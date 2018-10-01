@@ -3,16 +3,33 @@ from functools import wraps
 from flask_sqlalchemy import BaseQuery
 from .paging import Paging
 from lumavate_signer import Signer
-from app import db
+from app import app, db
 from base64 import b64decode
 from lumavate_request import ApiRequest
 from lumavate_exceptions import ApiException
+from enum import Enum
 import requests
 import json
 import os
 import re
 
-def __authenticate(storage, key, check_sut):
+class SecurityType(Enum):
+  browser_origin = 1
+  api_origin = 2
+  system_origin = 3
+
+def __authenticate(storage, key, security_type):
+
+  if SecurityType.browser_origin == security_type:
+    check_sut = True
+    restrict_domain = True
+  elif SecurityType.api_origin == security_type:
+    check_sut = False
+    restrict_domain = True
+  elif SecurityType.system_origin == security_type:
+    check_sut = False
+    restrict_domain = False
+
   valid_header = False
   if key in storage:
     try:
@@ -22,20 +39,33 @@ def __authenticate(storage, key, check_sut):
       g.pwa_jwt = jwt.replace('Bearer ', '')
       g.token_data = token_data
       g.org_id = token_data.get('orgId')
-      sut = None
-      if check_sut:
-        sut = request.headers.get('Lumavate-sut')
-        if sut is None:
-          sut = '--'
 
-      if re.match(str(g.token_data.get('code')) + '[\.\_\-]', request.host) is None:
+      if restrict_domain == True:
+        if re.match(str(g.token_data.get('code')) + '[\.\_\-]', request.host) is None:
+          raise Exception('Not Authorized')
+
+      try:
+        service_data = LumavateRequest().get_service_data(request.headers.get('Lumavate-sut'))
+        g.service_data = service_data['serviceData']
+        g.session = service_data['session']
+      except:
+        raise
+        if security_type != SecurityType.system_origin:
+          raise Exception('Not Authorized')
+
+      if check_sut == True and service_data and service_data.get('sutValid', True) == False:
         raise Exception('Not Authorized')
 
-      service_data = LumavateRequest().get_service_data(sut)
-      g.service_data = service_data['serviceData']
-      g.session = service_data['session']
-      if service_data.get('sutValid', True) == False:
-        raise Exception('Not Authorized')
+      g.auth_status = {
+        'status': 'inactive',
+        'roles': [],
+        'user': 'anonymous'
+      }
+      try:
+        if g.token_data.get('authUrl') and str(g.token_data.get('authUrl')).split('/')[-1] != os.environ.get('SERVICE_NAME'):
+          g.auth_status = LumavateRequest().get('https://' + request.host + g.token_data.get('authUrl') + '/status')
+      except:
+        pass
 
     except Exception as e:
       raise Exception('Not Authorized')
@@ -45,12 +75,12 @@ def __authenticate(storage, key, check_sut):
   if valid_header == False:
     raise Exception('Not Authorized')
 
-def api_response(check_sut=True, check_signature=False, required_roles=[]):
+def api_response(security_type, required_roles=[]):
   def actual_decorator(f):
     @wraps(f)
     def wrapped(*args, **kwargs):
       try:
-        __authenticate(request.headers, 'Authorization', check_sut)
+        __authenticate(request.headers, 'Authorization', security_type)
       except:
         return make_response('Not Authenticated', 401)
 
@@ -85,7 +115,7 @@ def browser_response(f):
   @wraps(f)
   def wrapped(*args, **kwargs):
     try:
-      __authenticate(request.cookies, 'pwa_jwt', False)
+      __authenticate(request.cookies, 'pwa_jwt', SecurityType.browser_origin)
     except:
       return redirect('https://' + request.host + '?u=' + request.url.replace('http://', 'https://'), 302)
 

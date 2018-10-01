@@ -1,5 +1,5 @@
-from flask import request, abort, g, Blueprint
-from .request import api_response
+from flask import request, abort, g, Blueprint, send_from_directory
+from .request import api_response, SecurityType
 from app import rest_model_mapping
 from app import db
 import re
@@ -73,9 +73,21 @@ class RestBehavior:
 
 
 rest_blueprint = Blueprint('rest_blueprint', __name__)
+icon_blueprint = Blueprint("qr_blueprint", __name__)
+
+@icon_blueprint.route("/<string:integration_cloud>/<string:widget_type>/discover/icons/<string:icon>", methods=["GET", "OPTIONS"])
+def icon(integration_cloud, widget_type, icon):
+  response = send_from_directory('icons', icon)
+
+  response.headers['Content-Type'] = 'image/svg+xml'
+  response.headers.add('Access-Control-Allow-Origin', '*')
+  response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+  response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+  response.headers.add('Access-Control-Allow-Credentials', 'true')
+  return response
 
 @rest_blueprint.route('/<string:integration_cloud>/<string:widget_type>/<string:model_name>', methods=['GET', 'POST'])
-@api_response()
+@api_response(SecurityType.browser_origin)
 def rest_collection(integration_cloud, widget_type, model_name):
   if request.method == 'POST':
     return rest_model_mapping.get(model_name, RestBehavior(None)).post()
@@ -83,7 +95,7 @@ def rest_collection(integration_cloud, widget_type, model_name):
     return rest_model_mapping.get(model_name, RestBehavior(None)).get_collection()
 
 @rest_blueprint.route('/<string:integration_cloud>/<string:widget_type>/<string:model_name>/<int:record_id>', methods=['GET'])
-@api_response()
+@api_response(SecurityType.browser_origin)
 def rest_single(integration_cloud, widget_type, model_name, record_id):
   if request.method == 'GET':
     return rest_model_mapping.get(model_name, RestBehavior(None)).get_single(record_id)
