@@ -19,9 +19,8 @@ class SecurityType(Enum):
   system_origin = 3
 
 def __authenticate(storage, key, security_type):
-
   if SecurityType.browser_origin == security_type:
-    check_sut = True
+    check_sut = False
     restrict_domain = True
   elif SecurityType.api_origin == security_type:
     check_sut = False
@@ -41,7 +40,7 @@ def __authenticate(storage, key, security_type):
       g.org_id = token_data.get('orgId')
 
       if restrict_domain == True:
-        if re.match(str(g.token_data.get('code')) + '[\.\_\-]', request.host) is None:
+        if re.match('(' + str(g.token_data.get('code')) + '|' + str(g.token_data.get('namespace')) + ')[\.\_\-]', request.host) is None:
           raise Exception('Not Authorized')
 
       try:
@@ -49,12 +48,12 @@ def __authenticate(storage, key, security_type):
         g.service_data = service_data['serviceData']
         g.session = service_data['session']
       except:
-        raise
         if security_type != SecurityType.system_origin:
           raise Exception('Not Authorized')
 
       if check_sut == True and service_data and service_data.get('sutValid', True) == False:
         raise Exception('Not Authorized')
+
 
       g.auth_status = {
         'status': 'inactive',
@@ -90,7 +89,6 @@ def api_response(security_type, required_roles=[]):
       except ApiException as e:
         return jsonify(e.to_dict()), e.status_code
       except:
-        raise
         abort(500)
 
       if r is None:
@@ -119,11 +117,7 @@ def browser_response(f):
     except:
       return redirect('https://' + request.host + '?u=' + request.url.replace('http://', 'https://'), 302)
 
-    try:
-      print(request.url, flush=True)
-      r = f(*args, **kwargs)
-    except:
-      raise
+    r = f(*args, **kwargs)
 
     return r
   return wrapped
