@@ -79,7 +79,6 @@ icon_blueprint = Blueprint("qr_blueprint", __name__)
 def icon(integration_cloud, widget_type, icon):
   response = send_from_directory('icons', icon)
 
-  response.headers['Content-Type'] = 'image/svg+xml'
   response.headers.add('Access-Control-Allow-Origin', '*')
   response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
   response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
