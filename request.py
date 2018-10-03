@@ -89,7 +89,7 @@ def api_response(security_type, required_roles=[]):
       except ApiException as e:
         return jsonify(e.to_dict()), e.status_code
       except:
-        abort(500)
+        raise
 
       if r is None:
         abort(404)
