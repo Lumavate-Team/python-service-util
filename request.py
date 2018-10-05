@@ -39,7 +39,7 @@ def __authenticate(storage, key, security_type):
   g.org_id = token_data.get('orgId')
 
   if restrict_domain == True:
-    if re.match('(' + str(g.token_data.get('code')) + '|' + str(g.token_data.get('namespace')) + ')[\.\_\-]', request.host) is None:
+    if re.match('(' + str(g.token_data.get('code')) + '|' + str(g.token_data.get('namespace')) + ')[._\-:]', request.host) is None:
       raise AuthorizationException('Domain mismatch')
 
   service_data = get_lumavate_request().get_service_data(request.headers.get('Lumavate-sut'))
