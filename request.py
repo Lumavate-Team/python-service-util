@@ -155,10 +155,11 @@ class LumavateRequest(ApiRequest):
     return auth_status
 
 class LumavateMockRequest(LumavateRequest):
-  def __init__(self, mock_service, mock_auth, mock_token):
+  def __init__(self, mock_service, mock_auth, mock_token, mock_func):
     self._mock_service = mock_service
     self._mock_auth = mock_auth
     self._mock_token = mock_token
+    self._mock_func = mock_func
 
   def get_service_data(self, sut):
     return self._mock_service
@@ -168,3 +169,20 @@ class LumavateMockRequest(LumavateRequest):
 
   def get_token(self, storage, key):
     return self._mock_token
+
+  def make_request(
+      self,
+      method,
+      path,
+      headers=None,
+      payload=None,
+      files=None,
+      raw=False,
+      timeout=None):
+    if self._mock_func is not None:
+      result = self._mock_func(method, path, headers, payload, files, raw, timeout)
+
+    if result is None:
+      return super().make_request(method, path, headers, payload, files, raw, timeout)
+    else:
+      return result
