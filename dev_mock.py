@@ -32,7 +32,7 @@ class DevMock():
     auth_token = AuthToken()
     auth_token.namespace = 'abc'
     auth_token.session = 'abc123'
-    auth_token.code = 'localhost'
+    auth_token.code = 'activation-code'
     auth_token.org_id = 1
     auth_token.version = 'production'
     auth_token.home_url = ''

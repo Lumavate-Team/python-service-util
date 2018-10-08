@@ -38,7 +38,7 @@ def __authenticate(storage, key, security_type):
   g.token_data = token_data
   g.org_id = token_data.get('orgId')
 
-  if restrict_domain == True:
+  if (not os.environ.get('DEV_MODE', 'False').lower() == 'true') and restrict_domain == True:
     if re.match('(' + str(g.token_data.get('code')) + '|' + str(g.token_data.get('namespace')) + ')[._\-:]', request.host) is None:
       raise AuthorizationException('Domain mismatch')
 
