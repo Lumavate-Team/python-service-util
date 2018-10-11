@@ -42,13 +42,16 @@ def __authenticate(storage, key, security_type):
     if re.match('(' + str(g.token_data.get('code')) + '|' + str(g.token_data.get('namespace')) + ')[._\-:]', request.host) is None:
       raise AuthorizationException('Domain mismatch')
 
-  if security_type != SecurityType.system_origin:
+  try:
     service_data = get_lumavate_request().get_service_data(request.headers.get('Lumavate-sut'))
     g.service_data = service_data['serviceData']
     g.session = service_data['session']
-  else:
-    g.service_data = {}
-    g.session = {}
+  except ApiException as e:
+    if e.status_code == 404 and security_type == SecurityType.system_origin:
+      g.service_data = {}
+      g.session = {}
+    else:
+      raise
 
   if check_sut == True and service_data and service_data.get('sutValid', True) == False:
     raise Exception('Not Authorized')
