@@ -93,6 +93,8 @@ def api_response(security_type, required_roles=[]):
       if isinstance(r, list):
         return jsonify({'payload': { 'data': r }})
 
+      return r
+
     return wrapped
   return actual_decorator
 
