@@ -188,6 +188,7 @@ class LumavateMockRequest(LumavateRequest):
       files=None,
       raw=False,
       timeout=None):
+    result = None
     if self._mock_func is not None:
       result = self._mock_func(method, path, headers, payload, files, raw, timeout)
 

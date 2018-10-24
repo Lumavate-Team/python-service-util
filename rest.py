@@ -19,7 +19,7 @@ def camel_to_underscore(name):
 
 class RestBehavior:
   def __init__(self, model_class):
-    self.__model_class = model_class
+    self._model_class = model_class
 
   def get_org_id(self):
     return g.org_id
@@ -30,50 +30,95 @@ class RestBehavior:
     if hasattr(r, 'org_id'):
       r.org_id = self.get_org_id()
 
+    if hasattr(r, 'created_by'):
+      r.created_by = g.auth_status.get('user')
+
+    if hasattr(r, 'last_modified_by'):
+      r.last_modified_by = g.auth_status.get('user')
+
     return r
 
   def apply_filter(self, q):
     for a in request.args:
-      if hasattr(self.__model_class, a):
-        q = q.filter(getattr(self.__model_class, a) == request.args[a])
+      if hasattr(self._model_class, camel_to_underscore(a)):
+        q = q.filter(getattr(self._model_class, camel_to_underscore(a)) == request.args[a])
     return q
 
   def get_collection(self):
-    if self.__model_class is None:
+    if self._model_class is None:
       return None
 
-    q = self.__model_class.query
-    if hasattr(self.__model_class, 'org_id'):
-      q = q.filter(self.__model_class.org_id == g.token_data['orgId'])
+    q = self._model_class.get_all()
 
     return self.apply_filter(q)
 
   def apply_values(self, rec):
     payload = rec.to_json()
     data = request.get_json(force=True)
+
+    if hasattr(rec, 'last_modified_by'):
+      rec.last_modified_by = g.auth_status.get('user')
+
     for k in payload:
       if k in data:
         setattr(rec, camel_to_underscore(k), data.get(k))
 
   def validate(self, rec):
-    required = [col.name for col in self.__model_class.__table__.columns if not col.nullable if col.name != 'id']
+    required = [col.name for col in self._model_class.__table__.columns if not col.nullable if col.name != 'id']
     for r in required:
       if getattr(rec, r) is None:
         abort(400, 'required: ' + r)
 
   def post(self):
-    rec = self.create_record(self.__model_class)
+    rec = self.create_record(self._model_class)
     self.apply_values(rec)
     self.validate(rec)
 
     return rec
 
+  def get_id(self, id):
+    if isinstance(id, int):
+      return id
+
+    if id.isdigit():
+      return id
+    else:
+      try:
+        object_type = self._model_class.__table__.name
+        service, object, id = id.split('|')
+        if object_type != object:
+          return None
+
+        return int(id)
+      except:
+        return None
+
   def get_single(self, record_id):
-    return self.__model_class.query.filter(self.__model_class.id == record_id).first()
+    record_id = self.get_id(record_id)
+    return self.apply_filter(self._model_class.get_all()).filter(self._model_class.id == record_id).first()
+
+  def put(self, record_id):
+    record_id = self.get_id(record_id)
+    r = self._model_class.get(record_id)
+    if r is not None:
+      self.apply_values(r)
+      self.validate(r)
+
+    return r
+
+  def delete(self, record_id):
+    record_id = self.get_id(record_id)
+    r = self._model_class.get(record_id)
+    result = None
+    if r is not None:
+      db.session.delete(r)
+      result = r.to_json()
+
+    return result
 
 
 rest_blueprint = Blueprint('rest_blueprint', __name__)
-icon_blueprint = Blueprint("qr_blueprint", __name__)
+icon_blueprint = Blueprint('icon_blueprint', __name__)
 
 @icon_blueprint.route("/<string:integration_cloud>/<string:widget_type>/discover/icons/<string:icon>", methods=["GET", "OPTIONS"])
 def icon(integration_cloud, widget_type, icon):
