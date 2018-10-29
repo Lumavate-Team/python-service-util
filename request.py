@@ -132,8 +132,7 @@ class LumavateRequest(ApiRequest):
     return 'Bearer ' + str(g.pwa_jwt)
 
   def get_base_url(self):
-    return 'https://' + request.host
-    #return os.environ.get('BASE_URL')
+    return '{}{}'.format(os.environ.get('PROTO'), request.host)
 
   def get_token(self, storage, key):
     return storage.get(key)
@@ -155,7 +154,7 @@ class LumavateRequest(ApiRequest):
     }
     try:
       if g.token_data.get('authUrl') and str(g.token_data.get('authUrl')).strip('/').split('/')[-1] != os.environ.get('SERVICE_NAME'):
-        auth_status = LumavateRequest().get('https://' + request.host + g.token_data.get('authUrl') + 'status')
+        auth_status = LumavateRequest().get('{}{}{}'.format(self.get_base_url(), g.token_data.get('authUrl'), 'status'))
     except Exception as e:
       pass
 
