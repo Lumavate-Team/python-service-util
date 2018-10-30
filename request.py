@@ -75,8 +75,10 @@ def api_response(security_type, required_roles=[]):
         r = f(*args, **kwargs)
         db.session.commit()
       except ApiException as e:
+        db.session.rollback()
         return jsonify(e.to_dict()), e.status_code
       except Exception as e:
+        db.session.rollback()
         raise
 
       if r is None:
@@ -159,8 +161,12 @@ class LumavateRequest(ApiRequest):
     }
     try:
       if g.token_data.get('authUrl') and str(g.token_data.get('authUrl')).strip('/').split('/')[-1] != os.environ.get('SERVICE_NAME'):
-        auth_status = LumavateRequest().get('{}{}{}'.format(self.get_base_url(), g.token_data.get('authUrl'), 'status'))
+        if g.token_data.get('authUrl').startswith('http://'):
+          auth_status = LumavateRequest().get(g.token_data.get('authUrl') + 'status')
+        else:
+          auth_status = LumavateRequest().get('{}{}{}'.format(self.get_base_url(), g.token_data.get('authUrl'), 'status'))
     except Exception as e:
+      print(g.token_data.get('authUrl'), flush=True)
       print(e, flush=True)
       pass
 
