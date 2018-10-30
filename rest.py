@@ -3,6 +3,7 @@ from .request import api_response, SecurityType
 from app import rest_model_mapping
 from app import db
 import re
+import os
 
 camel_pat = re.compile(r'([A-Z0-9])')
 under_pat = re.compile(r'_([A-Za-z0-9])')
@@ -16,6 +17,12 @@ def underscore_to_camel(name):
 
 def camel_to_underscore(name):
 	return camel_pat.sub(lambda x: '_' + x.group(1).lower(), name)
+
+def make_id(id, classification):
+  if hasattr(classification, '__table__'):
+    return os.environ.get('WIDGET_URL_PREFIX').strip('/').replace('/', '~') + '!' + classification.__table__.name + '!' + str(id)
+  else:
+    return os.environ.get('WIDGET_URL_PREFIX').strip('/').replace('/', '~') + '!' + classification + '!' + str(id)
 
 class RestBehavior:
   def __init__(self, model_class):
