@@ -96,7 +96,7 @@ class RestBehavior:
     else:
       try:
         object_type = self._model_class.__table__.name
-        service, object, id = id.split('|')
+        service, object, id = id.split('!')
         if object_type != object:
           return None
 
