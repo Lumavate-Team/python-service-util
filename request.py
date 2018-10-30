@@ -75,8 +75,9 @@ def api_response(security_type, required_roles=[]):
         r = f(*args, **kwargs)
         db.session.commit()
       except ApiException as e:
-        print(e, flush=True)
         return jsonify(e.to_dict()), e.status_code
+      except Exception as e:
+        raise
 
       if r is None:
         abort(404)
@@ -85,10 +86,10 @@ def api_response(security_type, required_roles=[]):
         return Paging().run(r)
 
       if hasattr(r, 'to_json'):
-        return jsonify(r.to_json())
+        return jsonify({'payload': {'data': r.to_json()}})
 
       if isinstance(r, dict):
-        return jsonify(r)
+        return jsonify({'payload': {'data': r}})
 
       if isinstance(r, list):
         return jsonify({'payload': { 'data': r }})
@@ -148,6 +149,10 @@ class LumavateRequest(ApiRequest):
     return d
 
   def get_auth_status(self):
+    auth_url = 'https://' + request.host + g.token_data.get('authUrl') + 'status'
+    if g.token_data.get('authUrl').startswith('http'):
+      auth_url = g.token_data.get('authUrl') + 'status'
+
     auth_status = {
       'status': 'inactive',
       'roles': [],
@@ -155,8 +160,9 @@ class LumavateRequest(ApiRequest):
     }
     try:
       if g.token_data.get('authUrl') and str(g.token_data.get('authUrl')).strip('/').split('/')[-1] != os.environ.get('SERVICE_NAME'):
-        auth_status = LumavateRequest().get('https://' + request.host + g.token_data.get('authUrl') + 'status')
+        auth_status = LumavateRequest().get(auth_url)
     except Exception as e:
+      print(e, flush=True)
       pass
 
     #with open('/app/auth-data.json', 'w') as outfile:

@@ -52,6 +52,9 @@ class RestBehavior:
 
     return self.apply_filter(q)
 
+  def read_value(self, data, field_name):
+    return data.get(field_name)
+
   def apply_values(self, rec):
     payload = rec.to_json()
     data = request.get_json(force=True)
@@ -61,9 +64,10 @@ class RestBehavior:
 
     for k in payload:
       if k in data:
-        setattr(rec, camel_to_underscore(k), data.get(k))
+        setattr(rec, camel_to_underscore(k), self.read_value(data, k))
 
   def validate(self, rec):
+    db.session.flush()
     required = [col.name for col in self._model_class.__table__.columns if not col.nullable if col.name != 'id']
     for r in required:
       if getattr(rec, r) is None:

@@ -43,6 +43,7 @@ class DevMock():
     t = self.get_auth_token()
     g.token_data = t._data
     g.org_id = t.org_id
+    g.pwa_jwt = t.get_token()
 
   def get_session_data(self):
     return {
