@@ -70,6 +70,9 @@ class RestBehavior:
       rec.last_modified_by = g.auth_status.get('user')
 
     for k in payload:
+      if k in ['id']:
+        continue
+
       if k in data:
         setattr(rec, camel_to_underscore(k), self.read_value(data, k))
 
