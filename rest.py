@@ -1,4 +1,5 @@
 from flask import request, abort, g, Blueprint, send_from_directory
+import sqlalchemy.sql.expression
 from .request import api_response, SecurityType
 from app import rest_model_mapping
 from app import db
@@ -51,13 +52,26 @@ class RestBehavior:
         q = q.filter(getattr(self._model_class, camel_to_underscore(a)) == request.args[a])
     return q
 
+  def apply_sort(self, q):
+    if 'sort' in request.args:
+      sort_key = request.args['sort']
+      sort_direction = 'asc'
+      if ' ' in sort_key:
+        sort_key, sort_direction = sort_key.split(' ', 1)
+
+      sort_dir_func = getattr(sqlalchemy.sql.expression, sort_direction)
+      q = q.order_by(sort_dir_func(getattr(self._model_class, camel_to_underscore(sort_key))))
+    return q
+
   def get_collection(self):
     if self._model_class is None:
       return None
 
     q = self._model_class.get_all()
 
-    return self.apply_filter(q)
+    q = self.apply_filter(q)
+    q = self.apply_sort(q)
+    return q
 
   def read_value(self, data, field_name):
     return data.get(field_name)
