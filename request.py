@@ -150,10 +150,6 @@ class LumavateRequest(ApiRequest):
     return d
 
   def get_auth_status(self):
-    auth_url = 'https://' + request.host + g.token_data.get('authUrl') + 'status'
-    if g.token_data.get('authUrl').startswith('http'):
-      auth_url = g.token_data.get('authUrl') + 'status'
-
     auth_status = {
       'status': 'inactive',
       'roles': [],
