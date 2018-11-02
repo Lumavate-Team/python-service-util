@@ -2,6 +2,8 @@ from flask import request, abort, g, Blueprint, send_from_directory
 import sqlalchemy.sql.expression
 from .request import api_response, SecurityType
 from app import rest_model_mapping
+import csv
+from io import StringIO
 from app import db
 import re
 import os
@@ -40,6 +42,26 @@ class RestBehavior:
 
   def get_org_id(self):
     return g.org_id
+
+  def get_batch_import_content(self):
+    j = []
+
+    input_data = ''
+    if 'file' in request.files:
+      f = request.files['file']
+      input_data = f.read().decode('utf-8')
+    else:
+      input_data = request.get_data().decode('utf-8')
+
+    try:
+      j = json.loads(input_data)
+    except:
+      sio = StringIO(input_data)
+      reader = csv.DictReader(sio)
+      for row in reader:
+        j.append(row)
+
+    return j
 
   def create_record(self, for_model):
     r = for_model()
