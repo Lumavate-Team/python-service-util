@@ -149,6 +149,68 @@ class LumavateRequest(ApiRequest):
     #  json.dump(d, outfile, sort_keys=True, indent=4)
     return d
 
+  def make_request(
+      self,
+      method,
+      path,
+      headers=None,
+      payload=None,
+      files=None,
+      raw=False,
+      timeout=None):
+    """Make a request with the given method and parameters"""
+    response_content = None
+    results = {}
+
+    if headers is None:
+      headers = {}
+
+    if timeout is None:
+      # If timeout is not set, requests library will hang indefinitely
+      timeout = 30
+
+    if 'Authorization' not in headers:
+      headers['Authorization'] = self.get_auth_token()
+
+    if 'Content-Type' not in headers:
+      headers['Content-Type'] = 'application/json'
+
+    if path.startswith('/'):
+      path = self.get_base_url() + path
+
+    if payload is not None and isinstance(payload, dict):
+      payload = json.dumps(payload)
+
+    headers['Connection'] = 'close'
+
+    with requests.Session() as session:
+      url = self.sign_url(method, path, payload, headers)
+      func = getattr(session, method.lower())
+      res = func(
+          url,
+          headers=headers,
+          data=payload,
+          stream=True,
+          timeout=timeout,
+          files=files)
+
+      res.encoding = 'utf-8' if not(res.encoding) else res.encoding
+
+      for chunk in res.iter_content(chunk_size=524288, decode_unicode=not raw):
+        if chunk:
+          if response_content is None:
+            response_content = chunk
+          else:
+            response_content += chunk
+
+      if res.status_code == 200:
+        if raw:
+          results = response_content
+        else:
+          results = json.loads(response_content)
+
+    return self.handle_response(res, results, raw=raw)
+
   def get_auth_status(self):
     auth_status = {
       'status': 'inactive',
