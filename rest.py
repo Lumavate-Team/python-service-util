@@ -29,6 +29,15 @@ class RestBehavior:
   def __init__(self, model_class):
     self._model_class = model_class
 
+  def hyphen_to_camel(self, name):
+    return hyphen_to_camel(name)
+
+  def underscore_to_camel(self, name):
+    return underscore_to_camel(name)
+
+  def camel_to_underscore(self, name):
+    return camel_to_underscore(name)
+
   def get_org_id(self):
     return g.org_id
 
