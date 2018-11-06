@@ -32,7 +32,7 @@ class RestBehavior:
     self._model_class = model_class
     self.data = data
   
-  def get_data(self, override_data):
+  def get_data(self, override_data=None):
     if override_data:
       return override_data
       
