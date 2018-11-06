@@ -28,7 +28,7 @@ def make_id(id, classification):
     return os.environ.get('WIDGET_URL_PREFIX').strip('/').replace('/', '~') + '!' + classification + '!' + str(id)
 
 class RestBehavior:
-  def __init__(self, model_class, data):
+  def __init__(self, model_class, data=None):
     self._model_class = model_class
     self.data = data
   
