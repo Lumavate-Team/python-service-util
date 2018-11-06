@@ -130,11 +130,11 @@ class RestBehavior:
         continue
 
       if k in data:
-        if rec.get(k, None) != data.get(k, None):
+        if getattr(rec, camel_to_underscore(k)) != self.read_value(data, k):
           updated_fields.append(k)
         setattr(rec, camel_to_underscore(k), self.read_value(data, k))
       
-      return updated_fields
+    return updated_fields
 
   def validate(self, rec):
     db.session.flush()
