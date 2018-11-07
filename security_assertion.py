@@ -5,7 +5,6 @@ import os
 class SecurityAssertion:
   def __init__(self):
     self._rolemap = {}
-    self.load_rolemap()
 
   def load_rolemap(self):
     pass
@@ -22,9 +21,19 @@ class SecurityAssertion:
 
     return auth_groups
 
-  def assert_has_role(self, role):
-    user_groups = g.auth_status.get('roles')
-    required_groups = self._rolemap.get(role, [])
+  def has_role(self, roles):
+    self.load_rolemap()
+    if isinstance(roles, str):
+      roles = [roles]
 
-    if len(list(set(user_groups) & set(required_groups))) == 0:
-      raise InvalidOperationException('User missing role "' + role + '"')
+    required_roles = []
+    for r in roles:
+      required_roles = required_roles + self._rolemap.get(r, [])
+
+    user_groups = g.auth_status.get('roles')
+
+    return len(list(set(user_groups) & set(required_roles))) > 0
+
+  def assert_has_role(self, roles):
+    if not self.has_role(roles):
+      raise InvalidOperationException('Insuffucient Privileges')
