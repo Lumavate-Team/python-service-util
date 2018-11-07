@@ -12,11 +12,7 @@ import requests
 import json
 import os
 import re
-
-class SecurityType(Enum):
-  browser_origin = 1
-  api_origin = 2
-  system_origin = 3
+from .security_type import SecurityType
 
 def __authenticate(storage, key, security_type):
   if SecurityType.browser_origin == security_type:
