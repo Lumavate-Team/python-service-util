@@ -5,3 +5,4 @@ from .dev_mock import DevMock
 from .route_decorator import lumavate_route, lumavate_blueprint, all_routes
 from .security_type import SecurityType
 from .request_type import RequestType
+from .security_assertion import SecurityAssertion
