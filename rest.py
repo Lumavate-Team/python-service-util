@@ -1,6 +1,7 @@
 from flask import request, abort, g, Blueprint, send_from_directory
 import sqlalchemy.sql.expression
 from .request import api_response, SecurityType
+from .paging import Paging
 from app import rest_model_mapping
 import csv
 from io import StringIO
@@ -102,7 +103,7 @@ class RestBehavior:
 
     q = self.apply_filter(q)
     q = self.apply_sort(q)
-    return q
+    return Paging().run(q, self.pack)
 
   def read_value(self, data, field_name):
     return data.get(field_name)
@@ -133,7 +134,7 @@ class RestBehavior:
     self.apply_values(rec)
     self.validate(rec)
 
-    return rec
+    return self.pack(rec)
 
   def get_id(self, id):
     if isinstance(id, int):
@@ -154,7 +155,8 @@ class RestBehavior:
 
   def get_single(self, record_id):
     record_id = self.get_id(record_id)
-    return self.apply_filter(self._model_class.get_all()).filter(self._model_class.id == record_id).first()
+    r = self.apply_filter(self._model_class.get_all()).filter(self._model_class.id == record_id).first()
+    return self.pack(r)
 
   def put(self, record_id):
     record_id = self.get_id(record_id)
@@ -163,17 +165,24 @@ class RestBehavior:
       self.apply_values(r)
       self.validate(r)
 
-    return r
+    return self.pack(r)
 
   def delete(self, record_id):
     record_id = self.get_id(record_id)
     r = self._model_class.get(record_id)
-    result = None
+    result = self.pack(r)
+
     if r is not None:
       db.session.delete(r)
       result = r.to_json()
 
     return result
+
+  def pack(self, rec):
+    if rec is None:
+      return None
+
+    return rec.to_json()
 
 
 rest_blueprint = Blueprint('rest_blueprint', __name__)
