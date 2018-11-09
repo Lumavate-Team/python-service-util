@@ -101,7 +101,7 @@ def lumavate_route(path, methods, request_type, security_types, required_roles=[
     all_routes.append({
       'path': '^' + regex_path + '$',
       'security': [x.name for x in security_types],
-      'origin': request_type.name
+      'type': request_type.name
     })
     return wrapped
   return actual_decorator
