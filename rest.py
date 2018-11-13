@@ -2,6 +2,7 @@ from flask import request, abort, g, Blueprint, send_from_directory
 import sqlalchemy.sql.expression
 from .request import api_response, SecurityType
 from app import rest_model_mapping
+from lumavate_exceptions import ValidationException
 import csv
 from io import StringIO
 from app import db
@@ -140,8 +141,12 @@ class RestBehavior:
     db.session.flush()
     required = [col.name for col in self._model_class.__table__.columns if not col.nullable if col.name != 'id']
     for r in required:
-      if getattr(rec, r) is None:
-        abort(400, 'required: ' + r)
+      if getattr(rec, r) is None or not str(getattr(rec, r)).strip():
+        raise ValidationException('Field is Required', self.underscore_to_camel(r))
+
+  def expanded(self, section):
+    expand_sections = [a.strip() for a in self.args.get('expand', 'none').lower().split(',')]
+    return section.lower() in expand_sections or 'all' in expand_sections
 
   def post(self):
     rec = self.create_record(self._model_class)
