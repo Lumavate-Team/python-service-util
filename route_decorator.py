@@ -14,10 +14,9 @@ lumavate_blueprint = Blueprint('lumavate_blueprint', __name__)
 all_routes = []
 
 def __authenticate(security_type):
-  if security_type == SecurityType.browser_origin:
+  jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
+  if jwt is None:
     jwt = get_lumavate_request().get_token(request.cookies, 'pwa_jwt')
-  else:
-    jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
 
   header, payload, signature = jwt.replace('Bearer ', '').split('.')
   token_data = json.loads(b64decode(payload + '==').decode('utf-8'))
@@ -102,7 +101,7 @@ def lumavate_route(path, methods, request_type, security_types, required_roles=[
     all_routes.append({
       'path': '^' + regex_path + '$',
       'security': [x.name for x in security_types],
-      'origin': request_type.name
+      'type': request_type.name
     })
     return wrapped
   return actual_decorator
