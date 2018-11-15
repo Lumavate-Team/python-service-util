@@ -14,6 +14,7 @@ class SecurityAssertion:
       auth_route = '/'.join(g.token_data.get('authUrl').strip('/').split('/')[:2])
       auth_groups = LumavateRequest().get(os.environ.get('PROTO') + request.host + '/' + auth_route + '/discover/auth-groups')
     except Exception as e:
+      print(e, flush=True)
       auth_groups = []
 
     auth_groups = [{'value': x['name'], 'displayValue': x['name']} for x in auth_groups]
