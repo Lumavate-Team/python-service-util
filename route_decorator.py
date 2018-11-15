@@ -27,7 +27,7 @@ def __authenticate(security_type):
   try:
     service_data = get_lumavate_request().get_service_data(request.headers.get('Lumavate-sut'))
     g.service_data = service_data['serviceData']
-    g.session = service_data['session']
+    g.session = service_data['session'] if service_data['session'] is not None else {}
   except ApiException as e:
     if e.status_code == 404 and security_type == SecurityType.system_origin:
       g.service_data = {}
