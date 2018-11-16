@@ -33,6 +33,7 @@ class SecurityAssertion:
       required_roles = required_roles + self._rolemap.get(r, [])
 
     user_groups = g.auth_status.get('roles')
+    user_groups.append('__all__')
 
     return len(list(set(user_groups) & set(required_roles))) > 0
 
