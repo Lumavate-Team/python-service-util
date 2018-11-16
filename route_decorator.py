@@ -15,7 +15,7 @@ all_routes = []
 
 def __authenticate(security_type):
   jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
-  if jwt is None:
+  if jwt is None or jwt.strip() == '':
     jwt = get_lumavate_request().get_token(request.cookies, 'pwa_jwt')
 
   header, payload, signature = jwt.replace('Bearer ', '').split('.')
