@@ -1,6 +1,6 @@
 from flask import g, request
 from lumavate_exceptions import InvalidOperationException
-from .request import get_lumavate_request
+from .request import get_lumavate_request, LumavateRequest
 import os
 
 class SecurityAssertion:
@@ -12,8 +12,13 @@ class SecurityAssertion:
 
   def get_all_auth_groups(self):
     try:
-      auth_route = '/'.join(g.token_data.get('authUrl').strip('/').split('/')[:2])
-      auth_groups = get_lumavate_request().get(os.environ.get('PROTO') + request.host + '/' + auth_route + '/discover/auth-groups')
+      if g.token_data.get('authUrl').startswith('http'):
+        auth_route = g.token_data.get('authUrl') + 'discover/auth-groups'
+      else:
+        auth_route = '/'.join(g.token_data.get('authUrl').strip('/').split('/')[:2])
+        auth_route = os.environ.get('PROTO') + request.host + '/' + auth_route + '/discover/auth-groups'
+
+      auth_groups = LumavateRequest().get(auth_route)
     except Exception as e:
       print(e, flush=True)
       auth_groups = []
