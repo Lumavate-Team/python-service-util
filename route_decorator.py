@@ -92,7 +92,7 @@ def lumavate_route(path, methods, request_type, security_types, required_roles=[
       view_func=wrapped,
       methods=methods)
 
-    regex_path = path
+    regex_path = path.replace('-', '[-]')
 
     regex_path = re.sub('<string[^>]*>','[^/]*', regex_path)
     regex_path = re.sub('<any[^>]*>','[^/]*', regex_path)
