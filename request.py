@@ -204,6 +204,8 @@ class LumavateRequest(ApiRequest):
           results = response_content
         else:
           results = json.loads(response_content)
+      else:
+        results = response_content
 
     return self.handle_response(res, results, raw=raw)
 
