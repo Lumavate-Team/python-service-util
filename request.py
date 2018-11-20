@@ -207,6 +207,11 @@ class LumavateRequest(ApiRequest):
 
     return self.handle_response(res, results, raw=raw)
 
+  def raise_exception(self, res):
+    raise ApiException(
+        res.status_code,
+        'Error making request ' + res.url + ':' + res.request.method + ' - ' + str(res.status_code) + res.text)
+
   def get_auth_status(self):
     auth_status = {
       'status': 'inactive',
