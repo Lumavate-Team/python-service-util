@@ -210,7 +210,7 @@ class LumavateRequest(ApiRequest):
   def raise_exception(self, res):
     raise ApiException(
         res.status_code,
-        'Error making request ' + res.url + ':' + res.request.method + ' - ' + str(res.status_code) + res.text)
+        'Error making request ' + res.url + ':' + res.request.method + ' - ' + str(res.status_code) + res.content.decode('utf-8'))
 
   def get_auth_status(self):
     auth_status = {
