@@ -146,7 +146,7 @@ class RestBehavior:
         raise ValidationException('Field is Required', self.underscore_to_camel(r))
 
   def expanded(self, section):
-    expand_sections = [a.strip() for a in self.args.get('expand', 'none').lower().split(',')]
+    expand_sections = [a.strip() for a in request.args.get('expand', 'none').lower().split(',')]
     return section.lower() in expand_sections or 'all' in expand_sections
 
   def post(self):
