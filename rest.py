@@ -3,6 +3,7 @@ import sqlalchemy.sql.expression
 from .request import api_response, SecurityType
 from .paging import Paging
 from app import rest_model_mapping
+from lumavate_exceptions import ValidationException
 import csv
 from io import StringIO
 from app import db
@@ -29,8 +30,18 @@ def make_id(id, classification):
     return os.environ.get('WIDGET_URL_PREFIX').strip('/').replace('/', '~') + '!' + classification + '!' + str(id)
 
 class RestBehavior:
-  def __init__(self, model_class):
+  def __init__(self, model_class, data=None):
     self._model_class = model_class
+    self.data = data
+  
+  def get_data(self, override_data=None):
+    if override_data:
+      return override_data
+      
+    if self.data:
+      return self.data
+      
+    return request.get_json(force=True)
 
   def hyphen_to_camel(self, name):
     return hyphen_to_camel(name)
@@ -108,9 +119,10 @@ class RestBehavior:
   def read_value(self, data, field_name):
     return data.get(field_name)
 
-  def apply_values(self, rec):
+  def apply_values(self, rec, data=None):
     payload = rec.to_json()
-    data = request.get_json(force=True)
+    data = self.get_data(data)
+    updated_fields = []
 
     if hasattr(rec, 'last_modified_by'):
       rec.last_modified_by = g.auth_status.get('user')
@@ -120,14 +132,22 @@ class RestBehavior:
         continue
 
       if k in data:
+        if getattr(rec, camel_to_underscore(k)) != self.read_value(data, k):
+          updated_fields.append(k)
         setattr(rec, camel_to_underscore(k), self.read_value(data, k))
+      
+    return updated_fields
 
   def validate(self, rec):
     db.session.flush()
     required = [col.name for col in self._model_class.__table__.columns if not col.nullable if col.name != 'id']
     for r in required:
-      if getattr(rec, r) is None:
-        abort(400, 'required: ' + r)
+      if getattr(rec, r) is None or not str(getattr(rec, r)).strip():
+        raise ValidationException('Field is Required', self.underscore_to_camel(r))
+
+  def expanded(self, section):
+    expand_sections = [a.strip() for a in request.args.get('expand', 'none').lower().split(',')]
+    return section.lower() in expand_sections or 'all' in expand_sections
 
   def post(self):
     rec = self.create_record(self._model_class)
