@@ -174,6 +174,8 @@ class LumavateRequest(ApiRequest):
     if path.startswith('/'):
       path = self.get_base_url() + path
 
+    path = path.replace('//', '/')
+
     if payload is not None and isinstance(payload, dict):
       payload = json.dumps(payload)
 
