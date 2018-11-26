@@ -204,8 +204,27 @@ class LumavateRequest(ApiRequest):
           results = response_content
         else:
           results = json.loads(response_content)
+      else:
+        results = response_content
 
     return self.handle_response(res, results, raw=raw)
+
+  def handle_response(self, res, data=None, raw=False):
+    """Given the request outcome, properly respond to the data"""
+    response_data = data
+
+    if res.status_code == 200:
+      if not raw and 'payload' in response_data:
+        return response_data['payload']['data']
+
+      return response_data
+
+    return self.raise_exception(res, response_data)
+
+  def raise_exception(self, res, response_data):
+    raise ApiException(
+        res.status_code,
+        'Error making request ' + res.url + ':' + res.request.method + ' - ' + str(res.status_code) + str(response_data))
 
   def get_auth_status(self):
     auth_status = {

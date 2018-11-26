@@ -9,13 +9,14 @@ import json
 from .security_type import SecurityType
 from .request import get_lumavate_request
 import re
+import os
 
 lumavate_blueprint = Blueprint('lumavate_blueprint', __name__)
 all_routes = []
 
 def __authenticate(security_type):
   jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
-  if jwt is None:
+  if jwt is None or jwt.strip() == '':
     jwt = get_lumavate_request().get_token(request.cookies, 'pwa_jwt')
 
   header, payload, signature = jwt.replace('Bearer ', '').split('.')
@@ -25,18 +26,36 @@ def __authenticate(security_type):
   g.org_id = token_data.get('orgId')
 
   try:
-    service_data = get_lumavate_request().get_service_data(request.headers.get('Lumavate-sut'))
+
+    if request.path == os.environ.get('WIDGET_URL_PREFIX') + 'status' and request.method == 'POST':
+      service_data = request.get_json(True)
+    else:
+      service_data = get_lumavate_request().get_service_data(request.headers.get('Lumavate-sut'))
+
     g.service_data = service_data['serviceData']
-    g.session = service_data['session']
+    g.session = service_data['session'] if service_data['session'] is not None else {}
+    g.auth_status = service_data.get('authData')
+    if g.auth_status is None:
+      g.auth_status = {
+        'status': 'inactive',
+        'roles': [],
+        'user': 'anonymous'
+      }
+
   except ApiException as e:
     if e.status_code == 404 and security_type == SecurityType.system_origin:
       g.service_data = {}
       g.session = {}
+      g.auth_status = {
+        'status': 'inactive',
+        'roles': [],
+        'user': 'anonymous'
+      }
     else:
       raise
 
-  g.auth_status = get_lumavate_request().get_auth_status()
-  valid_header = True
+  #g.auth_status = get_lumavate_request().get_auth_status()
+  #valid_header = True
 
 
 @lumavate_blueprint.route('/<string:integration_cloud>/<string:widget_type>/discover/health', methods=['GET', 'POST'])
@@ -92,7 +111,7 @@ def lumavate_route(path, methods, request_type, security_types, required_roles=[
       view_func=wrapped,
       methods=methods)
 
-    regex_path = path
+    regex_path = path.replace('-', '[-]')
 
     regex_path = re.sub('<string[^>]*>','[^/]*', regex_path)
     regex_path = re.sub('<any[^>]*>','[^/]*', regex_path)
