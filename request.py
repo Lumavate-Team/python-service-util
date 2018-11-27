@@ -177,6 +177,8 @@ class LumavateRequest(ApiRequest):
       else:
         path = self.get_base_url() + path
 
+    print(path, flush=True)
+
     if payload is not None and isinstance(payload, dict):
       payload = json.dumps(payload)
 
