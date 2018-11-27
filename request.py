@@ -171,6 +171,7 @@ class LumavateRequest(ApiRequest):
     if 'Content-Type' not in headers:
       headers['Content-Type'] = 'application/json'
 
+    path = path.replace('//', '/')
     if path.startswith('/'):
       if self.get_base_url().endswith('/'):
         path = self.get_base_url()[:-1] + path
