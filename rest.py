@@ -1,5 +1,6 @@
 from flask import request, abort, g, Blueprint, send_from_directory
 import sqlalchemy.sql.expression
+from sqlalchemy import or_
 from .request import api_response, SecurityType
 from .paging import Paging
 from app import rest_model_mapping
@@ -92,7 +93,8 @@ class RestBehavior:
   def apply_filter(self, q):
     for a in request.args:
       if hasattr(self._model_class, camel_to_underscore(a)):
-        q = q.filter(getattr(self._model_class, camel_to_underscore(a)) == request.args[a])
+        or_clauses = [ getattr(self._model_class, camel_to_underscore(a)) == v  for v in request.args[a].split('||')]
+        q = q.filter(or_(*[c for c in or_clauses if c is not None]))
     return q
 
   def apply_sort(self, q):
