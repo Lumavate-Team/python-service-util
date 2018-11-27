@@ -33,14 +33,14 @@ class RestBehavior:
   def __init__(self, model_class, data=None):
     self._model_class = model_class
     self.data = data
-  
+
   def get_data(self, override_data=None):
     if override_data:
       return override_data
-      
+
     if self.data:
       return self.data
-      
+
     return request.get_json(force=True)
 
   def hyphen_to_camel(self, name):
@@ -132,10 +132,16 @@ class RestBehavior:
         continue
 
       if k in data:
+        if k in ['createdBy', 'createdAt', 'lastModifiedBy', 'lastModifiedAt']:
+          continue
+
+        if not hasattr(rec, k):
+          continue
+
         if getattr(rec, camel_to_underscore(k)) != self.read_value(data, k):
           updated_fields.append(k)
         setattr(rec, camel_to_underscore(k), self.read_value(data, k))
-      
+
     return updated_fields
 
   def validate(self, rec):
