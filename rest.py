@@ -137,7 +137,7 @@ class RestBehavior:
         if k in ['createdBy', 'createdAt', 'lastModifiedBy', 'lastModifiedAt']:
           continue
 
-        if not hasattr(rec, k):
+        if not hasattr(rec, camel_to_underscore(k)):
           continue
 
         if getattr(rec, camel_to_underscore(k)) != self.read_value(data, k):
