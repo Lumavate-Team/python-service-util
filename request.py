@@ -177,7 +177,7 @@ class LumavateRequest(ApiRequest):
       else:
         path = self.get_base_url() + path
 
-    proto, url = path.split('://')
+    proto, url = path.split('://', 1)
     url = url.replace('//', '/')
     path = proto + '://' + url
 
