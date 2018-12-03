@@ -34,13 +34,16 @@ def __authenticate(security_type):
 
     g.service_data = service_data['serviceData']
     g.session = service_data['session'] if service_data['session'] is not None else {}
-    g.auth_status = service_data.get('authData')
-    if g.auth_status is None:
-      g.auth_status = {
-        'status': 'inactive',
-        'roles': [],
-        'user': 'anonymous'
-      }
+    if 'authData' not in service_data:
+      g.auth_status = get_lumavate_request().get_auth_status()
+    else:
+      g.auth_status = service_data.get('authData')
+      if g.auth_status is None:
+        g.auth_status = {
+          'status': 'inactive',
+          'roles': [],
+          'user': 'anonymous'
+        }
 
   except ApiException as e:
     if e.status_code == 404 and security_type == SecurityType.system_origin:
@@ -54,8 +57,6 @@ def __authenticate(security_type):
     else:
       raise
 
-  #g.auth_status = get_lumavate_request().get_auth_status()
-  #valid_header = True
 
 
 @lumavate_blueprint.route('/<string:integration_cloud>/<string:widget_type>/discover/health', methods=['GET', 'POST'])
