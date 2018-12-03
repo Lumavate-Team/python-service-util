@@ -58,6 +58,9 @@ class DevMock():
       'user': 'anonymous'
     }
 
+  def get_activation_data(self):
+    return None
+
   def get_mock_func(self):
     return None
 
@@ -70,7 +73,8 @@ class DevMock():
     sd = ServiceData({
       'serviceData': payload['data'],
       'session': self.get_session_data(),
-      'authData': self.get_auth_data()
+      'authData': self.get_auth_data(),
+      'activationData': self.get_activation_data()
     })
     return sd
 

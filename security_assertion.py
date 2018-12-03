@@ -12,7 +12,13 @@ class SecurityAssertion:
 
   def get_all_auth_groups(self):
     try:
-      if g.token_data.get('authUrl').startswith('http'):
+
+      if g.token_data.get('authUrl') is '':
+        auth_groups = []
+
+        return auth_groups
+
+      elif g.token_data.get('authUrl').startswith('http'):
         auth_route = g.token_data.get('authUrl') + 'discover/auth-groups'
       else:
         auth_route = '/'.join(g.token_data.get('authUrl').strip('/').split('/')[:2])

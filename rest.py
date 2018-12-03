@@ -93,9 +93,19 @@ class RestBehavior:
   def apply_filter(self, q):
     for a in request.args:
       if hasattr(self._model_class, camel_to_underscore(a)):
-        or_clauses = [ getattr(self._model_class, camel_to_underscore(a)) == v  for v in request.args[a].split('||')]
+        or_clauses = [ getattr(self._model_class, camel_to_underscore(a)) == self.resolve_value(v)  for v in request.args[a].split('||')]
         q = q.filter(or_(*[c for c in or_clauses if c is not None]))
     return q
+
+  def resolve_value(self, val):
+    if '.' in val:
+      temp = val.split('.')
+      if len(temp) > 1 and temp[0] == 'activationData':
+        activationData = g.activation_data
+        for key in temp[1:]:
+          activationData = activationData.get(key)
+        return  activationData
+    return val
 
   def apply_sort(self, q):
     if 'sort' in request.args:
