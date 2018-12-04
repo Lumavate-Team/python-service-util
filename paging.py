@@ -1,5 +1,4 @@
 from flask import request, current_app, make_response, jsonify
-import request as lumavate_request
 
 class Paging:
   @property
@@ -21,7 +20,6 @@ class Paging:
   def run(self, query, serialize_func=None):
     paged_data = query.paginate(self.page, self.page_size, False)
     previousPage = str(paged_data.pages) if self.page > paged_data.pages else str(paged_data.prev_num)
-    luma_req = lumavate_request.LumavateRequest()
 
     response = { 'payload':
                   { 'data' : [],
@@ -30,8 +28,8 @@ class Paging:
                     'totalPages': paged_data.pages,
                     'totalItems': paged_data.total,
                     'currentItemCount': len(paged_data.items),
-                    'nextPage': luma_req.get_base_url() + '?page=' + str(paged_data.next_num) + '&pagesize=' + str(self.page_size) if paged_data.has_next else None,
-                    'prevPage': luma_req.get_base_url() + '?page=' + previousPage + '&pagesize=' + str(self.page_size) if paged_data.has_prev else None
+                    'nextPage': request.base_url + '?page=' + str(paged_data.next_num) + '&pagesize=' + str(self.page_size) if paged_data.has_next else None,
+                    'prevPage': request.base_url + '?page=' + previousPage + '&pagesize=' + str(self.page_size) if paged_data.has_prev else None
                   }
               }
 
