@@ -45,7 +45,7 @@ def __authenticate(security_type):
           'user': 'anonymous'
         }
 
-    g.activation_data = service_data['activationData'] if service_data['activationData'] is not None else {}
+    g.activation_data = service_data.get('activationData', {})
 
   except ApiException as e:
     if e.status_code == 404 and security_type == SecurityType.system_origin:
