@@ -90,8 +90,11 @@ class RestBehavior:
 
     return r
 
-  def apply_filter(self, q):
+  def apply_filter(self, q, ignore_fields=[]):
     for a in request.args:
+      if a in ignore_fields:
+        continue
+        
       if hasattr(self._model_class, camel_to_underscore(a)):
         or_clauses = [ getattr(self._model_class, camel_to_underscore(a)) == self.resolve_value(v)  for v in request.args[a].split('||')]
         q = q.filter(or_(*[c for c in or_clauses if c is not None]))
