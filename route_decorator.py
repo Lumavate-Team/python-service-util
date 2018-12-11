@@ -6,7 +6,7 @@ from app import db
 from base64 import b64decode
 from lumavate_exceptions import ApiException
 import json
-from .security_type import SecurityType
+from .request_type import RequestType
 from .request import get_lumavate_request
 import re
 import os
@@ -14,7 +14,7 @@ import os
 lumavate_blueprint = Blueprint('lumavate_blueprint', __name__)
 all_routes = []
 
-def __authenticate(security_type):
+def __authenticate(request_type):
   jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
   if jwt is None or jwt.strip() == '':
     jwt = get_lumavate_request().get_token(request.cookies, 'pwa_jwt')
@@ -48,7 +48,8 @@ def __authenticate(security_type):
     g.activation_data = service_data.get('activationData', {})
 
   except ApiException as e:
-    if e.status_code == 404 and security_type == SecurityType.system_origin:
+    # Older services that use SecurityType.system_origin will have a value of 3 which matches RequestType.system value
+    if e.status_code == 404 and request_type.value == RequestType.system.value:
       g.service_data = {}
       g.session = {}
       g.auth_status = {
