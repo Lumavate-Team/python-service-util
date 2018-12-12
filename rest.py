@@ -10,6 +10,7 @@ from io import StringIO
 from app import db
 import re
 import os
+import json
 
 camel_pat = re.compile(r'([A-Z0-9])')
 under_pat = re.compile(r'_([A-Za-z0-9])')
@@ -68,7 +69,7 @@ class RestBehavior:
 
     try:
       j = json.loads(input_data)
-    except:
+    except Exception as e:
       sio = StringIO(input_data)
       reader = csv.DictReader(sio)
       for row in reader:
@@ -94,7 +95,7 @@ class RestBehavior:
     for a in request.args:
       if a in ignore_fields:
         continue
-        
+
       if hasattr(self._model_class, camel_to_underscore(a)):
         or_clauses = [ getattr(self._model_class, camel_to_underscore(a)) == self.resolve_value(v)  for v in request.args[a].split('||')]
         q = q.filter(or_(*[c for c in or_clauses if c is not None]))
