@@ -15,9 +15,9 @@ class Resolver:
   def lookup_data(self):
     url = self._api_route
     if '?' in url:
-      url = url + '&' + '||'.join(self._ids)
+      url = url + '&id=' + '||'.join(self._ids)
     else:
-      url = url + '?' + '||'.join(self._ids)
+      url = url + '?id=' + '||'.join(self._ids)
 
     self._data = get_lumavate_request().get(url, headers=self._headers)
 
