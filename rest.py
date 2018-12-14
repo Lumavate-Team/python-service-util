@@ -32,9 +32,10 @@ def make_id(id, classification):
     return os.environ.get('WIDGET_URL_PREFIX').strip('/').replace('/', '~') + '!' + classification + '!' + str(id)
 
 class RestBehavior:
-  def __init__(self, model_class, data=None):
+  def __init__(self, model_class, data=None, args=None):
     self._model_class = model_class
     self.data = data
+    self.args = args
 
   def get_data(self, override_data=None):
     if override_data:
@@ -44,6 +45,12 @@ class RestBehavior:
       return self.data
 
     return request.get_json(force=True)
+  
+  def get_args(self):
+    if self.args:
+      return self.args
+    
+    return request.args
 
   def hyphen_to_camel(self, name):
     return hyphen_to_camel(name)
@@ -92,12 +99,12 @@ class RestBehavior:
     return r
 
   def apply_filter(self, q, ignore_fields=[]):
-    for a in request.args:
+    for a in self.get_args():
       if a in ignore_fields:
         continue
 
       if hasattr(self._model_class, camel_to_underscore(a)):
-        or_clauses = [ getattr(self._model_class, camel_to_underscore(a)) == self.resolve_value(v)  for v in request.args[a].split('||')]
+        or_clauses = [ getattr(self._model_class, camel_to_underscore(a)) == self.resolve_value(v)  for v in self.get_args()[a].split('||')]
         q = q.filter(or_(*[c for c in or_clauses if c is not None]))
     return q
 
@@ -112,8 +119,8 @@ class RestBehavior:
     return val
 
   def apply_sort(self, q):
-    if 'sort' in request.args:
-      sort_key = request.args['sort']
+    if 'sort' in self.get_args():
+      sort_key = self.get_args()['sort']
       sort_direction = 'asc'
       if ' ' in sort_key:
         sort_key, sort_direction = sort_key.split(' ', 1)
@@ -168,7 +175,7 @@ class RestBehavior:
         raise ValidationException('Field is Required', self.underscore_to_camel(r))
 
   def expanded(self, section):
-    expand_sections = [a.strip() for a in request.args.get('expand', 'none').lower().split(',')]
+    expand_sections = [a.strip() for a in self.get_args().get('expand', 'none').lower().split(',')]
     return section.lower() in expand_sections or 'all' in expand_sections
 
   def post(self):
