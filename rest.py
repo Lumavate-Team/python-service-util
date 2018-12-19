@@ -129,14 +129,22 @@ class RestBehavior:
       q = q.order_by(sort_dir_func(getattr(self._model_class, camel_to_underscore(sort_key))))
     return q
 
-  def get_collection(self):
+  def get_collection_query(self):
     if self._model_class is None:
       return None
-
+    
     q = self._model_class.get_all()
 
     q = self.apply_filter(q)
     q = self.apply_sort(q)
+    return q
+
+  def get_collection(self):
+    if self._model_class is None:
+      return None
+    
+    q = self.get_collection_query()
+
     return Paging().run(q, self.pack)
 
   def read_value(self, data, field_name):
