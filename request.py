@@ -13,6 +13,7 @@ import json
 import os
 import re
 from .security_type import SecurityType
+from .custom_encoder import CustomEncoder
 
 def __authenticate(storage, key, security_type):
   if SecurityType.browser_origin == security_type:
@@ -182,7 +183,7 @@ class LumavateRequest(ApiRequest):
     path = proto + '://' + url
 
     if payload is not None and isinstance(payload, dict):
-      payload = json.dumps(payload)
+      payload = json.dumps(payload, cls=CustomEncoder)
 
     headers['Connection'] = 'close'
 
