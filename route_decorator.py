@@ -14,10 +14,28 @@ import os
 lumavate_blueprint = Blueprint('lumavate_blueprint', __name__)
 all_routes = []
 
+def __authenticate_admin(request_type):
+  jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
+  if jwt is None or jwt.strip() == '':
+    jwt = get_lumavate_request().get_token(request.cookies, 'pwa_jwt')
+
+  if not jwt:
+    return
+
+  header, payload, signature = jwt.replace('Bearer ', '').split('.')
+  token_data = json.loads(b64decode(payload + '==').decode('utf-8'))
+  g.pwa_jwt = jwt.replace('Bearer ', '')
+  g.token_data = token_data
+  g.org_id = token_data.get('orgId')
+  return
+
 def __authenticate(request_type):
   jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
   if jwt is None or jwt.strip() == '':
     jwt = get_lumavate_request().get_token(request.cookies, 'pwa_jwt')
+
+  if not jwt:
+    return
 
   header, payload, signature = jwt.replace('Bearer ', '').split('.')
   token_data = json.loads(b64decode(payload + '==').decode('utf-8'))
@@ -70,61 +88,79 @@ def health(integration_cloud, widget_type):
 def allowed_routes(integration_cloud, widget_type):
   return jsonify(all_routes)
 
-def lumavate_route(path, methods, request_type, security_types, required_roles=[]):
-  def actual_decorator(f):
+def handle_request(func, auth_func, integration_cloud, widget_type, *args, **kwargs):
+  g.integration_cloud = integration_cloud
+  g.widget_type = widget_type
+
+  try:
+    auth_func()
+  except ApiException as e:
+    return jsonify(e.to_dict()), e.status_code
+
+  try:
+    r = func(*args, **kwargs)
+    db.session.commit()
+  except ApiException as e:
+    db.session.rollback()
+    return jsonify(e.to_dict()), e.status_code
+  except Exception as e:
+    db.session.rollback()
+    raise
+
+  if r is None:
+    abort(404)
+
+  if isinstance(r, BaseQuery):
+    return Paging().run(r)
+
+  if hasattr(r, 'to_json'):
+    return jsonify({'payload': {'data': r.to_json()}})
+
+  if isinstance(r, dict):
+    return jsonify({'payload': {'data': r}})
+
+  if isinstance(r, list):
+    return jsonify({'payload': { 'data': r }})
+
+  return r
+
+def add_url_rule(func, wrapped, path, methods, request_type, security_types):
+  lumavate_blueprint.add_url_rule(
+    '/<string:integration_cloud>/<string:widget_type>' + path,
+    endpoint=func.__name__,
+    view_func=wrapped,
+    methods=methods)
+
+  regex_path = path.replace('-', '[-]')
+
+  regex_path = re.sub('<string[^>]*>','[^/]*', regex_path)
+  regex_path = re.sub('<any[^>]*>','[^/]*', regex_path)
+  regex_path = re.sub('<int[^>]*>','[0-9-]*', regex_path)
+
+  all_routes.append({
+    'path': '^' + regex_path + '$',
+    'security': [x.name for x in security_types],
+    'type': request_type.name
+  })
+
+def lumavate_admin_route(path, methods, request_type, security_types, required_roles=None):
+  def decorator(f):
     @wraps(f)
-    def wrapped(integration_cloud, widget_type, *args, **kwargs):
-      g.integration_cloud = integration_cloud
-      g.widget_type = widget_type
+    def wrapper(integration_cloud, widget_type, *args, **kwargs):
+      return handle_request(f, lambda: __authenticate_admin(request_type), integration_cloud, widget_type, *args, **kwargs)
 
-      try:
-        __authenticate(request_type)
-      except ApiException as e:
-        return jsonify(e.to_dict()), e.status_code
+    add_url_rule(f, wrapper, path, methods, request_type, security_types)
 
-      try:
-        r = f(*args, **kwargs)
-        db.session.commit()
-      except ApiException as e:
-        db.session.rollback()
-        return jsonify(e.to_dict()), e.status_code
-      except Exception as e:
-        db.session.rollback()
-        raise
+    return wrapper
+  return decorator
 
-      if r is None:
-        abort(404)
+def lumavate_route(path, methods, request_type, security_types, required_roles=None):
+  def decorator(f):
+    @wraps(f)
+    def wrapper(integration_cloud, widget_type, *args, **kwargs):
+      return handle_request(f, lambda: __authenticate(request_type), integration_cloud, widget_type, *args, **kwargs)
 
-      if isinstance(r, BaseQuery):
-        return Paging().run(r)
+    add_url_rule(f, wrapper, path, methods, request_type, security_types)
 
-      if hasattr(r, 'to_json'):
-        return jsonify({'payload': {'data': r.to_json()}})
-
-      if isinstance(r, dict):
-        return jsonify({'payload': {'data': r}})
-
-      if isinstance(r, list):
-        return jsonify({'payload': { 'data': r }})
-
-      return r
-
-    lumavate_blueprint.add_url_rule(
-      '/<string:integration_cloud>/<string:widget_type>' + path,
-      endpoint=f.__name__,
-      view_func=wrapped,
-      methods=methods)
-
-    regex_path = path.replace('-', '[-]')
-
-    regex_path = re.sub('<string[^>]*>','[^/]*', regex_path)
-    regex_path = re.sub('<any[^>]*>','[^/]*', regex_path)
-    regex_path = re.sub('<int[^>]*>','[0-9-]*', regex_path)
-
-    all_routes.append({
-      'path': '^' + regex_path + '$',
-      'security': [x.name for x in security_types],
-      'type': request_type.name
-    })
-    return wrapped
-  return actual_decorator
+    return wrapper
+  return decorator
