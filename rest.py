@@ -6,9 +6,12 @@ from app import rest_model_mapping
 from lumavate_exceptions import ValidationException
 import csv
 from io import StringIO
-from app import db
 import re
 import os
+try:
+  from app import db
+except:
+  db = None
 
 camel_pat = re.compile(r'([A-Z0-9])')
 under_pat = re.compile(r'_([A-Za-z0-9])')
@@ -33,14 +36,14 @@ class RestBehavior:
   def __init__(self, model_class, data=None):
     self._model_class = model_class
     self.data = data
-  
+
   def get_data(self, override_data=None):
     if override_data:
       return override_data
-      
+
     if self.data:
       return self.data
-      
+
     return request.get_json(force=True)
 
   def hyphen_to_camel(self, name):
@@ -76,6 +79,9 @@ class RestBehavior:
     return j
 
   def create_record(self, for_model):
+    if not db:
+      raise Exception('Unable to create record without db context')
+
     r = for_model()
     db.session.add(r)
     if hasattr(r, 'org_id'):
@@ -135,10 +141,13 @@ class RestBehavior:
         if getattr(rec, camel_to_underscore(k)) != self.read_value(data, k):
           updated_fields.append(k)
         setattr(rec, camel_to_underscore(k), self.read_value(data, k))
-      
+
     return updated_fields
 
   def validate(self, rec):
+    if not db:
+      raise Exception('Unable to validate record without db context')
+
     db.session.flush()
     required = [col.name for col in self._model_class.__table__.columns if not col.nullable if col.name != 'id']
     for r in required:
@@ -188,6 +197,9 @@ class RestBehavior:
     return self.pack(r)
 
   def delete(self, record_id):
+    if not db:
+      raise Exception('Unable to validate record without db context')
+
     record_id = self.get_id(record_id)
     r = self._model_class.get(record_id)
     result = self.pack(r)

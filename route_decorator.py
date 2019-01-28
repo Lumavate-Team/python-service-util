@@ -2,7 +2,6 @@ from flask import abort, jsonify, request, g, Blueprint
 from functools import wraps
 from flask_sqlalchemy import BaseQuery
 from .paging import Paging
-from app import db
 from base64 import b64decode
 from lumavate_exceptions import ApiException
 import json
@@ -10,6 +9,11 @@ from .security_type import SecurityType
 from .request import get_lumavate_request
 import re
 import os
+try:
+  from app import db
+except:
+  db = None
+
 
 lumavate_blueprint = Blueprint('lumavate_blueprint', __name__)
 all_routes = []
@@ -80,12 +84,15 @@ def lumavate_route(path, methods, request_type, security_types, required_roles=[
 
       try:
         r = f(*args, **kwargs)
-        db.session.commit()
+        if db:
+          db.session.commit()
       except ApiException as e:
-        db.session.rollback()
+        if db:
+          db.session.rollback()
         return jsonify(e.to_dict()), e.status_code
       except Exception as e:
-        db.session.rollback()
+        if db:
+          db.session.rollback()
         raise
 
       if r is None:
