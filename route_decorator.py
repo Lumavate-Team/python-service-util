@@ -14,28 +14,34 @@ import os
 lumavate_blueprint = Blueprint('lumavate_blueprint', __name__)
 all_routes = []
 
-def __authenticate_admin(request_type):
+def __authenticate_manage(request_type, required_roles):
   jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
   if jwt is None or jwt.strip() == '':
     jwt = get_lumavate_request().get_token(request.cookies, 'pwa_jwt')
 
   if not jwt:
-    return
+    raise ApiException(401, 'Missing token')
 
   header, payload, signature = jwt.replace('Bearer ', '').split('.')
   token_data = json.loads(b64decode(payload + '==').decode('utf-8'))
+
+  if token_data.get('scope') != 'ms-manage':
+    raise ApiException(401, 'Invalid scope')
+
   g.pwa_jwt = jwt.replace('Bearer ', '')
   g.token_data = token_data
   g.org_id = token_data.get('orgId')
+  role = token_data.get('role')
+
+  if required_roles and role not in required_roles:
+    raise ApiException(403, 'Invalid role')
+
   return
 
 def __authenticate(request_type):
   jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
   if jwt is None or jwt.strip() == '':
     jwt = get_lumavate_request().get_token(request.cookies, 'pwa_jwt')
-
-  if not jwt:
-    return
 
   header, payload, signature = jwt.replace('Bearer ', '').split('.')
   token_data = json.loads(b64decode(payload + '==').decode('utf-8'))
@@ -124,7 +130,7 @@ def handle_request(func, auth_func, integration_cloud, widget_type, *args, **kwa
 
   return r
 
-def add_url_rule(func, wrapped, path, methods, request_type, security_types):
+def add_url_rule(func, wrapped, path, methods, request_type, security_types, is_manage=False):
   lumavate_blueprint.add_url_rule(
     '/<string:integration_cloud>/<string:widget_type>' + path,
     endpoint=func.__name__,
@@ -140,16 +146,17 @@ def add_url_rule(func, wrapped, path, methods, request_type, security_types):
   all_routes.append({
     'path': '^' + regex_path + '$',
     'security': [x.name for x in security_types],
-    'type': request_type.name
+    'type': request_type.name,
+    'isManage': str(is_manage).lower()
   })
 
-def lumavate_admin_route(path, methods, request_type, security_types, required_roles=None):
+def lumavate_manage_route(path, methods, request_type, security_types, required_roles=None):
   def decorator(f):
     @wraps(f)
     def wrapper(integration_cloud, widget_type, *args, **kwargs):
-      return handle_request(f, lambda: __authenticate_admin(request_type), integration_cloud, widget_type, *args, **kwargs)
+      return handle_request(f, lambda: __authenticate_manage(request_type, required_roles), integration_cloud, widget_type, *args, **kwargs)
 
-    add_url_rule(f, wrapper, path, methods, request_type, security_types)
+    add_url_rule(f, wrapper, path, methods, request_type, security_types, is_manage=True)
 
     return wrapper
   return decorator
