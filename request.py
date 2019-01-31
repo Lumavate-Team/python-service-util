@@ -3,7 +3,7 @@ from functools import wraps
 from flask_sqlalchemy import BaseQuery
 from .paging import Paging
 from lumavate_signer import Signer
-from app import app, db
+from app import app
 from base64 import b64decode
 from lumavate_request import ApiRequest
 from lumavate_exceptions import ApiException, AuthorizationException
@@ -14,6 +14,11 @@ import os
 import re
 from .security_type import SecurityType
 from .custom_encoder import CustomEncoder
+
+try:
+  from app import db
+except:
+  db = None
 
 def __authenticate(storage, key, security_type):
   if SecurityType.browser_origin == security_type:
@@ -70,12 +75,15 @@ def api_response(security_type, required_roles=[]):
 
       try:
         r = f(*args, **kwargs)
-        db.session.commit()
+        if db:
+          db.session.commit()
       except ApiException as e:
-        db.session.rollback()
+        if db:
+          db.session.rollback()
         return jsonify(e.to_dict()), e.status_code
       except Exception as e:
-        db.session.rollback()
+        if db:
+          db.session.rollback()
         raise
 
       if r is None:
