@@ -163,7 +163,8 @@ def lumavate_manage_route(path, methods, request_type, security_types, required_
     def wrapper(integration_cloud, widget_type, *args, **kwargs):
       return handle_request(f, lambda: __authenticate_manage(request_type, required_roles), integration_cloud, widget_type, *args, **kwargs)
 
-    add_url_rule(f, wrapper, path, methods, request_type, security_types, is_manage=True)
+    # Prefix manage routes with /manage
+    add_url_rule(f, wrapper, '/manage{}'.format(path), methods, request_type, security_types, is_manage=True)
 
     return wrapper
   return decorator
