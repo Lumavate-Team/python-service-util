@@ -1,0 +1,118 @@
+<html>
+  <head>
+    <title>Manage Email Service</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="theme-color" content="#ffffff">
+    <noscript>Javascript required for this site to work.</noscript>
+
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="no">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <link href="https://fonts.googleapis.com/css?family=Teko:400,500" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
+
+    <style>
+      body {
+        margin: 0;
+      }
+      .output {
+        padding: 20px 0px;
+      }
+      .drawer-frame-root {
+        display: flex;
+        height: 100vh;
+      }
+      .drawer-frame-app-content {
+        position: relative;
+        width: 100%;
+      }
+      .drawer-main-content {
+        overflow: auto;
+        height: 100%;
+        padding: 0 18px;
+      }
+      .drawer-top-app-bar {
+        position: absolute;
+      }
+      .mdc-drawer__title {
+        font-size: .875rem;
+      }
+      .mdc-drawer__subtitle {
+        font-size: .8rem;
+      }
+      .mdc-top-app-bar__row {
+        height: 76px;
+      }
+      .mdc-top-app-bar--fixed-adjust {
+        padding-top: 76px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div class="drawer-frame-root">
+        <aside class="mdc-drawer">
+          <div class="mdc-drawer__header">
+            <h4 class="mdc-drawer__title">{{ user }}</h4>
+            <h6 class="mdc-drawer__subtitle">{{ role }} | {{ org_type }} | {{ namespace }}</h6>
+          </div>
+          <div class="mdc-drawer__content">
+            <nav class="mdc-list">
+              <hr class="mdc-list-divider">
+              {% if role == "admin" %}
+                <a class="mdc-list-item" href="./upgrade">
+                  <span class="mdc-list-item__text">Upgrade</span>
+                </a>
+              {% endif %}
+              {% if role == "admin" %}
+                <a class="mdc-list-item" href="./downgrade">
+                  <span class="mdc-list-item__text">Downgrade</span>
+                </a>
+              {% endif %}
+              <a class="mdc-list-item" href="./history">
+                <span class="mdc-list-item__text">History</span>
+              </a>
+              <a class="mdc-list-item" href="./current">
+                <span class="mdc-list-item__text">Current</span>
+              </a>
+            </nav>
+          </div>
+        </aside>
+        <div class="drawer-frame-app-content">
+          <header class="mdc-top-app-bar drawer-top-app-bar">
+            <div class="mdc-top-app-bar__row">
+              <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+                <span class="mdc-top-app-bar__title">Email Service</span>
+              </section>
+            </div>
+          </header>
+          <div class="drawer-main-content">
+            <div class="mdc-top-app-bar--fixed-adjust"></div>
+            <div class="output">
+              <code>
+                {% for o in output %}
+                  {{ o }} <br/>
+                {% endfor %}
+              </code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <script type="text/javascript">
+      mdc.autoInit();
+    </script>
+    <script>
+          var current = location.pathname.substring(location.pathname.lastIndexOf('/') + 1);
+          document.querySelectorAll('nav a').forEach(function(navItem){
+            if(navItem.href.indexOf(current) !== -1){
+              navItem.classList.add('mdc-list-item--activated');
+            }
+          });
+    </script>
+  </body>
+</html>

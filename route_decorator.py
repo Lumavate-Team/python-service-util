@@ -1,12 +1,12 @@
 from flask import abort, jsonify, request, g, Blueprint
-from functools import wraps
-from flask_sqlalchemy import BaseQuery
-from .paging import Paging
-from base64 import b64decode
 from lumavate_exceptions import ApiException
-import json
-from .request_type import RequestType
 from .request import get_lumavate_request
+from flask_sqlalchemy import BaseQuery
+from .request_type import RequestType
+from base64 import b64decode
+from functools import wraps
+from .paging import Paging
+import json
 import re
 import os
 try:
@@ -14,8 +14,12 @@ try:
 except:
   db = None
 
+if os.path.isdir("/app/templates"):
+  lumavate_blueprint = Blueprint('lumavate_blueprint', __name__)
+else:
+  template_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
+  lumavate_blueprint = Blueprint('lumavate_blueprint', __name__, template_folder=template_folder)
 
-lumavate_blueprint = Blueprint('lumavate_blueprint', __name__)
 all_routes = []
 
 def __authenticate_manage(request_type, required_roles):
@@ -157,7 +161,7 @@ def add_url_rule(func, wrapped, path, methods, request_type, security_types, is_
     'isManage': str(is_manage).lower()
   })
 
-def lumavate_manage_route(path, methods, request_type, security_types, required_roles=None):
+def lumavate_manage_route(path, methods, request_type, security_types, template_folder=None, required_roles=None):
   def decorator(f):
     @wraps(f)
     def wrapper(integration_cloud, widget_type, *args, **kwargs):
