@@ -1,4 +1,4 @@
-from alembic.command import history, downgrade, upgrade
+from alembic.command import history, downgrade, upgrade, current
 from contextlib import redirect_stdout, redirect_stderr
 from lumavate_service_util import RestBehavior
 from flask import render_template, g
