@@ -15,9 +15,9 @@
     <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
 
     <style>
-      body {
-        margin: 0;
-      }
+body {
+  margin: 0;
+}
       .output {
         padding: 20px 0px;
       }
@@ -63,25 +63,29 @@
             <nav class="mdc-list">
               <hr class="mdc-list-divider">
               {% if role == "admin" %}
-                <a class="mdc-list-item" href="./upgrade">
-                  <span class="mdc-list-item__text">Upgrade</span>
-                </a>
-              {% endif %}
-              {% if role == "admin" %}
-                <a class="mdc-list-item" href="./downgrade">
-                  <span class="mdc-list-item__text">Downgrade</span>
-                </a>
+              <form>
+                <div style="margin-left:16px">
+                  Target:
+                  <input style="width:60px;" type="text" id="upgradeTarget" name="upgradeTarget"/>
+                  <input type="button" value="Upgrade" onclick="postData('upgrade')"/>
+                </div>
+              </form>
+              <form>
+                <div style="margin-left:16px">
+                  Target:
+                  <input type="text" style="width:60px;" id="downgradeTarget" name="downgradeTarget"/>
+                  <input type="button" value="Downgrade" onclick="postData('downgrade')"/>
+                </div>
+              </form>
               {% endif %}
               <a class="mdc-list-item" href="./history">
                 <span class="mdc-list-item__text">History</span>
-              </a>
-              <a class="mdc-list-item" href="./current">
-                <span class="mdc-list-item__text">Current</span>
               </a>
             </nav>
           </div>
         </aside>
         <div class="drawer-frame-app-content">
+
           <header class="mdc-top-app-bar drawer-top-app-bar">
             <div class="mdc-top-app-bar__row">
               <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
@@ -89,30 +93,66 @@
               </section>
             </div>
           </header>
+
           <div class="drawer-main-content">
             <div class="mdc-top-app-bar--fixed-adjust"></div>
             <div class="output">
               <code>
                 {% for o in output %}
-                  {{ o }} <br/>
+                {{ o }} <br/>
                 {% endfor %}
               </code>
             </div>
           </div>
+
         </div>
       </div>
     </div>
+    <script>
+      function postData(type = '') {
+        var historyUrl = window.location.href
+        var url = window.location.href.split('/').slice(0, -1).join('/');
+
+        if (type == 'upgrade') {
+          var target = document.getElementById("upgradeTarget").value;
+        } else {
+          var target = document.getElementById("downgradeTarget").value;
+        }
+        url = url + '/' + type;
+        console.log(url);
+        var data = {
+          'target': target
+        };
+
+        return fetch(url, {
+          method: "POST",
+          mode: "cors", // no-cors, cors, *same-origin
+          headers: {
+            "Content-Type": "application/json",
+          },
+          referrer: "no-referrer",
+          body: JSON.stringify(data),
+        })
+          .then(function(response) {
+            return response.json();
+          })
+          .then(function(myJson) {
+            console.log(JSON.stringify(myJson.payload.data));
+          });
+      }
+    </script>
+
     <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
     <script type="text/javascript">
       mdc.autoInit();
     </script>
     <script>
-          var current = location.pathname.substring(location.pathname.lastIndexOf('/') + 1);
-          document.querySelectorAll('nav a').forEach(function(navItem){
-            if(navItem.href.indexOf(current) !== -1){
-              navItem.classList.add('mdc-list-item--activated');
-            }
-          });
+      var current = location.pathname.substring(location.pathname.lastIndexOf('/') + 1);
+      document.querySelectorAll('nav a').forEach(function(navItem){
+        if(navItem.href.indexOf(current) !== -1){
+          navItem.classList.add('mdc-list-item--activated');
+        }
+      });
     </script>
   </body>
 </html>

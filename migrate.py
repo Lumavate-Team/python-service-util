@@ -16,6 +16,11 @@ class LumavateMigrate(RestBehavior):
     self.org_type=g.token_data.get('orgType')
     self.namespace=g.token_data.get('namespace')
 
+    if os.path.isdir("/app/templates"):
+      self.default = False
+    else:
+      self.default = True
+
     super().__init__(None)
 
   def get_alembic_config(self):
@@ -26,9 +31,9 @@ class LumavateMigrate(RestBehavior):
   def history(self, template=None, template_args=None):
     config = self.get_alembic_config()
     history(config)
-    if template is None:
+
+    if self.default:
       template = 'manage.html'
-    if template_args is None:
       template_args = {
           "user": self.user,
           "role": self.role,
@@ -36,66 +41,48 @@ class LumavateMigrate(RestBehavior):
           "namespace": self.namespace
           }
 
-    try:
       return render_template(template, **template_args, output=config.format_stdout())
 
-    except Exception as e:
-      print(e, flush=True)
-      return "Error Rendering Template: \
-          If you are using a custom template, \
-          be sure it is located in the /app/templates folder. \
-          Template Name: {}".format(e)
+    else:
+      return config.format_stdout()
 
   def current_revision(self, template=None, template_args=None):
     config = self.get_alembic_config()
     f = StringIO()
     with redirect_stderr(f):
-      current(config)
+      current(config, verbose=True)
 
-    if template is None:
-      template = 'manage.html'
-    if template_args is None:
-      template_args = {
-          "user": self.user,
-          "role": self.role,
-          "org_type": self.org_type,
-          "namespace": self.namespace
-          }
-
-    return render_template(template, **template_args, output=f.getvalue().splitlines())
+    return f.getvalue().splitlines()
 
   def upgrade(self, template=None, template_args=None):
     config = self.get_alembic_config()
     f = StringIO()
-    with redirect_stderr(f):
-      upgrade(config, '+1')
+    target = self.get_data().get('target')
+    if target is None:
+      return
 
-    if template is None:
-      template = 'manage.html'
-    if template_args is None:
-      template_args = {
-          "user": self.user,
-          "role": self.role,
-          "org_type": self.org_type,
-          "namespace": self.namespace
-          }
+    if target != "head":
+      with redirect_stderr(f):
+        upgrade(config, '+{}'.format(target))
+    else:
+      with redirect_stderr(f):
+        upgrade(config, 'head')
 
-    return render_template(template, **template_args, output=f.getvalue().splitlines())
+    return f.getvalue().splitlines()
 
   def downgrade(self, template=None, template_args=None):
     config = self.get_alembic_config()
     f = StringIO()
-    with redirect_stderr(f):
-      downgrade(config, '-1')
 
-    if template is None:
-      template = 'manage.html'
-    if template_args is None:
-      template_args = {
-          "user": self.user,
-          "role": self.role,
-          "org_type": self.org_type,
-          "namespace": self.namespace
-          }
+    target = self.get_data().get('target')
+    if target is None:
+      return
 
-    return render_template(template, **template_args, output=f.getvalue().splitlines())
+    if target != "base":
+      with redirect_stderr(f):
+        downgrade(config, '-{}'.format(target))
+    else:
+      with redirect_stderr(f):
+        downgrade(config, 'base')
+
+    return f.getvalue().splitlines()
