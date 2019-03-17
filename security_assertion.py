@@ -12,7 +12,13 @@ class SecurityAssertion:
 
   def get_all_auth_groups(self):
     try:
-      if g.token_data.get('authUrl').startswith('http'):
+
+      if g.token_data.get('authUrl') is '':
+        auth_groups = []
+
+        return auth_groups
+
+      elif g.token_data.get('authUrl', '').startswith('http'):
         auth_route = g.token_data.get('authUrl') + 'discover/auth-groups'
       else:
         auth_route = '/'.join(g.token_data.get('authUrl').strip('/').split('/')[:2])
@@ -37,8 +43,10 @@ class SecurityAssertion:
     for r in roles:
       required_roles = required_roles + self._rolemap.get(r, [])
 
+    print('required: {}'.format(required_roles),flush=True)
     user_groups = g.auth_status.get('roles')
     user_groups.append('__all__')
+    print('groups: {}'.format(user_groups),flush=True)
 
     return len(list(set(user_groups) & set(required_roles))) > 0
 

@@ -1,5 +1,6 @@
 from flask import request, abort, g, Blueprint, send_from_directory
 import sqlalchemy.sql.expression
+from sqlalchemy import or_
 from .request import api_response, SecurityType
 from .paging import Paging
 from app import rest_model_mapping
@@ -8,6 +9,7 @@ import csv
 from io import StringIO
 import re
 import os
+import json
 try:
   from app import db
 except:
@@ -33,9 +35,10 @@ def make_id(id, classification):
     return os.environ.get('WIDGET_URL_PREFIX').strip('/').replace('/', '~') + '!' + classification + '!' + str(id)
 
 class RestBehavior:
-  def __init__(self, model_class, data=None):
+  def __init__(self, model_class, data=None, args=None):
     self._model_class = model_class
     self.data = data
+    self.args = args
 
   def get_data(self, override_data=None):
     if override_data:
@@ -45,6 +48,12 @@ class RestBehavior:
       return self.data
 
     return request.get_json(force=True)
+
+  def get_args(self):
+    if self.args:
+      return self.args
+
+    return request.args
 
   def hyphen_to_camel(self, name):
     return hyphen_to_camel(name)
@@ -70,7 +79,7 @@ class RestBehavior:
 
     try:
       j = json.loads(input_data)
-    except:
+    except Exception as e:
       sio = StringIO(input_data)
       reader = csv.DictReader(sio)
       for row in reader:
@@ -95,24 +104,36 @@ class RestBehavior:
 
     return r
 
-  def apply_filter(self, q):
-    for a in request.args:
+  def apply_filter(self, q, ignore_fields=[]):
+    for a in self.get_args():
+      if a in ignore_fields:
+        continue
+
       if hasattr(self._model_class, camel_to_underscore(a)):
-        q = q.filter(getattr(self._model_class, camel_to_underscore(a)) == request.args[a])
+        or_clauses = [ getattr(self._model_class, camel_to_underscore(a)) == self.resolve_value(v)  for v in self.get_args()[a].split('||')]
+        q = q.filter(or_(*[c for c in or_clauses if c is not None]))
     return q
+
+  def resolve_value(self, val):
+    if '.' in val:
+      temp = val.split('.')
+      if len(temp) > 1 and temp[0] == 'activationData':
+        activationData = g.activation_data
+        for key in temp[1:]:
+          activationData = activationData.get(key)
+        return  activationData
+    return val
 
   def apply_sort(self, q):
-    if 'sort' in request.args:
-      sort_key = request.args['sort']
-      sort_direction = 'asc'
-      if ' ' in sort_key:
-        sort_key, sort_direction = sort_key.split(' ', 1)
+    if request.args.get('sort') is not None:
+      for sort in request.args.get('sort').split(','):
+        sort_args = (sort + ' asc').split(' ')
 
-      sort_dir_func = getattr(sqlalchemy.sql.expression, sort_direction)
-      q = q.order_by(sort_dir_func(getattr(self._model_class, camel_to_underscore(sort_key))))
+        sort_dir_func = getattr(sqlalchemy.sql.expression, sort_args[1])
+        q = q.order_by(sort_dir_func(getattr(self._model_class, camel_to_underscore(sort_args[0]))))
     return q
 
-  def get_collection(self):
+  def get_collection_query(self):
     if self._model_class is None:
       return None
 
@@ -120,6 +141,14 @@ class RestBehavior:
 
     q = self.apply_filter(q)
     q = self.apply_sort(q)
+    return q
+
+  def get_collection(self):
+    if self._model_class is None:
+      return None
+
+    q = self.get_collection_query()
+
     return Paging().run(q, self.pack)
 
   def read_value(self, data, field_name):
@@ -138,6 +167,12 @@ class RestBehavior:
         continue
 
       if k in data:
+        if k in ['createdBy', 'createdAt', 'lastModifiedBy', 'lastModifiedAt']:
+          continue
+
+        if not hasattr(rec, camel_to_underscore(k)):
+          continue
+
         if getattr(rec, camel_to_underscore(k)) != self.read_value(data, k):
           updated_fields.append(k)
         setattr(rec, camel_to_underscore(k), self.read_value(data, k))
@@ -155,7 +190,7 @@ class RestBehavior:
         raise ValidationException('Field is Required', self.underscore_to_camel(r))
 
   def expanded(self, section):
-    expand_sections = [a.strip() for a in request.args.get('expand', 'none').lower().split(',')]
+    expand_sections = [a.strip() for a in self.get_args().get('expand', 'none').lower().split(',')]
     return section.lower() in expand_sections or 'all' in expand_sections
 
   def post(self):

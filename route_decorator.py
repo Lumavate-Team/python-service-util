@@ -5,7 +5,7 @@ from .paging import Paging
 from base64 import b64decode
 from lumavate_exceptions import ApiException
 import json
-from .security_type import SecurityType
+from .request_type import RequestType
 from .request import get_lumavate_request
 import re
 import os
@@ -18,7 +18,7 @@ except:
 lumavate_blueprint = Blueprint('lumavate_blueprint', __name__)
 all_routes = []
 
-def __authenticate(security_type):
+def __authenticate(request_type):
   jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
   if jwt is None or jwt.strip() == '':
     jwt = get_lumavate_request().get_token(request.cookies, 'pwa_jwt')
@@ -38,16 +38,22 @@ def __authenticate(security_type):
 
     g.service_data = service_data['serviceData']
     g.session = service_data['session'] if service_data['session'] is not None else {}
-    g.auth_status = service_data.get('authData')
-    if g.auth_status is None:
-      g.auth_status = {
-        'status': 'inactive',
-        'roles': [],
-        'user': 'anonymous'
-      }
+    if 'authData' not in service_data:
+      g.auth_status = get_lumavate_request().get_auth_status()
+    else:
+      g.auth_status = service_data.get('authData')
+      if g.auth_status is None:
+        g.auth_status = {
+          'status': 'inactive',
+          'roles': [],
+          'user': 'anonymous'
+        }
+
+    g.activation_data = service_data.get('activationData', {})
 
   except ApiException as e:
-    if e.status_code == 404 and security_type == SecurityType.system_origin:
+    # Older services that use SecurityType.system_origin will have a value of 3 which matches RequestType.system value
+    if e.status_code == 404 and request_type.value == RequestType.system.value:
       g.service_data = {}
       g.session = {}
       g.auth_status = {
@@ -58,8 +64,6 @@ def __authenticate(security_type):
     else:
       raise
 
-  #g.auth_status = get_lumavate_request().get_auth_status()
-  #valid_header = True
 
 
 @lumavate_blueprint.route('/<string:integration_cloud>/<string:widget_type>/discover/health', methods=['GET', 'POST'])
@@ -123,6 +127,7 @@ def lumavate_route(path, methods, request_type, security_types, required_roles=[
     regex_path = re.sub('<string[^>]*>','[^/]*', regex_path)
     regex_path = re.sub('<any[^>]*>','[^/]*', regex_path)
     regex_path = re.sub('<int[^>]*>','[0-9-]*', regex_path)
+    regex_path = re.sub('<path[^>]*>','.*', regex_path)
 
     all_routes.append({
       'path': '^' + regex_path + '$',

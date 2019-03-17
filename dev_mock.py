@@ -44,6 +44,7 @@ class DevMock():
     g.token_data = t._data
     g.org_id = t.org_id
     g.pwa_jwt = t.get_token()
+    g.auth_status = self.get_auth_data()
 
   def get_session_data(self):
     return {
@@ -57,6 +58,9 @@ class DevMock():
       'user': 'anonymous'
     }
 
+  def get_activation_data(self):
+    return None
+
   def get_mock_func(self):
     return None
 
@@ -69,7 +73,8 @@ class DevMock():
     sd = ServiceData({
       'serviceData': payload['data'],
       'session': self.get_session_data(),
-      'sutValid': True
+      'authData': self.get_auth_data(),
+      'activationData': self.get_activation_data()
     })
     return sd
 
