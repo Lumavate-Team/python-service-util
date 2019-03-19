@@ -126,14 +126,12 @@ class RestBehavior:
     return val
 
   def apply_sort(self, q):
-    if 'sort' in self.get_args():
-      sort_key = self.get_args()['sort']
-      sort_direction = 'asc'
-      if ' ' in sort_key:
-        sort_key, sort_direction = sort_key.split(' ', 1)
+    if request.args.get('sort') is not None:
+      for sort in request.args.get('sort').split(','):
+        sort_args = (sort + ' asc').split(' ')
 
-      sort_dir_func = getattr(sqlalchemy.sql.expression, sort_direction)
-      q = q.order_by(sort_dir_func(getattr(self._model_class, camel_to_underscore(sort_key))))
+        sort_dir_func = getattr(sqlalchemy.sql.expression, sort_args[1])
+        q = q.order_by(sort_dir_func(getattr(self._model_class, camel_to_underscore(sort_args[0]))))
     return q
 
   def get_collection_query(self):
