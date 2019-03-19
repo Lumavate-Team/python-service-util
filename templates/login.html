@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Login</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="theme-color" content="#ffffff">
+    <noscript>Javascript required for this site to work.</noscript>
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/iot/favicon-180x180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/iot/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/iot/favicon-16x16.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="shortcut icon" href="/iot/favicon.ico">
+    <meta name="apple-mobile-web-app-capable" content="no">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <link href="https://fonts.googleapis.com/css?family=Teko:400,500" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
+    <script src="https://cdn.auth0.com/js/auth0/9.5.1/auth0.min.js"></script>
+    <style>
+      body {
+        font-family: 'Teko', sans-serif !important
+      }
+
+      :root {
+        --mdc-theme-primary: #1B3668 !important;
+      }
+
+      .container {
+        display: flex;
+        height: auto;
+      }
+
+      .wrapper {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        align-items:center;
+        background-color: black;
+      }
+
+      .center-jumbotron {
+        display: flex;
+        justify-content: center;
+        width: 90%;
+        margin: auto auto;
+      }
+
+      .jumbotron {
+        background-color: white;
+        padding: 2rem 1rem;
+        border-radius: 7px;
+        margin: 15px;
+        width: 100%
+      }
+
+      .center {
+        text-align: center;
+      }
+
+      .title.section {
+        margin-top: 0px;
+        margin-bottom: 20px;
+      }
+
+      .title {
+        font-size: 44px;
+        font-weight: 500;
+        line-height: 36px;
+        text-transform: uppercase;
+      }
+
+      #codeContainer {
+        display: none;
+      }
+
+      #sendEmail {
+        width: 100%;
+        background-color: #1B3668;
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 7px;
+        color: white;
+        text-transform: uppercase;
+      }
+
+      #validate {
+        width: 100%;
+        background-color: #1B3668;
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 7px;
+        color: white;
+        text-transform: uppercase;
+      }
+
+      #notAuth {
+        margin-top: 15px;
+        font-size: 22px;
+        color: red;
+        display: none;
+      }
+
+      #wrong {
+        margin-top: 15px;
+        font-size: 22px;
+        color: red;
+        display: none;
+      }
+
+      .mdc-text-field {
+        width: 75%
+      }
+
+      .mdc-text-field:not(.mdc-text-field--disabled) .mdc-text-field__input {
+        color: black;
+      }
+
+      .mdc-text-field .mdc-text-field__input {
+        color: black;
+      }
+
+      .mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label {
+        color: #1B3668;
+      }
+
+      </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="wrapper">
+      <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+
+
+      <script>
+        var webAuth = new auth0.WebAuth({
+          domain: 'jlawrence.auth0.com',
+          clientID: '{{ client_id }}',
+          redirectUri: '{{ callback }}',
+          responseType: 'code',
+          state: '{{ state }}'
+        });
+
+        function getCookie(name) {
+          var value = "; " + document.cookie;
+          var parts = value.split("; " + name + "=");
+          if (parts.length == 2) return parts.pop().split(";").shift();
+        }
+
+        function sendEmail(){
+
+          var email = document.querySelector("#email").value;
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', '/ic/passwordless/email-permitted/1/' + email);
+          xhr.setRequestHeader('Authorization', getCookie('pwa_jwt'))
+          xhr.onload = function() {
+            if (xhr.status === 200) {
+              webAuth.passwordlessStart({
+                connection: 'email',
+                send: 'code',
+                email: email
+              },
+              function (err,res) {
+                if (err) {
+                  console.log(err);
+                }
+
+                document.querySelector('#emailField').style.setProperty('display', 'none')
+                document.querySelector('#sendEmail').style.setProperty('display', 'none')
+                document.querySelector('#codeContainer').style.setProperty('display', 'block')
+
+              });
+            }
+            else {
+                document.querySelector('#notAuth').style.display = 'block';
+            }
+          };
+          xhr.send();
+        }
+
+
+        function login(){
+          var email = document.querySelector("#email").value
+          var code = document.querySelector("#code").value
+
+          webAuth.passwordlessVerify({
+            connection: 'email',
+            email: email,
+            verificationCode: code,
+            scope: "profile email openid",
+          }, function (err,res) {
+            console.log(res)
+            if (err) {
+              document.querySelector('#wrong').style.display = 'block'
+              // Handle error
+            }
+          });
+        };
+
+      </script>
+
+        <div class="center-jumbotron">
+          <div class="jumbotron">
+            <div class="center">
+              <div class="title section" id="registrationTitle">Email Login</div>
+
+              <div id='emailField' class="mdc-text-field" data-mdc-auto-init="MDCTextField">
+                <input type="email" id="email" name="email" class="mdc-text-field__input" autocomplete="off" autocorrect="off" autocapitalize="off" required>
+                <label class="mdc-floating-label" for="email">Enter your email</label>
+                <div class="mdc-line-ripple"></div>
+              </div>
+              <div id="notAuth">This email is not authorized</div>
+              <div><button type="button" id="sendEmail" onclick='sendEmail()'>Send Email</button></div>
+
+              <div id="codeContainer">
+                <div class="mdc-text-field" data-mdc-auto-init="MDCTextField">
+                  <input type="numeric" pattern="[0-9]*" min="0" id="code" name="code" class="mdc-text-field__input"required>
+                  <label class="mdc-floating-label" for="code">Enter the code</label>
+                  <div class="mdc-line-ripple"></div>
+                </div>
+                <div id="wrong">You entered an invalid code</div>
+                <div><button type="button" id="validate" onclick='login()'>Validate</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <script type="text/javascript">
+      mdc.autoInit();
+    </script>
+  </body>
+</html>
