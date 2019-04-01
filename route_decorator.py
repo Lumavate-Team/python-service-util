@@ -38,16 +38,13 @@ def __authenticate_manage(request_type, required_roles):
 
   g.pwa_jwt = jwt.replace('Bearer ', '')
   g.token_data = token_data
-  print(f'token_data: {token_data}',flush=True)
   g.org_id = token_data.get('orgId')
   role = token_data.get('role')
-
-  # print(f'token_data: {token_data}',flush=True)
   g.auth_status = {
-    'user': token_data.user
+    'user': token_data.get('user')
   }
-  # if required_roles and role not in required_roles:
-  #   raise ApiException(403, 'Invalid role')
+  if required_roles and role not in required_roles:
+    raise ApiException(403, 'Invalid role')
 
   return
 

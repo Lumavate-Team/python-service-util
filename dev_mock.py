@@ -40,14 +40,12 @@ class DevMock():
     auth_token.auth_url = ''
     auth_token.scope = 'ms-manage'
     auth_token.user = 'user@user.com'
-    print(f'token: {auth_token.user}',flush=True)
     return auth_token
 
   def bootstrap_context(self):
     t = self.get_auth_token()
     g.token_data = t._data
     g.org_id = t.org_id
-    # print(f'bootstrap org-id: {g.org_id}',flush=True)
     g.pwa_jwt = t.get_token()
     g.auth_status = self.get_auth_data()
 
