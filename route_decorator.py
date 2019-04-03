@@ -43,6 +43,10 @@ def __authenticate_manage(request_type, required_roles):
   g.auth_status = {
     'user': token_data.get('user')
   }
+  if g.token_data.get("namespace", None):
+      service_data = get_lumavate_request().get_service_data(request.headers.get('Lumavate-sut'))
+      g.service_data = service_data['serviceData']
+
   if required_roles and role not in required_roles:
     raise ApiException(403, 'Invalid role')
 
