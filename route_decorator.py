@@ -15,25 +15,41 @@ lumavate_blueprint = Blueprint('lumavate_blueprint', __name__)
 all_routes = []
 
 def __authenticate(request_type):
+  print('got to authenticate', flush=True)
   jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
   if jwt is None or jwt.strip() == '':
     jwt = get_lumavate_request().get_token(request.cookies, 'pwa_jwt')
 
-  header, payload, signature = jwt.replace('Bearer ', '').split('.')
-  token_data = json.loads(b64decode(payload + '==').decode('utf-8'))
-  g.pwa_jwt = jwt.replace('Bearer ', '')
-  g.token_data = token_data
-  g.org_id = token_data.get('orgId')
+  if jwt is None or jwt.strip() == '':
+    header, payload, signature = None, None, None
+    g.pwa_jwt = None
+    g.token_data = None
+    g.org_id = None
+
+  else:
+    header, payload, signature = jwt.replace('Bearer ', '').split('.')
+    token_data = json.loads(b64decode(payload + '==').decode('utf-8'))
+    g.pwa_jwt = jwt.replace('Bearer ', '')
+    g.token_data = token_data
+    g.org_id = token_data.get('orgId')
 
   try:
 
     if request.path == os.environ.get('WIDGET_URL_PREFIX') + 'status' and request.method == 'POST':
       service_data = request.get_json(True)
     else:
-      service_data = get_lumavate_request().get_service_data(request.headers.get('Lumavate-sut'))
+      if jwt is None or jwt.strip() == '':
+        service_data = {
+            'authData' : None
+        }
+        g.service_data = service_data
+        g.session = {}
+      else:
+        print('getting service data', flush=True)
+        service_data = get_lumavate_request().get_service_data(request.headers.get('Lumavate-sut'))
+        g.service_data = service_data['serviceData']
+        g.session = service_data['session'] if service_data['session'] is not None else {}
 
-    g.service_data = service_data['serviceData']
-    g.session = service_data['session'] if service_data['session'] is not None else {}
     if 'authData' not in service_data:
       g.auth_status = get_lumavate_request().get_auth_status()
     else:
