@@ -26,7 +26,6 @@ class SecurityAssertion:
 
       auth_groups = LumavateRequest().get(auth_route)
     except Exception as e:
-      print(e, flush=True)
       auth_groups = []
 
     auth_groups = [{'value': x['name'], 'displayValue': x['name']} for x in auth_groups]
@@ -41,15 +40,17 @@ class SecurityAssertion:
 
     required_roles = []
     for r in roles:
+      # print(roles,flush=True)
+      # print(self._rolemap,flush=True)
       required_roles = required_roles + self._rolemap.get(r, [])
 
-    print('required: {}'.format(required_roles),flush=True)
+    # print('required: {}'.format(required_roles),flush=True)
     user_groups = g.auth_status.get('roles')
     user_groups.append('__all__')
-    print('groups: {}'.format(user_groups),flush=True)
+    # print('groups: {}'.format(user_groups),flush=True)
 
     return len(list(set(user_groups) & set(required_roles))) > 0
 
   def assert_has_role(self, roles):
     if not self.has_role(roles):
-      raise InvalidOperationException('Insuffucient Privileges')
+      raise InvalidOperationException('Insufficient Privileges')
