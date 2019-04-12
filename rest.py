@@ -10,6 +10,8 @@ from io import StringIO
 import re
 import os
 import json
+from .filter import Filter
+from .sort import Sort
 
 try:
   from app import db
@@ -105,15 +107,9 @@ class RestBehavior:
 
     return r
 
-  def apply_filter(self, q, ignore_fields=[]):
-    for a in self.get_args():
-      if a in ignore_fields:
-        continue
-
-      if hasattr(self._model_class, camel_to_underscore(a)):
-        or_clauses = [ getattr(self._model_class, camel_to_underscore(a)) == self.resolve_value(v)  for v in self.get_args()[a].split('||')]
-        q = q.filter(or_(*[c for c in or_clauses if c is not None]))
-    return q
+  def apply_filter(self, q, ignore_fields=None):
+    print('should apply filter?', flush=True)
+    return Filter(self.args, ignore_fields).apply(q)
 
   def resolve_value(self, val):
     if '.' in val:
@@ -126,13 +122,7 @@ class RestBehavior:
     return val
 
   def apply_sort(self, q):
-    if request.args.get('sort') is not None:
-      for sort in request.args.get('sort').split(','):
-        sort_args = (sort + ' asc').split(' ')
-
-        sort_dir_func = getattr(sqlalchemy.sql.expression, sort_args[1])
-        q = q.order_by(sort_dir_func(getattr(self._model_class, camel_to_underscore(sort_args[0]))))
-    return q
+    return Sort().apply(q)
 
   def get_collection_query(self):
     if self._model_class is None:

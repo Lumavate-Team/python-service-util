@@ -37,6 +37,7 @@ class DevMock():
     auth_token.version = 'production'
     auth_token.home_url = ''
     auth_token.auth_url = ''
+    auth_token.scope = 'ms-manage'
     return auth_token
 
   def bootstrap_context(self):
