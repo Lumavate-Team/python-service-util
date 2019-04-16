@@ -26,4 +26,5 @@ class Resolver:
       self.lookup_data()
 
     data = next((x for x in self._data if x['id'] == id), None)
-    return self._format_func(data)
+
+    return self._format_func(data) if data else None
