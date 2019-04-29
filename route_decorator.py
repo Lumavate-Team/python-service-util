@@ -71,6 +71,8 @@ def __authenticate(request_type):
 
     if request.path == os.environ.get('WIDGET_URL_PREFIX') + 'status' and request.method == 'POST':
       service_data = request.get_json(True)
+      g.service_data = service_data['serviceData']
+      g.session = service_data['session'] if service_data['session'] is not None else {}
     else:
       if jwt is None or jwt.strip() == '':
         service_data = {
@@ -201,4 +203,3 @@ def lumavate_route(path, methods, request_type, security_types, required_roles=N
 
     return wrapper
   return decorator
-
