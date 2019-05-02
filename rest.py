@@ -108,7 +108,6 @@ class RestBehavior:
     return r
 
   def apply_filter(self, q, ignore_fields=None):
-    print('should apply filter?', flush=True)
     return Filter(self.args, ignore_fields).apply(q)
 
   def resolve_value(self, val):

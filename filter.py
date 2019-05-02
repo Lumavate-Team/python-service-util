@@ -102,7 +102,7 @@ class Filter:
       elif op == 'ct':
         return cast(column, String).ilike('%' + original_value + '%')
       elif op == 'aeq':
-        return column == all_(value)
+        return and_(column.op('@>')(value),column.op('<@')(value))
       elif op == 'adeq':
         return and_(column.op('@>')(value),column.op('<@')(value))
 
