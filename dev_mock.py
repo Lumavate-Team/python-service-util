@@ -30,14 +30,16 @@ class DevMock():
 
   def get_auth_token(self):
     auth_token = AuthToken()
-    auth_token.namespace = 'abc'
+    auth_token.namespace = 'abcd'
     auth_token.session = 'abc123'
     auth_token.code = 'activation-code'
     auth_token.org_id = 1
+    auth_token.company_id = 1
     auth_token.version = 'production'
     auth_token.home_url = ''
     auth_token.auth_url = ''
     auth_token.scope = 'ms-manage'
+    auth_token.user = 'user@user.com'
     return auth_token
 
   def bootstrap_context(self):

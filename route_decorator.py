@@ -40,6 +40,9 @@ def __authenticate_manage(request_type, required_roles):
   g.token_data = token_data
   g.org_id = token_data.get('orgId')
   role = token_data.get('role')
+  g.auth_status = {
+    'user': token_data.get('user')
+  }
 
   if required_roles and role not in required_roles:
     raise ApiException(403, 'Invalid role')
@@ -68,6 +71,8 @@ def __authenticate(request_type):
 
     if request.path == os.environ.get('WIDGET_URL_PREFIX') + 'status' and request.method == 'POST':
       service_data = request.get_json(True)
+      g.service_data = service_data['serviceData']
+      g.session = service_data['session'] if service_data['session'] is not None else {}
     else:
       if jwt is None or jwt.strip() == '':
         service_data = {
@@ -198,4 +203,3 @@ def lumavate_route(path, methods, request_type, security_types, required_roles=N
 
     return wrapper
   return decorator
-
