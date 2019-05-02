@@ -74,7 +74,7 @@ class Filter:
       if str(column.type) == 'DATETIME' or str(column.type) == 'DATE':
         value = parse(value)
       elif str(column.type) == 'BIGINT' or str(column.type) == 'INT':
-        value = value = int(str(value))
+        value = int(str(value))
       elif str(column.type) == 'FLOAT':
         value = float(str(value))
       elif str(column.type) == 'BOOLEAN':
