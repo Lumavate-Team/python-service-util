@@ -52,35 +52,46 @@ class Filter:
       clauses = [self.get_expression(column_name, self.get_column(base_query, column_name), op, value.split(','))]
     elif op == 'adeq':
       clauses = [self.get_expression(column_name, self.get_column(base_query, column_name), op, [int(x) for x in value.split(',')])]
+    elif op == 'bt':
+      clauses = self.get_between_expressions(column_name, column, op, value)
+      # AND the clauses together for "between"
+      return base_query.filter(and_(*clauses))
     else:
       clauses = [self.get_expression(column_name, self.get_column(base_query, column_name), op, v) for v in value.split('||')]
+
     return base_query.filter(or_(*[c for c in clauses if c is not None]))
 
   def get_column(self, base_query, column_name):
     column = ColumnResolver(base_query._primary_entity.type().__mapper__).resolve(column_name)
     return column
 
-  def get_expression(self, column_name, column, op, value):
-    if isinstance(value, str) and value in self.subs:
+  def validate_value(self, column_name, column, op, value):
+    if value in self.subs:
       value = self.subs[value]
 
-    original_value = value
     if isinstance(value, str) and value.lower() == '_null_':
       value = None
 
+    if isinstance(column, sqlalchemy.dialects.postgresql.JSONB):
+      pass
+    if str(column.type) == 'DATETIME' or str(column.type) == 'DATE':
+      value = parse(value)
+    elif str(column.type) == 'BIGINT' or str(column.type) == 'INT':
+      value = int(str(value))
+    elif str(column.type) == 'FLOAT':
+      value = float(str(value))
+    elif str(column.type) == 'BOOLEAN':
+      value = str(value).lower() == 'true'
+      if op != 'eq':
+        raise pyro.ValidationException('Booleans can only be filtered using an equals operator', api_field=column_name)
+
+    return value
+
+  def get_expression(self, column_name, column, op, value):
     if column is not None:
-      if isinstance(column, sqlalchemy.dialects.postgresql.JSONB):
-        pass
-      if str(column.type) == 'DATETIME' or str(column.type) == 'DATE':
-        value = parse(value)
-      elif str(column.type) == 'BIGINT' or str(column.type) == 'INT':
-        value = int(str(value))
-      elif str(column.type) == 'FLOAT':
-        value = float(str(value))
-      elif str(column.type) == 'BOOLEAN':
-        value = str(value).lower() == 'true'
-        if op != 'eq':
-          raise ValidationException('Booleans can only be filtered using an equals operator', api_field=column_name)
+      original_value = value
+
+      value = self.validate_value(column_name, column, op, value)
 
       if op == 'eq':
         if str(column.type) == 'BIGINT[]':
@@ -108,6 +119,24 @@ class Filter:
       elif op == 'act':
         return column.contains(value)
 
+  def get_between_expressions(self, column_name, column, op, value):
+    vals = value.split('||')
+
+    # empty string is a valid value but we don't want to sort if one exists
+    if '' not in vals and len(vals) > 1:
+      for i, val in enumerate(vals):
+          vals[i] = self.validate_value(column_name, column, op, val)
+
+      vals.sort()
+
+    expressions = []
+    if vals[0] != '':
+      expressions.append(self.get_expression(column_name, column, 'gte', vals[0]))
+
+    if len(vals) > 1 and vals[-1] != '':
+      expressions.append(self.get_expression(column_name, column, 'lte', vals[-1]))
+
+    return expressions
 
 class ColumnResolver:
   def __init__(self, mapper):
