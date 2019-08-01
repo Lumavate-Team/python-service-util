@@ -151,3 +151,4 @@ class ColumnResolver:
       column = inspect(self.mapper).get_property_by_column(column).expression
 
     return column
+
