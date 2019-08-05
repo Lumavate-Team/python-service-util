@@ -76,6 +76,7 @@ class Filter:
       pass
     if str(column.type) == 'DATETIME' or str(column.type) == 'DATE':
       print(f'validate_v: {value}:{type(value)}', flush=True)
+      # if type(value) != 'datetme'
       value = parse(value)
     elif str(column.type) == 'BIGINT' or str(column.type) == 'INT':
       value = int(str(value))
@@ -91,8 +92,9 @@ class Filter:
   def get_expression(self, column_name, column, op, value):
     if column is not None:
       original_value = value
-
-      value = self.validate_value(column_name, column, op, value)
+      print(f'datetime type:'type(value, flush=True)
+      if isinstance(value,datetime.datetime)
+        value = self.validate_value(column_name, column, op, value)
 
       if op == 'eq':
         if str(column.type) == 'BIGINT[]':
@@ -130,9 +132,9 @@ class Filter:
     if '' not in vals and len(vals) > 1:
       print(f'inside if', flush=True)
       for i, val in enumerate(vals):
-          print(f'before: {vals[i]}', flush=True)
+          print(f'before: {type(vals[i])}:{vals[i]}', flush=True)
           vals[i] = self.validate_value(column_name, column, op, val)
-          print(f'after: {vals[i]}', flush=True)
+          print(f'after: {type(vals[i])}:{vals[i]}', flush=True)
       vals.sort()
 
     expressions = []
