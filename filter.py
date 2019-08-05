@@ -75,7 +75,7 @@ class Filter:
     if isinstance(column, sqlalchemy.dialects.postgresql.JSONB):
       pass
     if str(column.type) == 'DATETIME' or str(column.type) == 'DATE':
-      print(value,flush=True)
+      print(f'validate_v: {value}:{type(value)}', flush=True)
       value = parse(value)
     elif str(column.type) == 'BIGINT' or str(column.type) == 'INT':
       value = int(str(value))
@@ -122,23 +122,26 @@ class Filter:
 
   def get_between_expressions(self, column_name, column, op, value):
     vals = value.split('||')
-    print(vals[0], flush=True)
-    print(vals[1], flush=True)
-    print(type(vals[0]), flush=True)
-    print(type(vals[1]), flush=True)
+    print(f'{vals[0]}:{type(vals[0])}', flush=True)
+    print(f'{vals[-1]}:{type(vals[-1])}', flush=True)
+    
 
     # empty string is a valid value but we don't want to sort if one exists
     if '' not in vals and len(vals) > 1:
+      print(f'inside if', flush=True)
       for i, val in enumerate(vals):
+          print(f'before: {vals[i]}', flush=True)
           vals[i] = self.validate_value(column_name, column, op, val)
-
+          print(f'after: {vals[i]}', flush=True)
       vals.sort()
 
     expressions = []
     if vals[0] != '':
+      print(f'{vals[0]}:{type(vals[0])}', flush=True)
       expressions.append(self.get_expression(column_name, column, 'gte', vals[0]))
 
     if len(vals) > 1 and vals[-1] != '':
+      print(f'{vals[-1]}:{type(vals[-1])}', flush=True)
       expressions.append(self.get_expression(column_name, column, 'lte', vals[-1]))
 
     return expressions
