@@ -53,7 +53,7 @@ class Filter:
     elif op == 'adeq':
       clauses = [self.get_expression(column_name, self.get_column(base_query, column_name), op, [int(x) for x in value.split(',')])]
     elif op == 'bt':
-      clauses = self.get_between_expressions(column_name, column, op, value)
+      clauses = self.get_between_expressions(column_name, self.get_column(base_query, column_name), op, value)
       # AND the clauses together for "between"
       return base_query.filter(and_(*clauses))
     else:
