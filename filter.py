@@ -75,6 +75,7 @@ class Filter:
     if isinstance(column, sqlalchemy.dialects.postgresql.JSONB):
       pass
     if str(column.type) == 'DATETIME' or str(column.type) == 'DATE':
+      print(value,flush=True)
       value = parse(value)
     elif str(column.type) == 'BIGINT' or str(column.type) == 'INT':
       value = int(str(value))
@@ -121,6 +122,10 @@ class Filter:
 
   def get_between_expressions(self, column_name, column, op, value):
     vals = value.split('||')
+    print(vals[0], flush=True)
+    print(vals[1], flush=True)
+    print(type(vals[0]), flush=True)
+    print(type(vals[1]), flush=True)
 
     # empty string is a valid value but we don't want to sort if one exists
     if '' not in vals and len(vals) > 1:
