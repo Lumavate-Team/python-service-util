@@ -3,6 +3,7 @@ import sqlalchemy.dialects.postgresql
 from sqlalchemy import or_, String, and_
 from flask import request, g
 from dateutil.parser import parse
+import datetime
 from lumavate_exceptions import ValidationException
 from sqlalchemy.inspection import inspect
 import re
@@ -76,7 +77,6 @@ class Filter:
       pass
     if str(column.type) == 'DATETIME' or str(column.type) == 'DATE':
       print(f'validate_v: {value}:{type(value)}', flush=True)
-      # if type(value) != 'datetme'
       value = parse(value)
     elif str(column.type) == 'BIGINT' or str(column.type) == 'INT':
       value = int(str(value))
