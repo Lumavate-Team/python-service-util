@@ -93,8 +93,8 @@ class Filter:
     if column is not None:
       original_value = value
       print(f'datetime type: {value}:{type(value)}', flush=True)
-      if isinstance(value, datetime.datetime)
-        value = self.validate_value(column_name, column, op, value)
+      #if isinstance(value, datetime.datetime)
+      value = self.validate_value(column_name, column, op, value)
 
       if op == 'eq':
         if str(column.type) == 'BIGINT[]':
