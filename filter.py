@@ -54,7 +54,7 @@ class Filter:
     elif op == 'adeq':
       clauses = [self.get_expression(column_name, self.get_column(base_query, column_name), op, [int(x) for x in value.split(',')])]
     elif op == 'bt':
-      clauses = self.get_between_expressions(column_name, self.get_column(base_query, column_name), op, value)
+      clauses = [self.get_between_expressions(column_name, self.get_column(base_query, column_name), op, value)]
       # AND the clauses together for "between"
       return base_query.filter(and_(*clauses))
     else:
@@ -77,7 +77,10 @@ class Filter:
       pass
     if str(column.type) == 'DATETIME' or str(column.type) == 'DATE':
       print(f'validate_v: {value}:{type(value)}', flush=True)
-      value = parse(value)
+      if isinstance(value, datetime.datetime):
+        pass
+      else:
+        value = parse(value)
     elif str(column.type) == 'BIGINT' or str(column.type) == 'INT':
       value = int(str(value))
     elif str(column.type) == 'FLOAT':
@@ -93,7 +96,7 @@ class Filter:
     if column is not None:
       original_value = value
       print(f'datetime type: {value}:{type(value)}', flush=True)
-      #if isinstance(value, datetime.datetime)
+      #if isinstance(value, datetime.datetime):
       value = self.validate_value(column_name, column, op, value)
 
       if op == 'eq':
