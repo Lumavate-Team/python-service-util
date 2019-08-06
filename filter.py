@@ -92,8 +92,8 @@ class Filter:
   def get_expression(self, column_name, column, op, value):
     if column is not None:
       original_value = value
-      print(f'datetime type:'type(value, flush=True)
-      if isinstance(value,datetime.datetime)
+      print(f'datetime type: {value}:{type(value)}', flush=True)
+      if isinstance(value, datetime.datetime)
         value = self.validate_value(column_name, column, op, value)
 
       if op == 'eq':
