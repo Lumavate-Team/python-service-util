@@ -39,7 +39,6 @@ class Filter:
     for a in self.args:
       if a != 'sort' and a not in self.ignore_fields:
         parts = self.args[a].split(":", 1)
-        print(parts, flush=True)
         if len(parts) > 1 and parts[0] in ops:
           base_query = self.apply_column(base_query, a, parts[0], parts[1])
         else:
