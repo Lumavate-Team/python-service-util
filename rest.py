@@ -152,6 +152,9 @@ class RestBehavior:
     if hasattr(rec, 'last_modified_by'):
       rec.last_modified_by = g.auth_status.get('user')
 
+    if hasattr(rec, 'last_modified_at'):
+      rec.last_modified_at = db.func.current_timestamp()
+
     for k in payload:
       if k in ['id']:
         continue
