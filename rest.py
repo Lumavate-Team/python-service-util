@@ -1,4 +1,5 @@
 from flask import request, abort, g, Blueprint, send_from_directory
+from datetime import datetime
 import sqlalchemy.sql.expression
 from sqlalchemy import or_
 from .request import api_response, SecurityType
@@ -170,6 +171,7 @@ class RestBehavior:
           updated_fields.append(k)
         setattr(rec, camel_to_underscore(k), self.read_value(data, k))
 
+    print(rec.to_json(), flush=True)
     return updated_fields
 
   def validate(self, rec):
@@ -186,12 +188,55 @@ class RestBehavior:
     expand_sections = [a.strip() for a in self.get_args().get('expand', 'none').lower().split(',')]
     return section.lower() in expand_sections or 'all' in expand_sections
 
-  def post(self):
-    rec = self.create_record(self._model_class)
-    self.apply_values(rec)
-    self.validate(rec)
+  def read_from_request(self, obj, attributes, alt_input=None):
+    for attribute in attributes:
+      if hasattr(obj, attribute) or (hasattr(obj, 'set_' + attribute)):
+        newVal = self.get_request_value(self.underscore_to_camel(attribute), alt_input=alt_input)
+        if newVal is not None:
+          if newVal == 'null': # this condition means a null was passed in, convert to None
+            newVal = None
 
-    return self.pack(rec)
+          if hasattr(obj, 'set_' + attribute) and callable(getattr(obj, 'set_' + attribute)):
+            setMethod = getattr(obj, 'set_' + attribute)
+            setMethod(newVal)
+          else:
+            setattr(obj, attribute, newVal)
+  
+  def rest_update_record(self, obj, attributes, alt_input=None):
+    if obj is not None:
+      self.read_from_request(obj, attributes, alt_input=alt_input)
+
+      # Update base attributes
+      obj.last_modified_by = g.auth_status.get('user')
+      obj.last_modified_at = datetime.utcnow()
+
+    return obj
+
+  def rest_create_record(self, obj, attributes, alt_input=None):
+    if obj is not None:
+      self.read_from_request(obj, attributes, alt_input=alt_input)
+
+      # Update base attributes
+      obj.last_modified_by = g.auth_status.get('user')
+      obj.last_modified_at = datetime.utcnow()
+
+      obj.created_by = g.auth_status.get('user')
+      obj.created_at = datetime.utcnow()
+
+    return obj
+
+  def get_request_value(self, value, alt_input=None):
+    if alt_input is not None:
+      return alt_input.get(value)
+
+    json_data = request.get_json()
+    if json_data is not None and value in json_data:
+      return json_data.get(value)
+
+    if value in request.form:
+      return request.form[value]
+
+    return None
 
   def get_id(self, id):
     if isinstance(id, int):
@@ -215,14 +260,37 @@ class RestBehavior:
     r = self.apply_filter(self._model_class.get_all()).filter(self._model_class.id == record_id).first()
     return self.pack(r)
 
+  def post(self):
+    print("Made it to post", flush=True)
+    rec = self.create_record(self._model_class)
+    if hasattr(rec, 'create_attributes') and len(rec.create_attributes) > 0:
+      rec = self.rest_create_record(rec, rec.create_attributes, alt_input=self.get_data())
+      db.session.flush()
+      rec = self.unpack(rec)
+      db.session.flush()
+      return self.pack(rec)
+
+    print("After IF", flush=True)
+    self.apply_values(rec)
+    self.validate(rec)
+
+    return self.pack(rec)
+
   def put(self, record_id):
     record_id = self.get_id(record_id)
-    r = self._model_class.get(record_id)
-    if r is not None:
-      self.apply_values(r)
-      self.validate(r)
+    rec = self._model_class.get(record_id)
+    if rec is not None:
+      if hasattr(rec, 'update_attributes') and len(rec.update_attributes) > 0:
+        rec = self.rest_update_record(rec, rec.update_attributes, alt_input=self.get_data())
+        db.session.flush()
+        rec = self.unpack(rec)
+        db.session.flush()
+        return self.pack(rec)
 
-    return self.pack(r)
+      self.apply_values(rec)
+      self.validate(rec)
+
+    return self.pack(rec)
 
   def delete(self, record_id):
     if not db:
@@ -243,6 +311,9 @@ class RestBehavior:
       return None
 
     return rec.to_json()
+  
+  def unpack(self, rec):
+    return rec
 
 
 rest_blueprint = Blueprint('rest_blueprint', __name__)
