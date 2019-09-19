@@ -145,6 +145,18 @@ class RestBehavior:
   def read_value(self, data, field_name):
     return data.get(field_name)
 
+  def get_collection(self):
+    raise Exception("Not Implemented")
+
+  def get_single(self, id):
+    raise Exception("Not Implemented")
+
+  def rest_get_collection(self):
+    return Paging().run(self.get_collection(), self.pack)
+
+  def rest_get_single(self, id):
+    return self.pack(self.get_single(id))
+
   def apply_values(self, rec, data=None):
     payload = rec.to_json()
     data = self.get_data(data)
@@ -171,7 +183,6 @@ class RestBehavior:
           updated_fields.append(k)
         setattr(rec, camel_to_underscore(k), self.read_value(data, k))
 
-    print(rec.to_json(), flush=True)
     return updated_fields
 
   def validate(self, rec):
@@ -261,7 +272,6 @@ class RestBehavior:
     return self.pack(r)
 
   def post(self):
-    print("Made it to post", flush=True)
     rec = self.create_record(self._model_class)
     if hasattr(rec, 'create_attributes') and len(rec.create_attributes) > 0:
       rec = self.rest_create_record(rec, rec.create_attributes, alt_input=self.get_data())
@@ -270,7 +280,6 @@ class RestBehavior:
       db.session.flush()
       return self.pack(rec)
 
-    print("After IF", flush=True)
     self.apply_values(rec)
     self.validate(rec)
 
@@ -314,7 +323,6 @@ class RestBehavior:
   
   def unpack(self, rec):
     return rec
-
 
 rest_blueprint = Blueprint('rest_blueprint', __name__)
 icon_blueprint = Blueprint('icon_blueprint', __name__)
