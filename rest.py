@@ -6,6 +6,8 @@ from .request import api_response, SecurityType
 from .paging import Paging
 from app import rest_model_mapping
 from lumavate_exceptions import ValidationException
+from sqlalchemy.schema import Sequence
+from sqlalchemy.inspection import inspect
 import csv
 from io import StringIO
 import re
@@ -212,28 +214,44 @@ class RestBehavior:
             setMethod(newVal)
           else:
             setattr(obj, attribute, newVal)
-  
+
+  def get_next_sequence(self, name):
+    return db.session.connection().execute(Sequence(name))
+
+  def get_next_id(self, rec):
+    sequence_name = inspect(rec.__class__).mapped_table.name + '_id_seq'
+    return self.get_next_sequence(sequence_name)
+
   def rest_update_record(self, obj, attributes, alt_input=None):
     if obj is not None:
       self.read_from_request(obj, attributes, alt_input=alt_input)
 
       # Update base attributes
-      obj.last_modified_by = g.auth_status.get('user')
-      obj.last_modified_at = datetime.utcnow()
+      if hasattr(obj, 'last_modified_by'):
+        obj.last_modified_by = g.auth_status.get('user')
+      if hasattr(obj, 'last_modified_at'):
+        obj.last_modified_at = datetime.utcnow()
 
     return obj
 
-  def rest_create_record(self, obj, attributes, alt_input=None):
-    if obj is not None:
-      self.read_from_request(obj, attributes, alt_input=alt_input)
+  def rest_create_record(self, type, attributes, alt_input=None):
+    obj = type()
+    obj.id = self.get_next_id(obj)
+    self.read_from_request(obj, attributes, alt_input=alt_input)
 
-      # Update base attributes
+    # Update base attributes
+
+    if hasattr(obj, 'last_modified_by'):
       obj.last_modified_by = g.auth_status.get('user')
+    if hasattr(obj, 'last_modified_at'):
       obj.last_modified_at = datetime.utcnow()
 
+    if hasattr(obj, 'created_by'):
       obj.created_by = g.auth_status.get('user')
+    if hasattr(obj, 'created_at'):
       obj.created_at = datetime.utcnow()
 
+    db.session.add(obj)
     return obj
 
   def get_request_value(self, value, alt_input=None):
@@ -271,34 +289,43 @@ class RestBehavior:
     r = self.apply_filter(self._model_class.get_all()).filter(self._model_class.id == record_id).first()
     return self.pack(r)
 
+  def rest_create(self):
+    return self.pack(self.create())
+  
+  def create(self):
+    instance = self._model_class()
+    attributes = instance.create_attributes if hasattr(instance, 'create_attributes') and len(instance.create_attributes) > 0 else instance.attributes
+    rec = self.rest_create_record(self._model_class, attributes, alt_input=self.get_data())
+    db.session.flush()
+    rec = self.unpack(rec)
+    db.session.flush()
+    return rec
+
   def post(self):
     rec = self.create_record(self._model_class)
-    if hasattr(rec, 'create_attributes') and len(rec.create_attributes) > 0:
-      rec = self.rest_create_record(rec, rec.create_attributes, alt_input=self.get_data())
+    self.apply_values(rec)
+    self.validate(rec)
+    return self.pack(rec)
+
+  def rest_update(self, id):
+    rec = self.update(self.get_single(id))
+    return self.pack(rec)
+
+  def update(self, rec):
+    if rec is not None:
+      attributes = rec.update_attributes if hasattr(rec, 'update_attributes') and len(rec.update_attributes) > 0 else rec.attributes
+      rec = self.rest_update_record(rec, attributes, alt_input=self.get_data())
       db.session.flush()
       rec = self.unpack(rec)
       db.session.flush()
-      return self.pack(rec)
 
-    self.apply_values(rec)
-    self.validate(rec)
-
-    return self.pack(rec)
+    return rec
 
   def put(self, record_id):
     record_id = self.get_id(record_id)
     rec = self._model_class.get(record_id)
-    if rec is not None:
-      if hasattr(rec, 'update_attributes') and len(rec.update_attributes) > 0:
-        rec = self.rest_update_record(rec, rec.update_attributes, alt_input=self.get_data())
-        db.session.flush()
-        rec = self.unpack(rec)
-        db.session.flush()
-        return self.pack(rec)
-
-      self.apply_values(rec)
-      self.validate(rec)
-
+    self.apply_values(rec)
+    self.validate(rec)
     return self.pack(rec)
 
   def delete(self, record_id):
@@ -316,10 +343,8 @@ class RestBehavior:
     return result
 
   def pack(self, rec):
-    if rec is None:
-      return None
-
-    return rec.to_json()
+    if rec is not None:
+      return rec.to_json()
   
   def unpack(self, rec):
     return rec
