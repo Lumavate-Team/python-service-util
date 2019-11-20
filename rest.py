@@ -103,10 +103,18 @@ class RestBehavior:
       r.org_id = self.get_org_id()
 
     if hasattr(r, 'created_by'):
-      r.created_by = g.auth_status.get('user')
+      user_id = g.auth_status.get('user')
+      if not user_id:
+        user_id = int('-1')
+
+      r.created_by = user_id
 
     if hasattr(r, 'last_modified_by'):
-      r.last_modified_by = g.auth_status.get('user')
+      user_id = g.auth_status.get('user')
+      if not user_id:
+        user_id = int('-1')
+
+      r.last_modified_by = user_id
 
     return r
 
@@ -165,7 +173,11 @@ class RestBehavior:
     updated_fields = []
 
     if hasattr(rec, 'last_modified_by'):
-      rec.last_modified_by = g.auth_status.get('user')
+      user_id = g.auth_status.get('user')
+      if not user_id:
+        user_id = int('-1')
+
+      rec.last_modified_by = user_id
 
     if hasattr(rec, 'last_modified_at'):
       rec.last_modified_at = db.func.current_timestamp()
@@ -228,7 +240,12 @@ class RestBehavior:
 
       # Update base attributes
       if hasattr(obj, 'last_modified_by'):
-        obj.last_modified_by = g.auth_status.get('user')
+        user_id = g.auth_status.get('user')
+        if not user_id:
+          user_id = int('-1')
+
+        obj.last_modified_by = user_id
+
       if hasattr(obj, 'last_modified_at'):
         obj.last_modified_at = datetime.utcnow()
 
@@ -242,12 +259,22 @@ class RestBehavior:
     # Update base attributes
 
     if hasattr(obj, 'last_modified_by'):
-      obj.last_modified_by = g.auth_status.get('user')
+      user_id = g.auth_status.get('user')
+      if not user_id:
+        user_id = int('-1')
+
+      obj.last_modified_by = user_id
+
     if hasattr(obj, 'last_modified_at'):
       obj.last_modified_at = datetime.utcnow()
 
     if hasattr(obj, 'created_by'):
-      obj.created_by = g.auth_status.get('user')
+      user_id = g.auth_status.get('user')
+      if not user_id:
+        user_id = int('-1')
+
+      obj.created_by = user_id
+
     if hasattr(obj, 'created_at'):
       obj.created_at = datetime.utcnow()
 
@@ -291,7 +318,7 @@ class RestBehavior:
 
   def rest_create(self):
     return self.pack(self.create())
-  
+
   def create(self):
     instance = self._model_class()
     attributes = instance.create_attributes if hasattr(instance, 'create_attributes') and len(instance.create_attributes) > 0 else instance.attributes
@@ -345,7 +372,7 @@ class RestBehavior:
   def pack(self, rec):
     if rec is not None:
       return rec.to_json()
-  
+
   def unpack(self, rec):
     return rec
 
