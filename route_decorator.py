@@ -163,7 +163,7 @@ def handle_request(func, auth_func, integration_cloud, widget_type, *args, **kwa
 
   return r
 
-def add_url_rule(func, wrapped, path, methods, request_type, security_types, is_manage=False, isAsset=False):
+def add_url_rule(func, wrapped, path, methods, request_type, security_types, is_manage=False, is_asset=False):
   lumavate_blueprint.add_url_rule(
     '/<string:integration_cloud>/<string:widget_type>' + path,
     endpoint=func.__name__,
