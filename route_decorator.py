@@ -163,7 +163,7 @@ def handle_request(func, auth_func, integration_cloud, widget_type, *args, **kwa
 
   return r
 
-def add_url_rule(func, wrapped, path, methods, request_type, security_types, is_manage=False):
+def add_url_rule(func, wrapped, path, methods, request_type, security_types, is_manage=False, isAsset=False):
   lumavate_blueprint.add_url_rule(
     '/<string:integration_cloud>/<string:widget_type>' + path,
     endpoint=func.__name__,
@@ -181,7 +181,8 @@ def add_url_rule(func, wrapped, path, methods, request_type, security_types, is_
     'path': '^' + regex_path + '$',
     'security': [x.name for x in security_types],
     'type': request_type.name,
-    'isManage': str(is_manage).lower()
+    'isManage': str(is_manage).lower(),
+    'isAsset': str(is_asset).lower()
   })
 
 def lumavate_manage_route(path, methods, request_type, security_types, template_folder=None, required_roles=None):
@@ -192,6 +193,18 @@ def lumavate_manage_route(path, methods, request_type, security_types, template_
 
     # Prefix manage routes with /manage
     add_url_rule(f, wrapper, '/manage{}'.format(path), methods, request_type, security_types, is_manage=True)
+
+    return wrapper
+  return decorator
+
+def lumavate_asset_route(path, methods, request_type, security_types, required_roles=None):
+  def decorator(f):
+    @wraps(f)
+    def wrapper(integration_cloud, widget_type, *args, **kwargs):
+      return handle_request(f, lambda: __authenticate(request_type), integration_cloud, widget_type, *args, **kwargs)
+
+    # Prefix manage routes with /manage
+    add_url_rule(f, wrapper, '/assets{}'.format(path), methods, request_type, security_types, is_asset=True)
 
     return wrapper
   return decorator
