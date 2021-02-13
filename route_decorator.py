@@ -70,21 +70,17 @@ def __authenticate_asset(request_type):
     g.org_id = token_data.get('orgId')
 
 
-    # for now...
+    # TODO: fix this
+    # But for now to keep me going...
     g.auth_status = {
       'status': 'inactive',
       'roles': [],
       'user': 'anonymous'
     }
 
-  print(f'TOKEN DATA: {token_data}')
-  if required_roles and role not in required_roles:
-    raise ApiException(403, 'Invalid role')
-
   #TODO: possibly get asset related data using get_lumavate_request().get_asset_data(request.headers.get('Lumavate-sut'))
   # Assets will need two versions, draft & production (changes made once saved become live and move from draft to production)
   # However, assets live on the asset service so I dont know if this is necessary yet....
-  print('VALID')
 
   return
 
