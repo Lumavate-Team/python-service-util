@@ -71,13 +71,11 @@ def __authenticate_asset(request_type):
 
 
     # for now...
-    g.auth_status = service_data.get('authData')
-    if g.auth_status is None:
-      g.auth_status = {
-        'status': 'inactive',
-        'roles': [],
-        'user': 'anonymous'
-      }
+    g.auth_status = {
+      'status': 'inactive',
+      'roles': [],
+      'user': 'anonymous'
+    }
 
   print(f'TOKEN DATA: {token_data}')
   if required_roles and role not in required_roles:
