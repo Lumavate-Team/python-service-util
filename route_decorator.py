@@ -62,9 +62,7 @@ def __authenticate_asset(request_type):
 
   header, payload, signature = jwt.replace('Bearer ', '').split('.')
   token_data = json.loads(b64decode(payload + '==').decode('utf-8'))
-
-  if token_data.get('scope') != 'ms-manage':
-    raise ApiException(401, 'Invalid scope')
+  print(f'TOKEN DATA: {token_data}')
 
   g.pwa_jwt = jwt.replace('Bearer ', '')
   g.token_data = token_data
@@ -80,6 +78,7 @@ def __authenticate_asset(request_type):
   #TODO: possibly get asset related data using get_lumavate_request().get_asset_data(request.headers.get('Lumavate-sut'))
   # Assets will need two versions, draft & production (changes made once saved become live and move from draft to production)
   # However, assets live on the asset service so I dont know if this is necessary yet....
+  print('VALID')
 
   return
 
