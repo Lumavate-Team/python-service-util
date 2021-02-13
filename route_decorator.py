@@ -52,6 +52,37 @@ def __authenticate_manage(request_type, required_roles):
 
   return
 
+def __authenticate_asset(request_type):
+  jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
+  if jwt is None or jwt.strip() == '':
+    jwt = get_lumavate_request().get_token(request.cookies, 'pwa_jwt')
+
+  if not jwt:
+    raise ApiException(401, 'Missing token')
+
+  header, payload, signature = jwt.replace('Bearer ', '').split('.')
+  token_data = json.loads(b64decode(payload + '==').decode('utf-8'))
+
+  if token_data.get('scope') != 'ms-manage':
+    raise ApiException(401, 'Invalid scope')
+
+  g.pwa_jwt = jwt.replace('Bearer ', '')
+  g.token_data = token_data
+  g.org_id = token_data.get('orgId')
+  role = token_data.get('role')
+  g.auth_status = {
+    'user': token_data.get('user')
+  }
+
+  if required_roles and role not in required_roles:
+    raise ApiException(403, 'Invalid role')
+
+  #TODO: possibly get asset related data using get_lumavate_request().get_asset_data(request.headers.get('Lumavate-sut'))
+  # Assets will need two versions, draft & production (changes made once saved become live and move from draft to production)
+  # However, assets live on the asset service so I dont know if this is necessary yet....
+
+  return
+
 def __authenticate(request_type):
   jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
   if jwt is None or jwt.strip() == '':
@@ -201,7 +232,7 @@ def lumavate_asset_route(path, methods, request_type, security_types, required_r
   def decorator(f):
     @wraps(f)
     def wrapper(integration_cloud, widget_type, *args, **kwargs):
-      return handle_request(f, lambda: __authenticate(request_type), integration_cloud, widget_type, *args, **kwargs)
+      return handle_request(f, lambda: __authenticate_asset(request_type), integration_cloud, widget_type, *args, **kwargs)
 
     # Prefix manage routes with /manage
     add_url_rule(f, wrapper, '/assets{}'.format(path), methods, request_type, security_types, is_asset=True)
