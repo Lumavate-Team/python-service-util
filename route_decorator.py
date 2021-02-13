@@ -57,21 +57,29 @@ def __authenticate_asset(request_type):
   if jwt is None or jwt.strip() == '':
     jwt = get_lumavate_request().get_token(request.cookies, 'pwa_jwt')
 
-  if not jwt:
-    raise ApiException(401, 'Missing token')
+  if jwt is None or jwt.strip() == '':
+    header, payload, signature = None, None, None
+    g.pwa_jwt = None
+    g.token_data = None
+    g.org_id = None
+  else:
+    header, payload, signature = jwt.replace('Bearer ', '').split('.')
+    token_data = json.loads(b64decode(payload + '==').decode('utf-8'))
+    g.pwa_jwt = jwt.replace('Bearer ', '')
+    g.token_data = token_data
+    g.org_id = token_data.get('orgId')
 
-  header, payload, signature = jwt.replace('Bearer ', '').split('.')
-  token_data = json.loads(b64decode(payload + '==').decode('utf-8'))
+
+    # for now...
+    g.auth_status = service_data.get('authData')
+    if g.auth_status is None:
+      g.auth_status = {
+        'status': 'inactive',
+        'roles': [],
+        'user': 'anonymous'
+      }
+
   print(f'TOKEN DATA: {token_data}')
-
-  g.pwa_jwt = jwt.replace('Bearer ', '')
-  g.token_data = token_data
-  g.org_id = token_data.get('orgId')
-  role = token_data.get('role')
-  g.auth_status = {
-    'user': token_data.get('user')
-  }
-
   if required_roles and role not in required_roles:
     raise ApiException(403, 'Invalid role')
 
