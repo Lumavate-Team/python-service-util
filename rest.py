@@ -1,10 +1,13 @@
 from flask import request, abort, g, Blueprint, send_from_directory
+from datetime import datetime
 import sqlalchemy.sql.expression
 from sqlalchemy import or_
 from .request import api_response, SecurityType
 from .paging import Paging
 from app import rest_model_mapping
 from lumavate_exceptions import ValidationException
+from sqlalchemy.schema import Sequence
+from sqlalchemy.inspection import inspect
 import csv
 from io import StringIO
 import re
@@ -23,13 +26,13 @@ under_pat = re.compile(r'_([A-Za-z0-9])')
 hyphen_pat = re.compile(r'-([A-Za-z0-9])')
 
 def hyphen_to_camel(name):
-	return hyphen_pat.sub(lambda x: x.group(1).upper(), name)
+  return hyphen_pat.sub(lambda x: x.group(1).upper(), name)
 
 def underscore_to_camel(name):
-	return under_pat.sub(lambda x: x.group(1).upper(), name)
+  return under_pat.sub(lambda x: x.group(1).upper(), name)
 
 def camel_to_underscore(name):
-	return camel_pat.sub(lambda x: '_' + x.group(1).lower(), name)
+  return camel_pat.sub(lambda x: '_' + x.group(1).lower(), name)
 
 def make_id(id, classification):
   if hasattr(classification, '__table__'):
@@ -100,10 +103,18 @@ class RestBehavior:
       r.org_id = self.get_org_id()
 
     if hasattr(r, 'created_by'):
-      r.created_by = g.auth_status.get('user')
+      user_id = g.auth_status.get('user')
+      if not user_id:
+        user_id = int('-1')
+
+      r.created_by = user_id
 
     if hasattr(r, 'last_modified_by'):
-      r.last_modified_by = g.auth_status.get('user')
+      user_id = g.auth_status.get('user')
+      if not user_id:
+        user_id = int('-1')
+
+      r.last_modified_by = user_id
 
     return r
 
@@ -144,13 +155,29 @@ class RestBehavior:
   def read_value(self, data, field_name):
     return data.get(field_name)
 
+  def get_collection(self):
+    raise Exception("Not Implemented")
+
+  def get_single(self, id):
+    raise Exception("Not Implemented")
+
+  def rest_get_collection(self):
+    return Paging().run(self.get_collection(), self.pack)
+
+  def rest_get_single(self, id):
+    return self.pack(self.get_single(id))
+
   def apply_values(self, rec, data=None):
     payload = rec.to_json()
     data = self.get_data(data)
     updated_fields = []
 
     if hasattr(rec, 'last_modified_by'):
-      rec.last_modified_by = g.auth_status.get('user')
+      user_id = g.auth_status.get('user')
+      if not user_id:
+        user_id = int('-1')
+
+      rec.last_modified_by = user_id
 
     if hasattr(rec, 'last_modified_at'):
       rec.last_modified_at = db.func.current_timestamp()
@@ -186,12 +213,86 @@ class RestBehavior:
     expand_sections = [a.strip() for a in self.get_args().get('expand', 'none').lower().split(',')]
     return section.lower() in expand_sections or 'all' in expand_sections
 
-  def post(self):
-    rec = self.create_record(self._model_class)
-    self.apply_values(rec)
-    self.validate(rec)
+  def read_from_request(self, obj, attributes, alt_input=None):
+    for attribute in attributes:
+      if hasattr(obj, attribute) or (hasattr(obj, 'set_' + attribute)):
+        newVal = self.get_request_value(self.underscore_to_camel(attribute), alt_input=alt_input)
+        if newVal is not None:
+          if newVal == 'null': # this condition means a null was passed in, convert to None
+            newVal = None
 
-    return self.pack(rec)
+          if hasattr(obj, 'set_' + attribute) and callable(getattr(obj, 'set_' + attribute)):
+            setMethod = getattr(obj, 'set_' + attribute)
+            setMethod(newVal)
+          else:
+            setattr(obj, attribute, newVal)
+
+  def get_next_sequence(self, name):
+    return db.session.connection().execute(Sequence(name))
+
+  def get_next_id(self, rec):
+    sequence_name = inspect(rec.__class__).mapped_table.name + '_id_seq'
+    return self.get_next_sequence(sequence_name)
+
+  def rest_update_record(self, obj, attributes, alt_input=None):
+    if obj is not None:
+      self.read_from_request(obj, attributes, alt_input=alt_input)
+
+      # Update base attributes
+      if hasattr(obj, 'last_modified_by'):
+        user_id = g.auth_status.get('user')
+        if not user_id:
+          user_id = int('-1')
+
+        obj.last_modified_by = user_id
+
+      if hasattr(obj, 'last_modified_at'):
+        obj.last_modified_at = datetime.utcnow()
+
+    return obj
+
+  def rest_create_record(self, type, attributes, alt_input=None):
+    obj = type()
+    obj.id = self.get_next_id(obj)
+    self.read_from_request(obj, attributes, alt_input=alt_input)
+
+    # Update base attributes
+
+    if hasattr(obj, 'last_modified_by'):
+      user_id = g.auth_status.get('user')
+      if not user_id:
+        user_id = int('-1')
+
+      obj.last_modified_by = user_id
+
+    if hasattr(obj, 'last_modified_at'):
+      obj.last_modified_at = datetime.utcnow()
+
+    if hasattr(obj, 'created_by'):
+      user_id = g.auth_status.get('user')
+      if not user_id:
+        user_id = int('-1')
+
+      obj.created_by = user_id
+
+    if hasattr(obj, 'created_at'):
+      obj.created_at = datetime.utcnow()
+
+    db.session.add(obj)
+    return obj
+
+  def get_request_value(self, value, alt_input=None):
+    if alt_input is not None:
+      return alt_input.get(value)
+
+    json_data = request.get_json()
+    if json_data is not None and value in json_data:
+      return json_data.get(value)
+
+    if value in request.form:
+      return request.form[value]
+
+    return None
 
   def get_id(self, id):
     if isinstance(id, int):
@@ -215,14 +316,44 @@ class RestBehavior:
     r = self.apply_filter(self._model_class.get_all()).filter(self._model_class.id == record_id).first()
     return self.pack(r)
 
+  def rest_create(self):
+    return self.pack(self.create())
+
+  def create(self):
+    instance = self._model_class()
+    attributes = instance.create_attributes if hasattr(instance, 'create_attributes') and len(instance.create_attributes) > 0 else instance.attributes
+    rec = self.rest_create_record(self._model_class, attributes, alt_input=self.get_data())
+    db.session.flush()
+    rec = self.unpack(rec)
+    db.session.flush()
+    return rec
+
+  def post(self):
+    rec = self.create_record(self._model_class)
+    self.apply_values(rec)
+    self.validate(rec)
+    return self.pack(rec)
+
+  def rest_update(self, id):
+    rec = self.update(self.get_single(id))
+    return self.pack(rec)
+
+  def update(self, rec):
+    if rec is not None:
+      attributes = rec.update_attributes if hasattr(rec, 'update_attributes') and len(rec.update_attributes) > 0 else rec.attributes
+      rec = self.rest_update_record(rec, attributes, alt_input=self.get_data())
+      db.session.flush()
+      rec = self.unpack(rec)
+      db.session.flush()
+
+    return rec
+
   def put(self, record_id):
     record_id = self.get_id(record_id)
-    r = self._model_class.get(record_id)
-    if r is not None:
-      self.apply_values(r)
-      self.validate(r)
-
-    return self.pack(r)
+    rec = self._model_class.get(record_id)
+    self.apply_values(rec)
+    self.validate(rec)
+    return self.pack(rec)
 
   def delete(self, record_id):
     if not db:
@@ -239,11 +370,11 @@ class RestBehavior:
     return result
 
   def pack(self, rec):
-    if rec is None:
-      return None
+    if rec is not None:
+      return rec.to_json()
 
-    return rec.to_json()
-
+  def unpack(self, rec):
+    return rec
 
 rest_blueprint = Blueprint('rest_blueprint', __name__)
 icon_blueprint = Blueprint('icon_blueprint', __name__)

@@ -103,7 +103,6 @@ def __authenticate(request_type):
     g.org_id = token_data.get('orgId')
 
   try:
-
     if request.path == os.environ.get('WIDGET_URL_PREFIX') + 'status' and request.method == 'POST':
       service_data = request.get_json(True)
       g.service_data = service_data['serviceData']
