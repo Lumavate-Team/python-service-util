@@ -69,6 +69,8 @@ def __authenticate_asset(request_type):
     g.token_data = token_data
     g.org_id = token_data.get('orgId')
     g.auth_status = get_lumavate_request().get_auth_status()
+    if g.auth_status['user'] == 'anonymous':
+      g.auth_status['user'] = -1
 
   return
 
