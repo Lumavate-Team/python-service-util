@@ -1,0 +1,17 @@
+name: PR Name Linter
+on:
+  pull_request:
+    types: ['opened', 'edited', 'reopened', 'synchronize']
+
+jobs:
+  pr-linter:
+    name: Check PR Title for Jira Issue
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2.0.0
+    - name: Regex for PR
+      id: lint-pr-title
+      uses: LabelNexus/regex-for-gh-actions@master
+      with:
+        pattern: '([A-Z0-9]{2,}\-\d+)'
+        string: ${{ github.event.pull_request.title }}
