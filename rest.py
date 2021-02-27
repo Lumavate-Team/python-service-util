@@ -155,12 +155,6 @@ class RestBehavior:
   def read_value(self, data, field_name):
     return data.get(field_name)
 
-  def get_collection(self):
-    raise Exception("Not Implemented")
-
-  def get_single(self, id):
-    raise Exception("Not Implemented")
-
   def rest_get_collection(self):
     return Paging().run(self.get_collection(), self.pack)
 
