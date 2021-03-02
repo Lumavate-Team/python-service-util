@@ -70,12 +70,9 @@ def __authenticate_asset(request_type, required_roles):
     g.token_data = token_data
     g.org_id = token_data.get('orgId')
     role = token_data.get('role')
-
-    # TODO Fix this for
-    print(f'TODO: fix authenticate_asset auth_status to get platform user id')
-    g.auth_status = get_lumavate_request().get_auth_status()
-    if g.auth_status['user'] == 'anonymous':
-      g.auth_status['user'] = -1
+    g.auth_status = {
+      'user': token_data.get('user')
+    }
 
   if required_roles and role not in required_roles:
     raise ApiException(403, 'Invalid role')
