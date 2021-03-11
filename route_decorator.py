@@ -52,7 +52,7 @@ def __authenticate_manage(request_type, required_roles):
 
   return
 
-def __authenticate_asset(request_type):
+def __authenticate_asset(request_type, required_roles):
   jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
   if jwt is None or jwt.strip() == '':
     jwt = get_lumavate_request().get_token(request.cookies, 'pwa_jwt')
@@ -62,15 +62,20 @@ def __authenticate_asset(request_type):
     g.pwa_jwt = None
     g.token_data = None
     g.org_id = None
+    role = None
   else:
     header, payload, signature = jwt.replace('Bearer ', '').split('.')
     token_data = json.loads(b64decode(payload + '==').decode('utf-8'))
     g.pwa_jwt = jwt.replace('Bearer ', '')
     g.token_data = token_data
     g.org_id = token_data.get('orgId')
-    g.auth_status = get_lumavate_request().get_auth_status()
-    if g.auth_status['user'] == 'anonymous':
-      g.auth_status['user'] = -1
+    role = token_data.get('role')
+    g.auth_status = {
+      'user': token_data.get('user')
+    }
+
+  if required_roles and role not in required_roles:
+    raise ApiException(403, 'Invalid role')
 
   return
 
@@ -222,7 +227,7 @@ def lumavate_asset_route(path, methods, request_type, security_types, required_r
   def decorator(f):
     @wraps(f)
     def wrapper(integration_cloud, widget_type, *args, **kwargs):
-      return handle_request(f, lambda: __authenticate_asset(request_type), integration_cloud, widget_type, *args, **kwargs)
+      return handle_request(f, lambda: __authenticate_asset(request_type, required_roles), integration_cloud, widget_type, *args, **kwargs)
 
     # Prefix manage routes with /manage
     add_url_rule(f, wrapper, '/assets{}'.format(path), methods, request_type, security_types, is_asset=True)
