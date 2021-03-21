@@ -55,7 +55,7 @@ def __authenticate_manage(request_type, required_roles):
 def __authenticate_asset(request_type, required_roles):
   jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
   if jwt is None or jwt.strip() == '':
-    jwt = get_lumavate_request().get_token(request.cookies, 'pwa_jwt')
+    jwt = get_lumavate_request().get_token(request.cookies, 'asset_jwt')
 
   if jwt is None or jwt.strip() == '':
     header, payload, signature = None, None, None
