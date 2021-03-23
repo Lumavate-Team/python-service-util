@@ -25,13 +25,14 @@ class AssetRestBehavior(RestBehavior):
     asset_data = self.get_data()
     self.validate_asset_name(asset_data)
 
-    asset_data = {
+    post_data = {
       'name': asset_data.get('assetName'),
       'orgId': self.get_org_id(),
       'isActive': True,
-      'data': asset_data.get('data')
+      'data': asset_data
     }
-    self.data = asset_data
+
+    self.data = post_data
     return super().post()
 
   def put(self, record_id):
