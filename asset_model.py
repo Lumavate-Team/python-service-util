@@ -12,12 +12,14 @@ from .db import BaseModel, Column
 
 class AssetBaseModel(BaseModel):
   __tablename__ = 'asset'
-  id = db.Column(db.BigInteger, primary_key=True)
   org_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)
   name = Column(db.String(35), nullable=False)
   image = Column(JSONB, default=lambda: {}, nullable=True)
   is_active = Column(db.Boolean, server_default=expression.true(), nullable=True)
   data = Column(JSONB)
+
+  created_by = db.Column(db.String(250), nullable=False)
+  last_modified_by = db.Column(db.String(250), nullable=False)
 
   @classmethod
   def get_all(cls, args=None):

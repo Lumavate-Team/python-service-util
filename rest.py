@@ -93,9 +93,16 @@ class RestBehavior:
 
     return j
 
+  def make_user_id(self, id):
+    return id
+
+  def get_default_user_id():
+    return -1
+
   def create_record(self, for_model):
     if not db:
       raise Exception('Unable to create record without db context')
+
 
     r = for_model()
     db.session.add(r)
@@ -105,16 +112,16 @@ class RestBehavior:
     if hasattr(r, 'created_by'):
       user_id = g.auth_status.get('user')
       if not user_id:
-        user_id = int('-1')
+        user_id = self.get_default_user_id()
 
-      r.created_by = user_id
+      r.created_by = self.make_user_id(user_id)
 
     if hasattr(r, 'last_modified_by'):
       user_id = g.auth_status.get('user')
       if not user_id:
-        user_id = int('-1')
+        user_id = self.get_default_user_id()
 
-      r.last_modified_by = user_id
+      r.last_modified_by = self.make_user_id(user_id)
 
     return r
 
@@ -169,9 +176,9 @@ class RestBehavior:
     if hasattr(rec, 'last_modified_by'):
       user_id = g.auth_status.get('user')
       if not user_id:
-        user_id = int('-1')
+        user_id = self.get_default_user_id()
 
-      rec.last_modified_by = user_id
+      rec.last_modified_by = self.make_user_id(user_id)
 
     if hasattr(rec, 'last_modified_at'):
       rec.last_modified_at = datetime.utcnow()
@@ -236,9 +243,9 @@ class RestBehavior:
       if hasattr(obj, 'last_modified_by'):
         user_id = g.auth_status.get('user')
         if not user_id:
-          user_id = int('-1')
+          user_id = self.get_default_user_id()
 
-        obj.last_modified_by = user_id
+        obj.last_modified_by = self.make_user_id(user_id)
 
       if hasattr(obj, 'last_modified_at'):
         obj.last_modified_at = datetime.utcnow()
@@ -255,9 +262,9 @@ class RestBehavior:
     if hasattr(obj, 'last_modified_by'):
       user_id = g.auth_status.get('user')
       if not user_id:
-        user_id = int('-1')
+        user_id = self.get_default_user_id()
 
-      obj.last_modified_by = user_id
+      obj.last_modified_by = self.make_user_id(user_id)
 
     if hasattr(obj, 'last_modified_at'):
       obj.last_modified_at = datetime.utcnow()
@@ -265,9 +272,9 @@ class RestBehavior:
     if hasattr(obj, 'created_by'):
       user_id = g.auth_status.get('user')
       if not user_id:
-        user_id = int('-1')
+        user_id = self.get_default_user_id()
 
-      obj.created_by = user_id
+      obj.created_by = self.make_user_id(user_id)
 
     if hasattr(obj, 'created_at'):
       obj.created_at = datetime.utcnow()
