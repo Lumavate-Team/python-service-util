@@ -22,7 +22,7 @@ class AssetRestBehavior(RestBehavior):
     # implemented at the child class
     raise ApiException(400, 'Not Implemented')
 
-  def make_id(id):
+  def make_user_id(self, id):
     return f'lmvt!{id}'
 
   def post(self):

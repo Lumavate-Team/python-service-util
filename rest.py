@@ -96,7 +96,7 @@ class RestBehavior:
   def make_user_id(self, id):
     return id
 
-  def get_default_user_id():
+  def get_default_user_id(self):
     return -1
 
   def create_record(self, for_model):
