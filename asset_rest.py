@@ -1,13 +1,14 @@
 from jinja2 import Environment, BaseLoader
 from flask import Blueprint, jsonify, request, make_response, redirect, render_template, g, abort
 from sqlalchemy import or_, cast, VARCHAR, func
+from datetime import datetime
 import os
 import re
 import json
 from lumavate_properties import Properties, Components
 from lumavate_exceptions import ValidationException, ApiException
 from app import db
-from .rest import RestBehavior
+from .rest import RestBehavior, camel_to_underscore, underscore_to_camel
 from .request import LumavateRequest
 from .resolver import Resolver
 from .paging import Paging
@@ -20,6 +21,12 @@ class AssetRestBehavior(RestBehavior):
   def get_preview(self, asset_id):
     # implemented at the child class
     raise ApiException(400, 'Not Implemented')
+
+  def make_user_id(self, id):
+    return f'lmvt!{id}'
+
+  def get_default_user_id(self, id):
+    return f'lmvt!-1'
 
   def post(self):
     asset_data = self.get_data()
