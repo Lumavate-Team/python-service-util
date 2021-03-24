@@ -25,8 +25,8 @@ class AssetRestBehavior(RestBehavior):
   def make_user_id(self, id):
     return f'lmvt!{id}'
 
-  def get_default_user_id(self, id):
-    return f'lmvt!-1'
+  def get_default_user_id(self):
+    return 'lmvt!-1'
 
   def post(self):
     asset_data = self.get_data()
