@@ -71,7 +71,7 @@ def __authenticate(request_type):
     g.org_id = token_data.get('orgId')
 
   try:
-
+    
     if request.path == os.environ.get('WIDGET_URL_PREFIX') + 'status' and request.method == 'POST':
       service_data = request.get_json(True)
       g.service_data = service_data['serviceData']
@@ -98,8 +98,11 @@ def __authenticate(request_type):
           'roles': [],
           'user': 'anonymous'
         }
+    activation_data = service_data.get('activationData', {})
+    if isinstance(activation_data, str):
+      activation_data = json.loads(activation_data)
 
-    g.activation_data = service_data.get('activationData', {})
+    g.activation_data = activation_data
 
   except ApiException as e:
     # Older services that use SecurityType.system_origin will have a value of 3 which matches RequestType.system value
