@@ -49,7 +49,12 @@ class AssetRestBehavior(RestBehavior):
 
     self.validate_asset_name(asset_data, record_id)
     self.data = asset_update_data
-    return super().put(record_id)
+    response_data = super().put(record_id)
+    asset_response = {
+      'state': asset_update_data.get('state'),
+      'payload': response_data
+    }
+    return asset_response
 
   def validate_asset_name(self, property_data, record_id=None):
     if 'assetName' not in property_data:
