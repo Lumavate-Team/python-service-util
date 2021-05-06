@@ -1,4 +1,5 @@
 from flask import got_request_exception, Request, g
+from app import app
 import rollbar
 import rollbar.contrib.flask
 import os
