@@ -1,5 +1,4 @@
 from flask import got_request_exception, Request, g
-from app import app
 import rollbar
 import rollbar.contrib.flask
 import os
@@ -10,7 +9,7 @@ def is_rollbar_configured():
   else:
     return False
 
-def init_rollbar():
+def init_rollbar(app):
   """init rollbar module"""
   if is_rollbar_configured():
     rollbar.init(
