@@ -11,3 +11,4 @@ from .resolver import Resolver
 from .migrate import LumavateMigrate
 from .filter import Filter
 from .sort import Sort
+from .rollbar_logging import is_rollbar_configured, init_rollbar, RollbarRequest
