@@ -17,6 +17,7 @@ class AssetBaseModel(BaseModel):
   image = Column(JSONB, default=lambda: {}, nullable=True)
   is_active = Column(db.Boolean, server_default=expression.true(), nullable=True)
   data = Column(JSONB)
+  dependency_assets = Column(JSONB)
 
   created_by = db.Column(db.String(250), nullable=False)
   last_modified_by = db.Column(db.String(250), nullable=False)
