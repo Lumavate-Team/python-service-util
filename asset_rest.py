@@ -36,7 +36,8 @@ class AssetRestBehavior(RestBehavior):
       'name': asset_data.get('assetName'),
       'orgId': self.get_org_id(),
       'isActive': True,
-      'data': asset_data
+      'data': asset_data,
+      'dependencyAssets': self.get_dependencies(asset_data)
     }
 
     self.data = post_data
@@ -49,6 +50,8 @@ class AssetRestBehavior(RestBehavior):
 
     self.validate_asset_name(asset_data, record_id)
     self.data = asset_update_data
+    self.data['dependencyAssets'] = self.get_dependencies(asset_data)
+
     response_data = super().put(record_id)
     asset_response = {
       'state': asset_update_data.get('state'),
@@ -65,6 +68,32 @@ class AssetRestBehavior(RestBehavior):
 
     if existing_name_asset is not None and (record_id is None or existing_name_asset.id != record_id):
       raise ValidationException('Name is already taken.', 'assetName')
+
+  def get_dependencies(self, asset_data, dependencies=None):
+    asset_data = asset_data
+    dependencies = [] if dependencies is None else dependencies
+
+    if isinstance(asset_data, list):
+      return [self.get_dependencies(x, dependencies) for x in asset_data]
+
+    elif isinstance(asset_data, dict):
+      component_data = {}
+
+      for k, v in asset_data.items():
+        if isinstance(v, list):
+          return [self.get_dependencies(x, dependencies) for x in v]
+
+        elif isinstance(v, dict):
+          assetRef = v.get('componentData',{}).get('assetRef',None)
+          if assetRef and isinstance(assetRef, dict) \
+            and 'assetId' in assetRef and 'containerId' in assetRef:
+
+            dependencies.append({
+              'assetId': assetId,
+              'containerId': containerId
+            })
+
+    return dependencies
 
   def pack(self, rec):
     if rec is None:
