@@ -69,34 +69,54 @@ class AssetRestBehavior(RestBehavior):
     if existing_name_asset is not None and (record_id is None or existing_name_asset.id != record_id):
       raise ValidationException('Name is already taken.', 'assetName')
 
-  def get_dependencies(self, asset_data, dependencies=None):
-    asset_data = asset_data
-    dependencies = [] if dependencies is None else dependencies
-
-    if isinstance(asset_data, list):
-      return [self.get_dependencies(x, dependencies) for x in asset_data]
-
-    elif isinstance(asset_data, dict):
-      component_data = {}
-
-      for k, v in asset_data.items():
-        if isinstance(v, list):
-          return [self.get_dependencies(x, dependencies) for x in v]
-
-        elif isinstance(v, dict):
-          assetRef = v.get('componentData',{}).get('assetRef',None)
-          if assetRef and isinstance(assetRef, dict) \
-            and 'assetId' in assetRef and 'containerId' in assetRef:
-
-            dependencies.append({
-              'assetId': assetId,
-              'containerId': containerId
-            })
-
-    return dependencies
-
   def pack(self, rec):
     if rec is None:
       return {}
 
     return rec.to_json()
+
+  def get_dependencies(self, asset_data):
+    dependencies = self._get_nested_dependencies(asset_data)
+    if dependencies is None:
+      return []
+
+    flattened = []
+    for d in dependencies:
+      if d is None:
+        continue
+      if isinstance(d, list):
+        flattened.extend(d)
+      if isinstance(d,dict):
+        flattened.append(d)
+    return flattened
+
+  def _get_nested_dependencies(self, asset_data, dependencies=None):
+    asset_data = asset_data
+    dependencies = [] if dependencies is None else dependencies
+
+    if isinstance(asset_data, list):
+      return [self._get_nested_dependencies(x, dependencies) for x in asset_data]
+
+    elif isinstance(asset_data, dict):
+      component_data = {}
+
+      for k, v in asset_data.items():
+        if isinstance(v, list) and k != 'componentTemplate':
+          dependencies.extend([self._get_nested_dependencies(x, dependencies) for x in v])
+
+        elif isinstance(v, dict):
+          assetRef = v.get('assetRef',None)
+          if assetRef and isinstance(assetRef, dict) \
+            and 'assetId' in assetRef and 'containerId' in assetRef:
+
+            dependencies.append({
+              'assetId': assetRef['assetId'],
+              'containerId': assetRef['containerId']
+            })
+
+    if len(dependencies)==0:
+      return
+
+    return dependencies
+
+
