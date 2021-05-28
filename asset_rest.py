@@ -36,7 +36,8 @@ class AssetRestBehavior(RestBehavior):
       'name': asset_data.get('assetName'),
       'orgId': self.get_org_id(),
       'isActive': True,
-      'data': asset_data
+      'data': asset_data,
+      'dependencyAssets': self.get_dependencies(asset_data)
     }
 
     self.data = post_data
@@ -49,6 +50,8 @@ class AssetRestBehavior(RestBehavior):
 
     self.validate_asset_name(asset_data, record_id)
     self.data = asset_update_data
+    self.data['dependencyAssets'] = self.get_dependencies(asset_data)
+
     response_data = super().put(record_id)
     asset_response = {
       'state': asset_update_data.get('state'),
@@ -71,3 +74,49 @@ class AssetRestBehavior(RestBehavior):
       return {}
 
     return rec.to_json()
+
+  def get_dependencies(self, asset_data):
+    dependencies = self._get_nested_dependencies(asset_data)
+    if dependencies is None:
+      return []
+
+    flattened = []
+    for d in dependencies:
+      if d is None:
+        continue
+      if isinstance(d, list):
+        flattened.extend(d)
+      if isinstance(d,dict):
+        flattened.append(d)
+    return flattened
+
+  def _get_nested_dependencies(self, asset_data, dependencies=None):
+    asset_data = asset_data
+    dependencies = [] if dependencies is None else dependencies
+
+    if isinstance(asset_data, list):
+      return [self._get_nested_dependencies(x, dependencies) for x in asset_data]
+
+    elif isinstance(asset_data, dict):
+      component_data = {}
+
+      for k, v in asset_data.items():
+        if isinstance(v, list) and k != 'componentTemplate':
+          dependencies.extend([self._get_nested_dependencies(x, dependencies) for x in v])
+
+        elif isinstance(v, dict):
+          assetRef = v.get('assetRef',None)
+          if assetRef and isinstance(assetRef, dict) \
+            and 'assetId' in assetRef and 'containerId' in assetRef:
+
+            dependencies.append({
+              'assetId': assetRef['assetId'],
+              'containerId': assetRef['containerId']
+            })
+
+    if len(dependencies)==0:
+      return
+
+    return dependencies
+
+
