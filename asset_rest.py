@@ -12,7 +12,7 @@ from .rest import RestBehavior, camel_to_underscore, underscore_to_camel
 from .request import LumavateRequest
 from .resolver import Resolver
 from .paging import Paging
-from .asset_sort import AssetSort
+from .name_sort import NameSort
 from .asset_model import AssetBaseModel
 
 class AssetRestBehavior(RestBehavior):
@@ -20,7 +20,7 @@ class AssetRestBehavior(RestBehavior):
     super().__init__(model_class, data)
 
   def apply_sort(self, q):
-    return AssetSort().apply(q)
+    return NameSort().apply(q)
 
   def get_preview(self, asset_id):
     # implemented at the child class
