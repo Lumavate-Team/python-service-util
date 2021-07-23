@@ -54,6 +54,9 @@ class AssetRestBehavior(RestBehavior):
 
     self.validate_asset_name(asset_data, record_id)
     self.data = asset_update_data
+    if 'assetName' in asset_data:
+      self.data['name'] = asset_data['assetName']
+
     self.data['dependencyAssets'] = self.get_dependencies(asset_data)
 
     response_data = super().put(record_id)
