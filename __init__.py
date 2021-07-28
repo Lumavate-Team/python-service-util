@@ -16,3 +16,4 @@ from .validators import IntValidator, BooleanValidator, ArrayValidator, EnumVali
 from .asset_model import AssetBaseModel
 from .asset_rest import AssetRestBehavior
 from .name_sort import NameSort
+from .rollbar_logging import is_rollbar_configured, init_rollbar, RollbarRequest
