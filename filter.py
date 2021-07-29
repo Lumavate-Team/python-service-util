@@ -1,5 +1,5 @@
 from sqlalchemy.sql.expression import cast
-import sqlalchemy.dialects.postgresql
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import or_, String, and_
 from flask import request, g
 from dateutil.parser import parse
@@ -35,7 +35,7 @@ class Filter:
           self.args[arg_key] = str(arg_value)
 
   def apply(self, base_query):
-    ops = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'sw', 'ct','aeq', 'adeq', 'act', 'jsonbstrct']
+    ops = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'sw', 'ct','aeq', 'adeq', 'act', 'jsonbstrct', 'jsonbstrctd']
     for a in self.args:
       if a != 'sort' and a not in self.ignore_fields:
         parts = self.args[a].split(":", 1)
@@ -68,7 +68,7 @@ class Filter:
       value = None
 
     if column is not None:
-      if isinstance(column, sqlalchemy.dialects.postgresql.JSONB):
+      if isinstance(column, JSONB):
         pass
       if str(column.type) == 'DATETIME' or str(column.type) == 'DATE':
         value = parse(value)
@@ -106,8 +106,10 @@ class Filter:
         return and_(column.op('@>')(value),column.op('<@')(value))
       elif op == 'act':
         return column.contains(value)
-      elif op == 'jsonbstrct':
-        return column.op('?')(value)
+      elif op == 'jsonbstrct': # Checks if jsonb array contains a given string
+        return column.op('?')(value) 
+      elif op == 'jsonbstrctd': # Checks if jsonb array contains a given integer
+        return column.op('@>')(value)
 
 
 class ColumnResolver:
