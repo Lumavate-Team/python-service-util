@@ -106,9 +106,9 @@ class Filter:
         return and_(column.op('@>')(value),column.op('<@')(value))
       elif op == 'act':
         return column.contains(value)
-      elif op == 'jsonbstrct':
-        return column.op('?')(value)
-      elif op == 'jsonbstrctd':
+      elif op == 'jsonbstrct': # Checks if jsonb array contains a given string
+        return column.op('?')(value) 
+      elif op == 'jsonbstrctd': # Checks if jsonb array contains a given integer
         return column.op('@>')(value)
 
 
