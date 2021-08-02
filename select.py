@@ -56,8 +56,6 @@ class Select:
     if len(self.excluded_fields) > 0:
       fields = self.diff(fields, self.excluded_fields)
 
-    #table_columns = inspect(self.model_class.__mapper__).columns
-    #column_list = [table_columns[field] for field in fields if field in self.columns]
     column_list = [field for field in fields if field in self.columns]
 
     return base_query.with_entities(*column_list)
