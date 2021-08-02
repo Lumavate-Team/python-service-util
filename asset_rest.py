@@ -80,7 +80,11 @@ class AssetRestBehavior(RestBehavior):
     if rec is None:
       return {}
 
-    return rec.to_json()
+    if type(rec) is self._model_class:
+      return rec.to_json()
+    else:
+      return {self.underscore_to_camel(key):value for(key,value) in rec._asdict().items()}
+
 
   def get_dependencies(self, asset_data):
     dependencies = self._get_nested_dependencies(asset_data)

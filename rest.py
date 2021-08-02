@@ -13,6 +13,7 @@ from io import StringIO
 import re
 import os
 import json
+from .select import Select
 from .filter import Filter
 from .sort import Sort
 
@@ -128,6 +129,9 @@ class RestBehavior:
   def apply_filter(self, q, ignore_fields=None):
     return Filter(self.args, ignore_fields).apply(q)
 
+  def apply_select(self, q):
+    return Select(model_class=self._model_class, args=self.get_args()).apply(q)
+
   def resolve_value(self, val):
     if '.' in val:
       temp = val.split('.')
@@ -149,6 +153,7 @@ class RestBehavior:
 
     q = self.apply_filter(q)
     q = self.apply_sort(q)
+    q = self.apply_select(q)
     return q
 
   def get_collection(self):
@@ -314,7 +319,8 @@ class RestBehavior:
 
   def get_single(self, record_id):
     record_id = self.get_id(record_id)
-    r = self.apply_filter(self._model_class.get_all()).filter(self._model_class.id == record_id).first()
+    q = self.apply_filter(self._model_class.get_all()).filter(self._model_class.id == record_id)
+    r = self.apply_select(q).first()
     return self.pack(r)
 
   def rest_create(self):
