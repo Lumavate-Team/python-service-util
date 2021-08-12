@@ -8,6 +8,7 @@ from base64 import b64decode
 from lumavate_request import ApiRequest
 from lumavate_exceptions import ApiException, AuthorizationException
 from enum import Enum
+from urllib.parse import quote, urlparse
 import requests
 import json
 import os
@@ -162,7 +163,8 @@ class LumavateRequest(ApiRequest):
       payload=None,
       files=None,
       raw=False,
-      timeout=None):
+      timeout=None,
+      encode_qs=False):
     """Make a request with the given method and parameters"""
     response_content = None
     results = {}
@@ -196,6 +198,12 @@ class LumavateRequest(ApiRequest):
     headers['Connection'] = 'close'
 
     with requests.Session() as session:
+      if encode_qs:
+        parsed_url = urlparse(url)
+        url = f'{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}'
+        if parsed_url.query != '':
+            url += f"?{quote(parsed_url.query)}"
+
       url = self.sign_url(method, path, payload, headers)
       func = getattr(session, method.lower())
       res = func(
@@ -287,12 +295,13 @@ class LumavateMockRequest(LumavateRequest):
       payload=None,
       files=None,
       raw=False,
-      timeout=None):
+      timeout=None,
+      encode_qs=False):
     result = None
     if self._mock_func is not None:
-      result = self._mock_func(method, path, headers, payload, files, raw, timeout)
+      result = self._mock_func(method, path, headers, payload, files, raw, timeout,encode_qs)
 
     if result is None:
-      return super().make_request(method, path, headers, payload, files, raw, timeout)
+      return super().make_request(method, path, headers, payload, files, raw, timeout,encode_qs)
     else:
       return result
