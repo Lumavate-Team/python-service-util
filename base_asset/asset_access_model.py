@@ -10,28 +10,29 @@ from lumavate_exceptions import ValidationException
 from .db import BaseModel, Column
 
 
-class AssetBaseModel(BaseModel):
-  __tablename__ = 'asset'
+class AssetAccessBaseModel(BaseModel):
+  __tablename__ = 'asset_access'
   org_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)
-  name = Column(db.String(35), nullable=False)
-  image = Column(JSONB, default=lambda: {}, nullable=True)
-  is_active = Column(db.Boolean, server_default=expression.true(), nullable=True)
-  data = Column(JSONB)
-  dependency_assets = Column(JSONB)
+  asset_id = Column(db.BigInteger, ForeignKey('asset.id'), nullable=False)
+  request_method = Column(db.String(10), nullable=False)
+  access_level = Column(db.String(30), nullable=False)
 
   created_by = db.Column(db.String(250), nullable=False)
   last_modified_by = db.Column(db.String(250), nullable=False)
 
   @classmethod
   def get_all(cls, args=None):
-    return cls.query.filter(and_(cls.org_id==g.org_id, cls.is_active==True))
+    return cls.query.filter(cls.org_id==g.org_id)
 
   @classmethod
   def get(cls, id):
     return cls.get_all().filter_by(id=id).first()
 
-  def to_json(self):
-    json_payload = super().to_json()
+  @classmethod
+  def get_by_asset(cls, asset_id):
+    return cls.get_all().filter_by(cls.asset_id=asset_id)
 
-    return json_payload
+  @classmethod
+  def get_by_request_method(cls, asset_id, method):
+    return cls.get_all().filter(and_(cls.asset_id=asset_id, cls.request_method=method))
 

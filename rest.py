@@ -321,6 +321,7 @@ class RestBehavior:
     record_id = self.get_id(record_id)
     q = self.apply_filter(self._model_class.get_all()).filter(self._model_class.id == record_id)
     r = self.apply_select(q).first()
+    print(f'get_single Record: {record_id}\n{r.__dict__}',flush=True)
     return self.pack(r)
 
   def rest_create(self):
