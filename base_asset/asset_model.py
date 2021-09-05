@@ -22,6 +22,8 @@ class AssetBaseModel(BaseModel):
   created_by = db.Column(db.String(250), nullable=False)
   last_modified_by = db.Column(db.String(250), nullable=False)
 
+  access = db.relationship('AssetAccessBaseModel', cascade='all,delete-orphan')
+
   @classmethod
   def get_all(cls, args=None):
     return cls.query.filter(and_(cls.org_id==g.org_id, cls.is_active==True))
