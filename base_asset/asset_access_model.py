@@ -7,7 +7,7 @@ from sqlalchemy import or_, cast, VARCHAR, func
 from sqlalchemy.dialects.postgresql import JSONB
 import json
 from lumavate_exceptions import ValidationException
-from .db import BaseModel, Column
+from ..db import BaseModel, Column
 
 
 class AssetAccessBaseModel(BaseModel):
@@ -30,9 +30,9 @@ class AssetAccessBaseModel(BaseModel):
 
   @classmethod
   def get_by_asset(cls, asset_id):
-    return cls.get_all().filter_by(cls.asset_id=asset_id)
+    return cls.get_all().filter_by(asset_id=asset_id)
 
   @classmethod
   def get_by_request_method(cls, asset_id, method):
-    return cls.get_all().filter(and_(cls.asset_id=asset_id, cls.request_method=method))
+    return cls.get_all().filter(and_(cls.asset_id==asset_id, cls.request_method==method))
 
