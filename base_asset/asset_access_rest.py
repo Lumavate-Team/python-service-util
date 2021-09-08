@@ -25,6 +25,14 @@ class AssetAccessRestBehavior(RestBehavior):
   def get_default_user_id(self):
     return 'lmvt!-1'
 
+  def get_access(self, asset_id):
+    access_rec = self._model_class.get_by_asset(record_id)
+    if access_rec:
+      return self.pack(access_rec)
+
+    # return default if no access record
+    return None
+
   """
   def post(self):
     acess_data = self.get_data()
@@ -59,3 +67,9 @@ class AssetAccessRestBehavior(RestBehavior):
     }
     return asset_response
   """
+
+  def save_access(self, asset_id):
+    access_data = self.get_data()
+    print(f'ACCESS DATA TO SAVE: {access_data}',flush=True)
+    return
+

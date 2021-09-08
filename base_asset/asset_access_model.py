@@ -32,5 +32,5 @@ class AssetAccessBaseModel(BaseModel):
 
   @classmethod
   def get_by_asset(cls, asset_id):
-    return cls.get_all().filter_by(asset_id=asset_id)
+    return cls.get_all().filter_by(asset_id=asset_id).first()
 

@@ -17,4 +17,9 @@ from .validators import IntValidator, BooleanValidator, ArrayValidator, EnumVali
 from .name_sort import NameSort
 from .rollbar_logging import is_rollbar_configured, init_rollbar, RollbarRequest
 
-from .base_asset import BaseAsset
+class BaseAsset:
+  from .base_asset import AssetBaseModel
+  from .base_asset import AssetRestBehavior
+  from .base_asset import AssetAccessBaseModel
+  from .base_asset import AssetAccessRestBehavior
+#from .base_asset import BaseAsset
