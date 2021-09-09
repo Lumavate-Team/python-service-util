@@ -26,50 +26,32 @@ class AssetAccessRestBehavior(RestBehavior):
     return 'lmvt!-1'
 
   def get_access(self, asset_id):
-    access_rec = self._model_class.get_by_asset(record_id)
+    access_rec = self._model_class.get_by_asset(asset_id)
     if access_rec:
       return self.pack(access_rec)
 
-    # return default if no access record
-    return None
-
-  """
-  def post(self):
-    acess_data = self.get_data()
-
-    post_data = {
-      'name': asset_data.get('assetName'),
-      'orgId': self.get_org_id(),
-      'isActive': True,
-      'data': asset_data,
-      'dependencyAssets': self.get_dependencies(asset_data)
-    }
-
-    self.data = post_data
-    return super().post()
-
-  def put(self, record_id):
-    asset_update_data = self.get_data()
-    asset_data = asset_update_data.get('data', {})
-    asset_rec = self._model_class.get(record_id)
-
-    self.validate_asset_name(asset_data, record_id)
-    self.data = asset_update_data
-    if 'assetName' in asset_data:
-      self.data['name'] = asset_data['assetName']
-
-    self.data['dependencyAssets'] = self.get_dependencies(asset_data)
-
-    response_data = super().put(record_id)
-    asset_response = {
-      'state': asset_update_data.get('state'),
-      'payload': response_data
-    }
-    return asset_response
-  """
+    return {}
 
   def save_access(self, asset_id):
     access_data = self.get_data()
-    print(f'ACCESS DATA TO SAVE: {access_data}',flush=True)
-    return
+    if 'operations' not in access_data:
+      raise ApiException(500, 'Invalid request')
 
+    access_rec = self._model_class.get_by_asset(asset_id)
+    if access_rec is None:
+      operations = access_data['operations']
+      post_data = {
+        'orgId': self.get_org_id(),
+        'assetId': access_data['assetId'],
+        'getAccess': operations['getAccess'],
+        'postAccess': operations['postAccess'],
+        'putAccess': operations['putAccess'],
+        'deleteAccess': operations['deleteAccess']
+      }
+
+      self.data = post_data
+      return self.post()
+    else:
+      access_rec = self._model_class.get_by_asset(asset_id)
+      self.data = access_data['operations']
+      return self.put(access_rec.id)

@@ -22,4 +22,3 @@ class BaseAsset:
   from .base_asset import AssetRestBehavior
   from .base_asset import AssetAccessBaseModel
   from .base_asset import AssetAccessRestBehavior
-#from .base_asset import BaseAsset
