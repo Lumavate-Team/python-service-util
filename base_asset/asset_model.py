@@ -7,7 +7,7 @@ from sqlalchemy import or_, cast, VARCHAR, func
 from sqlalchemy.dialects.postgresql import JSONB
 import json
 from lumavate_exceptions import ValidationException
-from .db import BaseModel, Column
+from ..db import BaseModel, Column
 
 
 class AssetBaseModel(BaseModel):
@@ -22,6 +22,8 @@ class AssetBaseModel(BaseModel):
   created_by = db.Column(db.String(250), nullable=False)
   last_modified_by = db.Column(db.String(250), nullable=False)
 
+  access = db.relationship('AssetAccessBaseModel', cascade='all,delete-orphan')
+
   @classmethod
   def get_all(cls, args=None):
     return cls.query.filter(and_(cls.org_id==g.org_id, cls.is_active==True))
@@ -29,9 +31,3 @@ class AssetBaseModel(BaseModel):
   @classmethod
   def get(cls, id):
     return cls.get_all().filter_by(id=id).first()
-
-  def to_json(self):
-    json_payload = super().to_json()
-
-    return json_payload
-

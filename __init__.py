@@ -14,7 +14,11 @@ from .resolver import Resolver
 from .migrate import LumavateMigrate
 from .db import BaseModel, Column
 from .validators import IntValidator, BooleanValidator, ArrayValidator, EnumValidator, StringValidator, UrlValidator, FloatValidator, DictionaryValidator, DateTimeValidator
-from .asset_model import AssetBaseModel
-from .asset_rest import AssetRestBehavior
 from .name_sort import NameSort
 from .rollbar_logging import is_rollbar_configured, init_rollbar, RollbarRequest
+
+class BaseAsset:
+  from .base_asset import AssetBaseModel
+  from .base_asset import AssetRestBehavior
+  from .base_asset import AssetAccessBaseModel
+  from .base_asset import AssetAccessRestBehavior
