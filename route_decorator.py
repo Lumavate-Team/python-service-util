@@ -6,6 +6,7 @@ from .request_type import RequestType
 from base64 import b64decode
 from functools import wraps
 from .paging import Paging
+from .base_asset import AssetAccessBaseModel
 import json
 import re
 import os
@@ -52,7 +53,7 @@ def __authenticate_manage(request_type, required_roles):
 
   return
 
-def __authenticate_asset(request_type, required_roles):
+def __authenticate_asset(request_type, access_check=False):
   jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
   if jwt is None or jwt.strip() == '':
     jwt = get_lumavate_request().get_token(request.cookies, 'asset_jwt')
@@ -62,22 +63,44 @@ def __authenticate_asset(request_type, required_roles):
     g.pwa_jwt = None
     g.token_data = None
     g.org_id = None
-    role = None
   else:
     header, payload, signature = jwt.replace('Bearer ', '').split('.')
     token_data = json.loads(b64decode(payload + '==').decode('utf-8'))
     g.pwa_jwt = jwt.replace('Bearer ', '')
     g.token_data = token_data
     g.org_id = token_data.get('orgId')
-    role = token_data.get('role')
     g.auth_status = {
       'user': token_data.get('user')
     }
 
-  if required_roles and role not in required_roles:
-    raise ApiException(403, 'Invalid role')
+  asset_id = request.view_args.get('asset_id')
+  if not asset_id:
+    return
 
-  return
+  if access_check:
+    asset_id = request.view_args.get('asset_id')
+    if not asset_id:
+      return
+
+    __authenticate_asset_access(asset_id, request_type)
+
+def __authenticate_asset_access(asset_id, request_type):
+  try:
+    access_rec = AssetAccessBaseModel().get_by_asset(asset_id)
+
+    access_operation = getattr(access_rec, f'{request.method.lower()}_access' )
+    if access_operation == 'all':
+      return
+    elif access_operation == 'authorized' and g.auth_status.get('user') is None:
+      raise ApiException(403, 'Insufficient permissions')
+    elif access_operation == 'none':
+      raise ApiException(403, 'Insufficient permissions')
+    else:
+      raise ApiException(500, 'Invalid access value')
+
+  except Exception as e:
+    print(e,flush=True)
+    raise ApiException(500, 'Asset Check is set without an access table to check.')
 
 def __authenticate(request_type):
   jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
@@ -96,49 +119,48 @@ def __authenticate(request_type):
     g.pwa_jwt = jwt.replace('Bearer ', '')
     g.token_data = token_data
     g.org_id = token_data.get('orgId')
-
-  try:
-    if request.path == os.environ.get('WIDGET_URL_PREFIX') + 'status' and request.method == 'POST':
-      service_data = request.get_json(True)
-      g.service_data = service_data['serviceData']
-      g.session = service_data['session'] if service_data['session'] is not None else {}
-    else:
-      if jwt is None or jwt.strip() == '':
-        service_data = {
-            'authData' : None
-        }
-        g.service_data = service_data
-        g.session = {}
-      else:
-        service_data = get_lumavate_request().get_service_data(request.headers.get('Lumavate-sut'))
+    try:
+      if request.path == os.environ.get('WIDGET_URL_PREFIX') + 'status' and request.method == 'POST':
+        service_data = request.get_json(True)
         g.service_data = service_data['serviceData']
         g.session = service_data['session'] if service_data['session'] is not None else {}
+      else:
+        if jwt is None or jwt.strip() == '':
+          service_data = {
+              'authData' : None
+          }
+          g.service_data = service_data
+          g.session = {}
+        else:
+          service_data = get_lumavate_request().get_service_data(request.headers.get('Lumavate-sut'))
+          g.service_data = service_data['serviceData']
+          g.session = service_data['session'] if service_data['session'] is not None else {}
 
-    if 'authData' not in service_data:
-      g.auth_status = get_lumavate_request().get_auth_status()
-    else:
-      g.auth_status = service_data.get('authData')
-      if g.auth_status is None:
+      if 'authData' not in service_data:
+        g.auth_status = get_lumavate_request().get_auth_status()
+      else:
+        g.auth_status = service_data.get('authData')
+        if g.auth_status is None:
+          g.auth_status = {
+            'status': 'inactive',
+            'roles': [],
+            'user': 'anonymous'
+          }
+
+      g.activation_data = service_data.get('activationData', {})
+
+    except ApiException as e:
+      # Older services that use SecurityType.system_origin will have a value of 3 which matches RequestType.system value
+      if e.status_code == 404 and request_type.value == RequestType.system.value:
+        g.service_data = {}
+        g.session = {}
         g.auth_status = {
           'status': 'inactive',
           'roles': [],
           'user': 'anonymous'
         }
-
-    g.activation_data = service_data.get('activationData', {})
-
-  except ApiException as e:
-    # Older services that use SecurityType.system_origin will have a value of 3 which matches RequestType.system value
-    if e.status_code == 404 and request_type.value == RequestType.system.value:
-      g.service_data = {}
-      g.session = {}
-      g.auth_status = {
-        'status': 'inactive',
-        'roles': [],
-        'user': 'anonymous'
-      }
-    else:
-      raise
+      else:
+        raise
 
 
 
@@ -223,11 +245,11 @@ def lumavate_manage_route(path, methods, request_type, security_types, template_
     return wrapper
   return decorator
 
-def lumavate_asset_route(path, methods, request_type, security_types, required_roles=None):
+def lumavate_asset_route(path, methods, request_type, security_types, access_check=False):
   def decorator(f):
     @wraps(f)
     def wrapper(integration_cloud, widget_type, *args, **kwargs):
-      return handle_request(f, lambda: __authenticate_asset(request_type, required_roles), integration_cloud, widget_type, *args, **kwargs)
+      return handle_request(f, lambda: __authenticate_asset(request_type, access_check), integration_cloud, widget_type, *args, **kwargs)
 
     # Prefix manage routes with /manage
     add_url_rule(f, wrapper, '/assets{}'.format(path), methods, request_type, security_types, is_asset=True)
