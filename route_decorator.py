@@ -85,22 +85,22 @@ def __authenticate_asset(request_type, access_check=False):
     __authenticate_asset_access(asset_id, request_type)
 
 def __authenticate_asset_access(asset_id, request_type):
+  asset_rec = None
   try:
     access_rec = AssetAccessBaseModel().get_by_asset(asset_id)
-
-    access_operation = getattr(access_rec, f'{request.method.lower()}_access' )
-    if access_operation == 'all':
-      return
-    elif access_operation == 'authorized' and g.auth_status.get('user') is None:
-      raise ApiException(403, 'Insufficient permissions')
-    elif access_operation == 'none':
-      raise ApiException(403, 'Insufficient permissions')
-    else:
-      raise ApiException(500, 'Invalid access value')
-
   except Exception as e:
-    print(e,flush=True)
     raise ApiException(500, 'Asset Check is set without an access table to check.')
+
+  access_operation = getattr(access_rec, f'{request.method.lower()}_access' )
+  if access_operation == 'all':
+    return
+  elif access_operation == 'authorized':
+    if g.auth_status.get('user') is None:
+      raise ApiException(403, 'Insufficient permissions')
+  elif access_operation == 'none':
+    raise ApiException(403, 'Insufficient permissions')
+  else:
+    raise ApiException(500, 'Invalid access value')
 
 def __authenticate(request_type):
   jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
