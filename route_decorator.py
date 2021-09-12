@@ -228,6 +228,7 @@ def add_url_rule(func, wrapped, path, methods, request_type, security_types, is_
   all_routes.append({
     'path': '^' + regex_path + '$',
     'security': [x.name for x in security_types],
+    'allowedMethods': methods,
     'type': request_type.name,
     'isManage': str(is_manage).lower(),
     'isAsset': str(is_asset).lower()
