@@ -13,5 +13,5 @@ jobs:
       id: lint-pr-title
       uses: LabelNexus/regex-for-gh-actions@master
       with:
-        pattern: '([A-Z]{2,}\-\d+;)'
+        pattern: '([A-Z0-9]{2,}\-\d+;)'
         string: ${{ github.event.pull_request.title }}
