@@ -71,7 +71,7 @@ def __authenticate(request_type):
     g.org_id = token_data.get('orgId')
 
   try:
-    
+
     if request.path == os.environ.get('WIDGET_URL_PREFIX') + 'status' and request.method == 'POST':
       service_data = request.get_json(True)
       g.service_data = service_data['serviceData']
@@ -183,6 +183,7 @@ def add_url_rule(func, wrapped, path, methods, request_type, security_types, is_
   all_routes.append({
     'path': '^' + regex_path + '$',
     'security': [x.name for x in security_types],
+    'allowedMethods': methods,
     'type': request_type.name,
     'isManage': str(is_manage).lower()
   })
