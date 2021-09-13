@@ -119,48 +119,49 @@ def __authenticate(request_type):
     g.pwa_jwt = jwt.replace('Bearer ', '')
     g.token_data = token_data
     g.org_id = token_data.get('orgId')
-    try:
-      if request.path == os.environ.get('WIDGET_URL_PREFIX') + 'status' and request.method == 'POST':
-        service_data = request.get_json(True)
+
+  try:
+    if request.path == os.environ.get('WIDGET_URL_PREFIX') + 'status' and request.method == 'POST':
+      service_data = request.get_json(True)
+      g.service_data = service_data['serviceData']
+      g.session = service_data['session'] if service_data['session'] is not None else {}
+    else:
+      if jwt is None or jwt.strip() == '':
+        service_data = {
+            'authData' : None
+        }
+        g.service_data = service_data
+        g.session = {}
+      else:
+        service_data = get_lumavate_request().get_service_data(request.headers.get('Lumavate-sut'))
         g.service_data = service_data['serviceData']
         g.session = service_data['session'] if service_data['session'] is not None else {}
-      else:
-        if jwt is None or jwt.strip() == '':
-          service_data = {
-              'authData' : None
-          }
-          g.service_data = service_data
-          g.session = {}
-        else:
-          service_data = get_lumavate_request().get_service_data(request.headers.get('Lumavate-sut'))
-          g.service_data = service_data['serviceData']
-          g.session = service_data['session'] if service_data['session'] is not None else {}
 
-      if 'authData' not in service_data:
-        g.auth_status = get_lumavate_request().get_auth_status()
-      else:
-        g.auth_status = service_data.get('authData')
-        if g.auth_status is None:
-          g.auth_status = {
-            'status': 'inactive',
-            'roles': [],
-            'user': 'anonymous'
-          }
-
-      g.activation_data = service_data.get('activationData', {})
-
-    except ApiException as e:
-      # Older services that use SecurityType.system_origin will have a value of 3 which matches RequestType.system value
-      if e.status_code == 404 and request_type.value == RequestType.system.value:
-        g.service_data = {}
-        g.session = {}
+    if 'authData' not in service_data:
+      g.auth_status = get_lumavate_request().get_auth_status()
+    else:
+      g.auth_status = service_data.get('authData')
+      if g.auth_status is None:
         g.auth_status = {
           'status': 'inactive',
           'roles': [],
           'user': 'anonymous'
         }
-      else:
-        raise
+
+    g.activation_data = service_data.get('activationData', {})
+
+  except ApiException as e:
+    # Older services that use SecurityType.system_origin will have a value of 3 which matches RequestType.system value
+    if e.status_code == 404 and request_type.value == RequestType.system.value:
+      g.service_data = {}
+      g.session = {}
+      g.auth_status = {
+        'status': 'inactive',
+        'roles': [],
+        'user': 'anonymous'
+      }
+    else:
+      raise
 
 
 
