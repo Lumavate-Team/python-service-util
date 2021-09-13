@@ -14,9 +14,9 @@ class AssetAccessBaseModel(BaseModel):
   __tablename__ = 'asset_access'
   org_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)
   asset_id = Column(db.BigInteger, ForeignKey('asset.id'), nullable=False)
-  get_access = Column(db.String(30), nullable=False, default='all')
+  get_access = Column(db.String(30), nullable=False, default='none')
   post_access = Column(db.String(30), nullable=False, default='all')
-  put_access = Column(db.String(30), nullable=False, default='all')
+  put_access = Column(db.String(30), nullable=False, default='none')
   delete_access = Column(db.String(30), nullable=False, default='none')
 
   created_by = db.Column(db.String(250), nullable=False)
@@ -32,5 +32,15 @@ class AssetAccessBaseModel(BaseModel):
 
   @classmethod
   def get_by_asset(cls, asset_id):
-    return cls.get_all().filter_by(asset_id=asset_id).first()
+    access_rec = cls.get_all().filter_by(asset_id=asset_id).first()
+    if access_rec is None:
+      access_rec = AssetAccessBaseModel(
+          org_id=g.org_id,
+          asset_id=asset_id,
+          get_access = 'none',
+          post_access= 'all',
+          put_access = 'none',
+          delete_access = 'none')
+
+    return access_rec
 
