@@ -52,6 +52,5 @@ class AssetAccessRestBehavior(RestBehavior):
       self.data = post_data
       return self.post()
     else:
-      access_rec = self._model_class.get_by_asset(asset_id)
       self.data = access_data['operations']
       return self.put(access_rec.id)
