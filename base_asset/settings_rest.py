@@ -1,6 +1,7 @@
 from jinja2 import Environment, BaseLoader
 from flask import Blueprint, jsonify, request, make_response, redirect, render_template, g, abort
 from sqlalchemy import or_, cast, VARCHAR, func
+from sqlalchemy.orm.attributes import flag_modified
 from datetime import datetime
 import os
 import re
@@ -13,11 +14,13 @@ from ..request import LumavateRequest
 from ..resolver import Resolver
 from ..paging import Paging
 from ..name_sort import NameSort
-from .asset_access_model import AssetAccessBaseModel
+from .asset_model import AssetBaseModel
+from .settings_model import SettingsModel
 
-class AssetAccessRestBehavior(RestBehavior):
-  def __init__(self, model_class=AssetAccessBaseModel, data=None):
+class SettingsRestBehavior(RestBehavior):
+  def __init__(self, model_class=SettingsModel, properties=None, data=None):
     super().__init__(model_class, data)
+    self.properties = properties
 
   def make_user_id(self, id):
     return f'lmvt!{id}'
@@ -25,32 +28,31 @@ class AssetAccessRestBehavior(RestBehavior):
   def get_default_user_id(self):
     return 'lmvt!-1'
 
-  def get_access(self, asset_id):
-    access_rec = self._model_class.get_by_asset(asset_id)
-    if access_rec:
-      return self.pack(access_rec)
+  def get_org_settings(self):
+    settings_rec = self._model_class.get_org_settings()
+    settings_json = {}
+    if settings_rec:
+      settings_json = self.pack(settings_rec).get('data',{})
 
-    return {}
+    return {
+        'properties': self.properties,
+        'data': settings_json
+        }
 
-  def save_access(self, asset_id):
-    access_data = self.get_data()
-    if 'operations' not in access_data:
+  def save_org_settings(self):
+    settings_data = self.get_data()
+    if 'data' not in settings_data:
       raise ApiException(500, 'Invalid request')
 
-    access_rec = self._model_class.get_by_asset(asset_id)
-    if access_rec is None:
-      operations = access_data['operations']
+    settings_rec = self._model_class.get_org_settings()
+    if settings_rec is None:
       post_data = {
         'orgId': self.get_org_id(),
-        'assetId': access_data['assetId'],
-        'getAccess': operations['getAccess'],
-        'postAccess': operations['postAccess'],
-        'putAccess': operations['putAccess'],
-        'deleteAccess': operations['deleteAccess']
+        'data': settings_data['data']
       }
 
       self.data = post_data
       return self.post()
     else:
-      self.data = access_data['operations']
-      return self.put(access_rec.id)
+      self.data = settings_data
+      return self.put(settings_rec.id)
