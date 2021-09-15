@@ -56,3 +56,10 @@ class SettingsRestBehavior(RestBehavior):
     else:
       self.data = settings_data
       return self.put(settings_rec.id)
+
+  def get_org_setting(self, key):
+    settings_rec = self._model_class.get_org_settings()
+    if not settings_rec:
+      return None
+
+    return settings_rec.data.get(key, None)
