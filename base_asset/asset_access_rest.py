@@ -37,7 +37,7 @@ class AssetAccessRestBehavior(RestBehavior):
     if 'operations' not in access_data:
       raise ApiException(500, 'Invalid request')
 
-    access_rec = self._model_class.get_by_asset(asset_id)
+    access_rec = self._model_class.get_by_asset(asset_id, return_default=False)
     if access_rec is None:
       operations = access_data['operations']
       post_data = {
