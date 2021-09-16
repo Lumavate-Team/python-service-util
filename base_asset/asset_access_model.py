@@ -31,9 +31,10 @@ class AssetAccessBaseModel(BaseModel):
     return cls.get_all().filter_by(id=id).first()
 
   @classmethod
-  def get_by_asset(cls, asset_id):
+  def get_by_asset(cls, asset_id, return_default=True):
     access_rec = cls.get_all().filter_by(asset_id=asset_id).first()
-    if access_rec is None:
+
+    if access_rec is None and return_default:
       access_rec = AssetAccessBaseModel(
           org_id=g.org_id,
           asset_id=asset_id,
