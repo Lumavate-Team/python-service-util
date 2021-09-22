@@ -82,6 +82,9 @@ def __authenticate_asset(request_type, access_check=False):
     if not asset_id:
       return
 
+    # Access check is done on the app side, so the auth user is different than if coming from the studio portion of assets
+    g.auth_status = get_lumavate_request().get_auth_status()
+
     __authenticate_asset_access(asset_id, request_type)
 
 def __authenticate_asset_access(asset_id, request_type):
