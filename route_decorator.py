@@ -105,6 +105,16 @@ def __authenticate_asset_access(asset_id, request_type):
   else:
     raise ApiException(500, 'Invalid access value')
 
+def __authenticate_callback(request_type, callback_arg):
+  state_param = request.args.get(callback_arg,'')
+  params_split = state_param.split('|')
+  g.pwa_jwt = None
+  g.token_data = None
+  g.org_id = params_split[0]
+  g.auth_status = {
+    'user': params_split[1]
+  }
+
 def __authenticate(request_type):
   jwt = get_lumavate_request().get_token(request.headers, 'Authorization')
   if jwt is None or jwt.strip() == '':
@@ -258,6 +268,18 @@ def lumavate_asset_route(path, methods, request_type, security_types, access_che
 
     # Prefix manage routes with /manage
     add_url_rule(f, wrapper, '/assets{}'.format(path), methods, request_type, security_types, is_asset=True)
+
+    return wrapper
+  return decorator
+
+#the callback query string arg should be url encoded in the format <org_id>|<user_id>|<container_version_id>
+def lumavate_callback_route(path, methods, request_type, security_types, callback_arg='state'):
+  def decorator(f):
+    @wraps(f)
+    def wrapper(integration_cloud, widget_type, *args, **kwargs):
+      return handle_request(f, lambda: __authenticate_callback(request_type, callback_arg), integration_cloud, widget_type, *args, **kwargs)
+
+    add_url_rule(f, wrapper, path, methods, request_type, security_types)
 
     return wrapper
   return decorator
