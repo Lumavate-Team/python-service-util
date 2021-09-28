@@ -78,14 +78,10 @@ def __authenticate_asset(request_type, access_check=False):
     return
 
   if access_check:
-    asset_id = request.view_args.get('asset_id')
-    if not asset_id:
-      return
-
     # Access check is done on the app side, so the auth user is different than if coming from the studio portion of assets
     g.auth_status = get_lumavate_request().get_auth_status()
-
     __authenticate_asset_access(asset_id, request_type)
+
 
 def __authenticate_asset_access(asset_id, request_type):
   asset_rec = None
@@ -98,8 +94,9 @@ def __authenticate_asset_access(asset_id, request_type):
   if access_operation == 'all':
     return
   elif access_operation == 'authorized':
-    if g.auth_status.get('user') is None:
+    if g.auth_status['status'] == 'inactive' or g.auth_status.get('user', 'anonymous') == 'anonymous':
       raise ApiException(403, 'Insufficient permissions')
+
   elif access_operation == 'none':
     raise ApiException(403, 'Insufficient permissions')
   else:
