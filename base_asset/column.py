@@ -11,7 +11,7 @@ class DataColumn():
     return {
       'id': self.id,
       'name': self.name,
-      'displayName': self.display_name;
+      'displayName': self.display_name,
       'columnType': {
         'value': self.type,
         'options': self.options
