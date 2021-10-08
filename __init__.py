@@ -16,6 +16,7 @@ from .db import BaseModel, Column
 from .validators import IntValidator, BooleanValidator, ArrayValidator, EnumValidator, StringValidator, UrlValidator, FloatValidator, DictionaryValidator, DateTimeValidator
 from .name_sort import NameSort
 from .rollbar_logging import is_rollbar_configured, init_rollbar, RollbarRequest
+from .enums import *
 
 class BaseAsset:
   from .base_asset import AssetBaseModel
@@ -25,3 +26,4 @@ class BaseAsset:
   from .base_asset import AssetAccessRestBehavior
   from .base_asset import SettingsRestBehavior
   from .base_asset import SettingsModel
+  from .base_asset import DataColumn
