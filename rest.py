@@ -206,9 +206,10 @@ class RestBehavior:
 
         updated_value = self.read_value(data, k)
         if isinstance(data[k], dict):
-          updated_value = payload[k]
+          updated_value = payload[k] if payload[k] is not None else {}
           updated_value.update(data[k])
-          flag_modified(rec, property_name)
+          if payload['id'] is not None:
+            flag_modified(rec, property_name)
           setattr(rec, property_name, updated_value)
         else:
           setattr(rec, property_name, self.read_value(data, k))
