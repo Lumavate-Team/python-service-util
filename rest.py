@@ -2,6 +2,7 @@ from flask import request, abort, g, Blueprint, send_from_directory
 from datetime import datetime
 import sqlalchemy.sql.expression
 from sqlalchemy import or_
+from sqlalchemy.orm.attributes import flag_modified
 from .request import api_response, SecurityType
 from .paging import Paging
 from app import rest_model_mapping
@@ -196,12 +197,21 @@ class RestBehavior:
         if k in ['createdBy', 'createdAt', 'lastModifiedBy', 'lastModifiedAt']:
           continue
 
-        if not hasattr(rec, camel_to_underscore(k)):
+        property_name = camel_to_underscore(k)
+        if not hasattr(rec, property_name):
           continue
 
-        if getattr(rec, camel_to_underscore(k)) != self.read_value(data, k):
+        if getattr(rec, property_name) != self.read_value(data, k):
           updated_fields.append(k)
-        setattr(rec, camel_to_underscore(k), self.read_value(data, k))
+
+        updated_value = self.read_value(data, k)
+        if isinstance(data[k], dict):
+          updated_value = payload[k]
+          updated_value.update(data[k])
+          flag_modified(rec, property_name)
+          setattr(rec, property_name, updated_value)
+        else:
+          setattr(rec, property_name, self.read_value(data, k))
 
     return updated_fields
 
@@ -358,6 +368,7 @@ class RestBehavior:
   def put(self, record_id):
     record_id = self.get_id(record_id)
     rec = self._model_class.get(record_id)
+
     self.apply_values(rec)
     self.validate(rec)
     return self.pack(rec)

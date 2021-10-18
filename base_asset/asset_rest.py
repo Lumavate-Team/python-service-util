@@ -50,7 +50,6 @@ class AssetRestBehavior(RestBehavior):
   def put(self, record_id):
     asset_update_data = self.get_data()
     asset_data = asset_update_data.get('data', {})
-    asset_rec = self._model_class.get(record_id)
 
     self.validate_asset_name(asset_data, record_id)
     self.data = asset_update_data
