@@ -9,13 +9,13 @@ import json
 from lumavate_properties import Properties, Components
 from lumavate_exceptions import ValidationException, ApiException
 from app import db
-from ..rest import RestBehavior, camel_to_underscore, underscore_to_camel
-from ..request import LumavateRequest
-from ..resolver import Resolver
-from ..paging import Paging
-from ..name_sort import NameSort
-from .asset_model import AssetBaseModel
-from .settings_model import SettingsModel
+from ...rest import RestBehavior, camel_to_underscore, underscore_to_camel
+from ...request import LumavateRequest
+from ...resolver import Resolver
+from ...paging import Paging
+from ...name_sort import NameSort
+from ..models import AssetBaseModel
+from ..models import SettingsModel
 
 class SettingsRestBehavior(RestBehavior):
   def __init__(self, model_class=SettingsModel, properties=None, data=None):

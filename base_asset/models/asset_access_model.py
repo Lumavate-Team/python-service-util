@@ -7,7 +7,7 @@ from sqlalchemy import or_, cast, VARCHAR, func
 from sqlalchemy.dialects.postgresql import JSONB
 import json
 from lumavate_exceptions import ValidationException
-from ..db import BaseModel, Column
+from ...db import BaseModel, Column
 
 
 class AssetAccessBaseModel(BaseModel):

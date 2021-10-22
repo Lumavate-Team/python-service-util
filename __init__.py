@@ -21,7 +21,9 @@ from .enums import *
 class BaseAsset:
   from .base_asset import AssetBaseModel
   from .base_asset import SecuredAssetBaseModel
+  from .base_asset import DataAssetBaseModel
   from .base_asset import AssetRestBehavior
+  from .base_asset import DataAssetRestBehavior
   from .base_asset import AssetAccessBaseModel
   from .base_asset import AssetAccessRestBehavior
   from .base_asset import SettingsRestBehavior
