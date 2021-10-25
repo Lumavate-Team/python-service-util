@@ -194,7 +194,7 @@ class RestBehavior:
         continue
 
       if k in data:
-        if k in ['createdBy', 'createdAt', 'lastModifiedBy', 'lastModifiedAt']:
+        if k in self.get_ignored_properties():
           continue
 
         property_name = camel_to_underscore(k)
@@ -206,8 +206,11 @@ class RestBehavior:
 
         updated_value = self.read_value(data, k)
         if isinstance(data[k], dict):
+          scrubbed_data = {key: value for (key,value) in data[k].items() if key not in self.get_ignored_properties()}
+
           updated_value = payload[k] if payload[k] is not None else {}
-          updated_value.update(data[k])
+          updated_fields.append(k)
+          updated_value.update(scrubbed_data)
           if payload['id'] is not None:
             flag_modified(rec, property_name)
           setattr(rec, property_name, updated_value)
@@ -215,6 +218,9 @@ class RestBehavior:
           setattr(rec, property_name, self.read_value(data, k))
 
     return updated_fields
+
+  def get_ignored_properties(self):
+    return ['createdBy', 'createdAt', 'lastModifiedBy', 'lastModifiedAt']
 
   def validate(self, rec):
     if not db:
