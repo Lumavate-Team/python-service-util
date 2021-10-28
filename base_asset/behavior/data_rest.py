@@ -33,13 +33,22 @@ class DataRestBehavior(RestBehavior):
   def create_data_record(self, for_model, data):
     rec = super().create_record(for_model)
     rec.asset_id = self._asset_id
-    self.apply_values(rec, {'submittedData': data})
-    self.validate(rec)
+    try:
+      self.apply_values(rec, {'submittedData': data})
+      self.validate(rec)
+    except Exception as e:
+      db.session.expunge(rec)
+      raise
+
     return rec
 
   def update_record(self, rec, data=None):
-    self.apply_values(rec, data)
-    self.validate(rec)
+    try:
+      self.apply_values(rec, data)
+      self.validate(rec)
+    except Exception as e:
+      db.session.expunge(rec)
+      raise
 
   def get_collection_query(self):
     q = self._model_class.get_all_by_asset_id(self._asset_id, self.get_args())
@@ -51,7 +60,6 @@ class DataRestBehavior(RestBehavior):
     return self._model_class.get_by_public_id(self._asset_id, public_id)
 
   def create_public_id(self):
-    print('base',flush=True)
     pass
 
   def try_import_action(self, action_func, result_key, result_dict):
@@ -87,10 +95,13 @@ class DataRestBehavior(RestBehavior):
         action_key = 'recordsDeleted'
         try:
           data_rec = self._model_class.get_by_public_id(self._asset_id, row_data['lumavateId'])
+          if data_rec is None:
+            raise Exception
         except Exception as e:
           print(f'Delete failed. Id: Data does not exist.\n{e}', flush=True)
           results['recordsFailed'] = results['recordsFailed'] + 1
           continue
+
         action = partial(self.delete, data_rec.id)
       else:
         action_key = 'recordsModified'
@@ -105,7 +116,6 @@ class DataRestBehavior(RestBehavior):
 
       self.try_import_action(action, action_key, results)
 
-    print(f'RESULTS: {results}',flush=True)
     return results
 
   def get_ignored_properties(self):
