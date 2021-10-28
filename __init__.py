@@ -5,7 +5,7 @@ from .sort import Sort
 from .rest import RestBehavior, icon_blueprint, make_id
 from .request import api_response, browser_response, LumavateRequest, LumavateMockRequest, get_lumavate_request, set_lumavate_request_factory
 from .dev_mock import DevMock
-from .route_decorator import lumavate_route, lumavate_blueprint, all_routes, lumavate_manage_route, lumavate_asset_route, lumavate_callback_route
+from .route_decorator import lumavate_route, lumavate_blueprint, all_routes, lumavate_manage_route, lumavate_asset_route, lumavate_callback_route, lumavate_asset_import_route
 from .security_type import SecurityType
 from .request_type import RequestType
 from .security_assertion import SecurityAssertion
@@ -22,12 +22,13 @@ class BaseAsset:
   from .base_asset import AssetBaseModel
   from .base_asset import SecuredAssetBaseModel
   from .base_asset import DataAssetBaseModel
+  from .base_asset import AssetAccessBaseModel
+  from .base_asset import DataBaseModel
+  from .base_asset import SettingsModel
+  from .base_asset import DataColumn
+
+  from .base_asset import AssetAccessRestBehavior
   from .base_asset import AssetRestBehavior
   from .base_asset import DataAssetRestBehavior
   from .base_asset import DataRestBehavior
-  from .base_asset import AssetAccessBaseModel
-  from .base_asset import AssetAccessRestBehavior
-  from .base_asset import DataBaseModel
   from .base_asset import SettingsRestBehavior
-  from .base_asset import SettingsModel
-  from .base_asset import DataColumn

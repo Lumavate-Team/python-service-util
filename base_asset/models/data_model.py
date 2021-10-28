@@ -1,3 +1,5 @@
+from abc import ABC, ABCMeta, abstractmethod
+
 from app import db
 from flask import request, g
 from time import time
@@ -19,7 +21,7 @@ class DataBaseModel(BaseModel):
   __table_args__ = {'extend_existing': True}
   org_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False)
   asset_id = Column(db.BigInteger, ForeignKey('asset.id'), nullable=False)
-  submitted_data = Column(JSONB, server_default='{}', nullable=False)
+  submitted_data = Column(JSONB, server_default='{}', nullable=True)
   activation_code = Column(db.String(35), nullable=True)
   created_by = Column(db.String(255), nullable=False)
   last_modified_by = Column(db.String(255), nullable=False)
@@ -65,7 +67,7 @@ class DataBaseModel(BaseModel):
   @validates('asset_id')
   def validate_asset_id(self, key, value):
     if value is not None:
-      if models.Asset().get(value) is None:
+      if AssetBaseModel().get(value) is None:
         raise ValidationException('Invalid asset id', key)
       return value
 
@@ -78,11 +80,10 @@ class DataBaseModel(BaseModel):
       data.replace("'", '"')
       data = json.loads(data)
 
-
     schema_columns = self.get_column_definitions(self.asset_id)
 
     for column_def in schema_columns:
-      column = models.DataColumn.from_json(column_def)
+      column = DataColumn.from_json(column_def)
       for data_key, value in data.items():
         if data_key.lower() == column.name.lower():
           if column.column_type == 'text':
@@ -101,11 +102,11 @@ class DataBaseModel(BaseModel):
             pass
 
           if column.column_type == 'boolean':
-            if value not in [True, False, 'true', 'false', 'True', 'False']:
+            if value not in [True, False, 'true', 'false', 'True', 'False', 'TRUE', 'FALSE', '']:
               raise ValidationException('Field must be valid boolean', column.name)
-            if value in ['true', 'True']:
+            if value in ['true', 'True', 'TRUE', True]:
               data[data_key] = True
-            if value in ['false', 'False']:
+            elif value in ['false', 'False', False]:
               data[data_key] = False
 
           if column.column_type == 'datetime':
@@ -113,20 +114,17 @@ class DataBaseModel(BaseModel):
 
     return data
 
+  def set_public_id(self):
+    pass
+
   def before_insert(self):
-
-    # get a timestamp to make hash unique since there is no id yet.
-    timestamp = int(time() * 1000)
-    self.public_id = 'p{}'.format(Hashids(min_length=8,
-        salt='T2uDF0uSWF8RwU6IdL0x',
-        alphabet='abcdefghijklmnopqrstuvwxyz1234567890').encode(timestamp))
-
+    self.set_public_id()
     super().before_insert()
 
   def get_column_definitions(self, asset_id):
     return DataAssetBaseModel.get_column_definitions(self.asset_id)
 
-  def tojson(self):
+  def to_json(self):
     response = {
       'id': self.public_id,
       'orgId': self.org_id,
@@ -136,10 +134,8 @@ class DataBaseModel(BaseModel):
       'createdAt': self.created_at,
       'lastModifiedBy': self.last_modified_by,
       'lastModifiedAt': self.last_modified_at,
-      'isDraft': self.is_draft
+      'isDraft': self.is_draft,
+      'submittedData': self.submitted_data
     }
 
-    # merge dictionaries
-    if self.submitted_data:
-      response.update({'submittedData': self.submitted_data})
-    return response_
+    return response
