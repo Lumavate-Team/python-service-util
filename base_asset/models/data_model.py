@@ -107,6 +107,8 @@ class DataBaseModel(BaseModel):
               data[data_key] = True
             elif value in ['false', 'False', False]:
               data[data_key] = False
+            else:
+              data[data_key] = value
 
           if column.column_type == 'datetime':
             pass
