@@ -8,7 +8,6 @@ from sqlalchemy.sql import text, expression
 from sqlalchemy.orm import validates, relationship, load_only
 from sqlalchemy import or_, cast, VARCHAR, func
 from sqlalchemy.dialects.postgresql import JSONB
-from hashids import Hashids
 from lumavate_exceptions import ValidationException
 from ...db import BaseModel, Column
 from ...enums import ColumnDataType
