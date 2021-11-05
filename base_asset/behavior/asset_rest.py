@@ -35,7 +35,6 @@ class AssetRestBehavior(RestBehavior):
   def post(self):
     asset_data = self.get_data()
     self.validate_asset_name(asset_data)
-
     post_data = {
       'name': asset_data.get('assetName'),
       'orgId': self.get_org_id(),
@@ -129,4 +128,13 @@ class AssetRestBehavior(RestBehavior):
 
     return dependencies
 
+  def read_property_values(self, asset_data, properties=[]):
+    if not asset_data:
+      return {}
 
+    for p in properties:
+      prop = Properties.Property.from_json(p)
+      values = {p['name']: asset_data.get(p['name'])}
+      asset_data[prop.name] = prop.read(values)
+
+    return asset_data
