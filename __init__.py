@@ -18,6 +18,9 @@ from .name_sort import NameSort
 from .rollbar_logging import is_rollbar_configured, init_rollbar, RollbarRequest
 from .enums import *
 
+class Aws:
+  from .aws import AwsClient
+
 class BaseAsset:
   from .base_asset import AssetBaseModel
   from .base_asset import SecuredAssetBaseModel
