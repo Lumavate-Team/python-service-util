@@ -105,7 +105,7 @@ class DataBaseModel(BaseModel):
               raise ValidationException('Field must be valid boolean', column.name)
             if value in ['true', 'True', 'TRUE', True]:
               data[data_key] = True
-            elif value in ['false', 'False', False]:
+            elif value in ['false', 'False', 'FALSE', False]:
               data[data_key] = False
             else:
               data[data_key] = value
