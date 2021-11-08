@@ -17,6 +17,14 @@ class DataRestBehavior(RestBehavior):
     self._asset_id = asset_id
     super().__init__(model_class, data)
 
+  def make_user_id(self, id):
+    if id=='anonymous':
+      id=-1
+    return f'lmvt!{id}'
+
+  def get_default_user_id(self):
+    return 'lmvt!-1'
+
   def post(self):
     data = self.get_data()
     host_split = request.host.split('.')

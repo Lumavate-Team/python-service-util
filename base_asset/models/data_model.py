@@ -80,38 +80,39 @@ class DataBaseModel(BaseModel):
       data = json.loads(data)
 
     schema_columns = self.get_column_definitions(self.asset_id)
+    column_dict = {column_def.get('columnName'): DataColumn.from_json(column_def) for column_def in schema_columns}
 
-    for column_def in schema_columns:
-      column = DataColumn.from_json(column_def)
-      for data_key, value in data.items():
-        if data_key.lower() == column.name.lower():
-          if column.column_type == 'text':
-            if type(value) != str:
-              raise ValidationException('Field must be text', column.dev_name)
+    for data_key, value in data.items():
+      column = column_dict.get(data_key.lower())
+      if column is None:
+        # not all submitted values are tied to the columns, some are asset related, just skip them
+        continue
 
-          if column.column_type == 'numeric':
-            if value in ["", None]:
-              continue
-            try:
-              data[data_key] = float(value)
-            except:
-              raise ValidationException('Field must be numeric', column.name)
+      if column.column_type == 'text':
+        if type(value) != str:
+          raise ValidationException('Field must be text', column.dev_name)
 
-          if column.column_type == 'dropdown':
-            pass
+      elif column.column_type == 'numeric':
+        if value in ["", None]:
+          continue
+        try:
+          data[data_key] = float(value)
+        except:
+          raise ValidationException('Field must be numeric', column.name)
 
-          if column.column_type == 'boolean':
-            if value not in [True, False, 'true', 'false', 'True', 'False', 'TRUE', 'FALSE', '']:
-              raise ValidationException('Field must be valid boolean', column.name)
-            if value in ['true', 'True', 'TRUE', True]:
-              data[data_key] = True
-            elif value in ['false', 'False', 'FALSE', False]:
-              data[data_key] = False
-            else:
-              data[data_key] = value
+      elif column.column_type == 'dropdown':
+        continue
 
-          if column.column_type == 'datetime':
-            pass
+      elif column.column_type == 'boolean':
+        if value not in [True, False, 'true', 'false', 'True', 'False', 'TRUE', 'FALSE', '']:
+          raise ValidationException('Field must be valid boolean', column.name)
+        if value in ['true', 'True', 'TRUE', True]:
+          data[data_key] = True
+        elif value in ['false', 'False', 'FALSE', False]:
+          data[data_key] = False
+
+      if column.column_type == 'datetime':
+        pass
 
     return data
 
