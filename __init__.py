@@ -20,6 +20,7 @@ from .enums import *
 
 class Aws:
   from .aws import AwsClient
+  from .file import FileBehavior
 
 class BaseAsset:
   from .base_asset import AssetBaseModel
