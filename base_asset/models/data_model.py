@@ -143,10 +143,10 @@ class DataBaseModel(BaseModel):
           return dt.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S")
         else:
           return dt.strftime("%Y-%m-%d %H:%M:%S")
-    except dateutil.parser.ParserError as e:
-      raise ValidationException('Invalid datetime value: {value} for column {column_name}', column_name)
-    except dateutil.parser.UnknownTimezoneWarning as e:
-      raise ValidationException('Unknown timezone in value: {value} for column {column_name}', column_name)
+    except ParserError as e:
+      raise ValidationException(f'Invalid datetime value: {value} for column {column_name}', column_name)
+    except UnknownTimezoneWarning as e:
+      raise ValidationException(f'Unknown timezone in value: {value} for column {column_name}', column_name)
 
   def is_time_only(self, value):
     # patterns
