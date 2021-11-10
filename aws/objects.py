@@ -61,7 +61,7 @@ class AwsObject(object):
 
     tags = f'company={g.org_id}'
     if tagging:
-      tags = f'{tags}&{tagging}
+      tags = f'{tags}&{tagging}'
 
     if cache_control is None:
       new_file.put(
