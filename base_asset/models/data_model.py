@@ -1,19 +1,22 @@
-from abc import ABC, ABCMeta, abstractmethod
-
-from app import db
 from flask import request, g
-from time import time
 from sqlalchemy import ForeignKey
 from sqlalchemy.sql import text, expression
 from sqlalchemy.orm import validates, relationship, load_only
 from sqlalchemy import or_, cast, VARCHAR, func
 from sqlalchemy.dialects.postgresql import JSONB
+from dateutil.parser import *
+from dateutil.tz import *
+from datetime import *
+from time import time
+import re
+import json
+
+from app import db
 from lumavate_exceptions import ValidationException
 from ...db import BaseModel, Column
 from ...enums import ColumnDataType
 from ..column import DataColumn
 from ..models import AssetBaseModel, DataAssetBaseModel
-import json
 
 class DataBaseModel(BaseModel):
   __tablename__='data'
@@ -112,7 +115,7 @@ class DataBaseModel(BaseModel):
           data[data_key] = False
 
       if column.column_type == 'datetime':
-        pass
+        data[data_key] = self.validate_datetime(value, column.name)
 
     return data
 
@@ -125,6 +128,43 @@ class DataBaseModel(BaseModel):
 
   def get_column_definitions(self, asset_id):
     return DataAssetBaseModel.get_column_definitions(self.asset_id)
+
+  def validate_datetime(self, value, column_name):
+    if not value:
+      return None
+
+    value = value.strip()
+    try:
+      if self.is_time_only(value):
+        return parse(value).strftime("0001-01-01 %H:%M:%S")
+      else:
+        dt = parse(value)
+        if dt.tzinfo:
+          return dt.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S")
+        else:
+          return dt.strftime("%Y-%m-%d %H:%M:%S")
+    except dateutil.parser.ParserError as e:
+      raise ValidationException('Invalid datetime value: {value} for column {column_name}', column_name)
+    except dateutil.parser.UnknownTimezoneWarning as e:
+      raise ValidationException('Unknown timezone in value: {value} for column {column_name}', column_name)
+
+  def is_time_only(self, value):
+    # patterns
+    #HH:MM 12-hour, optional leading 0 and optional seconds am/pm,
+    #HH:MM 24-hour, optional leading 0 and optional seconds
+    time_formats = [
+      "/^(0?[1-9]|1[0-2])(:[0-5][0-9])(:[0-5][0-9])? ?([AaPp][Mm])$/",
+      "/^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/"
+    ]
+
+    time_patterns = [re.compile(pattern) for pattern in time_formats]
+
+    for pattern in time_patterns:
+      match = pattern.match(str(value))
+      if bool(match):
+        return True
+
+    return False
 
   def to_json(self):
     response = {
