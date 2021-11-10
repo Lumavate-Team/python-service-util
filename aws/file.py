@@ -1,7 +1,6 @@
 from flask import request, g, make_response, abort
 import urllib.parse
 import uuid
-import util
 from ..aws import AwsClient
 from lumavate_exceptions import ValidationException
 

@@ -2,7 +2,6 @@ from flask import current_app
 import boto3
 import botocore
 import os
-import pyro
 from .objects import AwsObject
 
 class AwsClient(object):
@@ -19,7 +18,15 @@ class AwsClient(object):
 
   @property
   def default_bucket_name(self):
-    return os.environ.get('AWS_BUCKET')
+    return os.environ.get('S3_BUCKET')
+
+  @property
+  def default_bucket_prefix(self):
+    prefix = os.environ.get('S3_BUCKET_PREFIX','')
+    if prefix:
+      return f'{prefix}/'
+
+    return ''
 
   @property
   def objects(self):
@@ -29,8 +36,8 @@ class AwsClient(object):
   def s3_client(self):
     if self.__s3_client is None:
       self.__s3_client = boto3.client('s3',
-      aws_access_key_id=pyro.get_setting('AWS_ACCESS_KEY_ID'),
-      aws_secret_access_key=pyro.get_setting('AWS_SECRET_ACCESS_KEY'))
+      aws_access_key_id= os.environ.get('AWS_ACCESS_KEY_ID'),
+      aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'))
     return self.__s3_client
 
   @property

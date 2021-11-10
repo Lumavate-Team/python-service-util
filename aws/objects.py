@@ -1,15 +1,15 @@
-import util
 import io
 import json
 import gzip
 import uuid
+from ..util import org_hash
 
 class AwsObject(object):
   def __init__(self, client):
     self.__client = client
 
-  def build_content_path(self, path, company_id=None):
-    return 'content/{}/{}'.format(util.company_hash(company_id), path)
+  def build_content_path(self, path, org_id=None):
+    return '{}content/{}/{}'.format(self.__client.default_bucket_prefix(), org_hash(org_id), path)
 
   def get(self, path):
     return self.__client.s3_bucket.Object(path).get()
@@ -58,6 +58,10 @@ class AwsObject(object):
       metadata = {}
 
     new_file = self.__client.s3_bucket.Object(path)
+
+    tags = f'company={g.org_id}'
+    if tagging:
+      tags = f'{tags}&{tagging}
 
     if cache_control is None:
       new_file.put(
