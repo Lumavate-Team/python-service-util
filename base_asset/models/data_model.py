@@ -1,19 +1,22 @@
-from abc import ABC, ABCMeta, abstractmethod
-
-from app import db
 from flask import request, g
-from time import time
 from sqlalchemy import ForeignKey
 from sqlalchemy.sql import text, expression
 from sqlalchemy.orm import validates, relationship, load_only
 from sqlalchemy import or_, cast, VARCHAR, func
 from sqlalchemy.dialects.postgresql import JSONB
+from dateutil.parser import *
+from dateutil.tz import *
+from datetime import *
+from time import time
+import re
+import json
+
+from app import db
 from lumavate_exceptions import ValidationException
 from ...db import BaseModel, Column
 from ...enums import ColumnDataType
 from ..column import DataColumn
 from ..models import AssetBaseModel, DataAssetBaseModel
-import json
 
 class DataBaseModel(BaseModel):
   __tablename__='data'
@@ -80,38 +83,39 @@ class DataBaseModel(BaseModel):
       data = json.loads(data)
 
     schema_columns = self.get_column_definitions(self.asset_id)
+    column_dict = {column_def.get('columnName'): DataColumn.from_json(column_def) for column_def in schema_columns}
 
-    for column_def in schema_columns:
-      column = DataColumn.from_json(column_def)
-      for data_key, value in data.items():
-        if data_key.lower() == column.name.lower():
-          if column.column_type == 'text':
-            if type(value) != str:
-              raise ValidationException('Field must be text', column.dev_name)
+    for data_key, value in data.items():
+      column = column_dict.get(data_key.lower())
+      if column is None:
+        # not all submitted values are tied to the columns, some are asset related, just skip them
+        continue
 
-          if column.column_type == 'numeric':
-            if value in ["", None]:
-              continue
-            try:
-              data[data_key] = float(value)
-            except:
-              raise ValidationException('Field must be numeric', column.name)
+      if column.column_type == 'text':
+        if type(value) != str:
+          raise ValidationException('Field must be text', column.dev_name)
 
-          if column.column_type == 'dropdown':
-            pass
+      elif column.column_type == 'numeric':
+        if value in ["", None]:
+          continue
+        try:
+          data[data_key] = float(value)
+        except:
+          raise ValidationException('Field must be numeric', column.name)
 
-          if column.column_type == 'boolean':
-            if value not in [True, False, 'true', 'false', 'True', 'False', 'TRUE', 'FALSE', '']:
-              raise ValidationException('Field must be valid boolean', column.name)
-            if value in ['true', 'True', 'TRUE', True]:
-              data[data_key] = True
-            elif value in ['false', 'False', False]:
-              data[data_key] = False
-            else:
-              data[data_key] = value
+      elif column.column_type == 'dropdown':
+        continue
 
-          if column.column_type == 'datetime':
-            pass
+      elif column.column_type == 'boolean':
+        if value not in [True, False, 'true', 'false', 'True', 'False', 'TRUE', 'FALSE', '']:
+          raise ValidationException('Field must be valid boolean', column.name)
+        if value in ['true', 'True', 'TRUE', True]:
+          data[data_key] = True
+        elif value in ['false', 'False', 'FALSE', False]:
+          data[data_key] = False
+
+      if column.column_type == 'datetime':
+        data[data_key] = self.validate_datetime(value, column.name)
 
     return data
 
@@ -124,6 +128,43 @@ class DataBaseModel(BaseModel):
 
   def get_column_definitions(self, asset_id):
     return DataAssetBaseModel.get_column_definitions(self.asset_id)
+
+  def validate_datetime(self, value, column_name):
+    if not value:
+      return None
+
+    value = value.strip()
+    try:
+      if self.is_time_only(value):
+        return parse(value).strftime("0001-01-01 %H:%M:%S")
+      else:
+        dt = parse(value)
+        if dt.tzinfo:
+          return dt.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S")
+        else:
+          return dt.strftime("%Y-%m-%d %H:%M:%S")
+    except ParserError as e:
+      raise ValidationException(f'Invalid datetime value: {value} for column {column_name}', column_name)
+    except UnknownTimezoneWarning as e:
+      raise ValidationException(f'Unknown timezone in value: {value} for column {column_name}', column_name)
+
+  def is_time_only(self, value):
+    # patterns
+    #HH:MM 12-hour, optional leading 0 and optional seconds am/pm,
+    #HH:MM 24-hour, optional leading 0 and optional seconds
+    time_formats = [
+      "/^(0?[1-9]|1[0-2])(:[0-5][0-9])(:[0-5][0-9])? ?([AaPp][Mm])$/",
+      "/^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/"
+    ]
+
+    time_patterns = [re.compile(pattern) for pattern in time_formats]
+
+    for pattern in time_patterns:
+      match = pattern.match(str(value))
+      if bool(match):
+        return True
+
+    return False
 
   def to_json(self):
     response = {
