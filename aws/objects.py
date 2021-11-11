@@ -59,7 +59,7 @@ class AwsObject(object):
 
     new_file = self.__client.s3_bucket.Object(path)
 
-    tags = f'company={g.org_id}'
+    tags = f'org_id={g.org_id}'
     if tagging:
       tags = f'{tags}&{tagging}'
 
