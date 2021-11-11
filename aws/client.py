@@ -24,7 +24,7 @@ class AwsClient(object):
   def default_bucket_prefix(self):
     prefix = os.environ.get('S3_BUCKET_PREFIX','')
     if prefix:
-      return f'{prefix}/'
+      return f'{prefix.strip("/")}/'
 
     return ''
 

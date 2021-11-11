@@ -8,12 +8,15 @@ class FileBehavior(object):
   def __init__(self):
     self.__client = AwsClient()
 
+  def generate_presigned_url(self, key, expires_in=600):
+    return self.__client.generate_presigned_url(key, expires_in)
+
   def get_ephemeral_token(self):
     content_type = request.args.get("contentType", None)
     if content_type is None:
       raise ValidationException("contentType must be specified")
 
-    key = self.get_temp_file_path()
+    key = self.__client.objects.build_temp_content_path()
 
     return self.__client.generate_presigned_post(key,
       conditions=[{'Content-Type': urllib.parse.unquote(content_type)}])
@@ -41,16 +44,6 @@ class FileBehavior(object):
     if full_path is not None:
       self.__client.delete_object(full_path)
 
-  def get_temp_file_path(self, generate_file_name=False):
-    result = '{company_id}/temp/{unique_id}__${{filename}}'.format(
-      company_id=g.user["company"]["id"],
-      unique_id=uuid.uuid4().hex)
-
-    if generate_file_name:
-      result = result.replace('${filename}', self.__client.objects.generate_unique_key())
-
-    return result
-
   def get_full_path(self, path=None, file_name=None):
     if file_name is None:
       file_name = self.__client.objects.generate_unique_key()
@@ -58,6 +51,8 @@ class FileBehavior(object):
     full_path = file_name
     if path is not None:
       full_path = '{}/{}'.format(path, file_name)
+    else:
+      full_path = self.__client.objects.build_content_path(file_name)
 
     return full_path
 
@@ -66,9 +61,7 @@ class FileBehavior(object):
     full_path = self.get_full_path(destination_path, destination_file_name)
     if temporary:
       metadata['temporary'] = 'true'
-      full_path = self.get_temp_file_path(generate_file_name=True if destination_file_name == None else False)
-      if destination_file_name is not None:
-        full_path = full_path.replace('${filename}', destination_file_name)
+      full_path = self.__client.objects.build_temp_content_Path(destination_file_name)
 
     self.__client.objects.write(
       full_path,
@@ -87,6 +80,8 @@ class FileBehavior(object):
     full_path = file_name
     if path is not None:
       full_path = '{}/{}'.format(path, file_name)
+    else:
+      full_path = self.__client.objects.build_content_path(file_name)
 
     obj = self.__client.objects.get(ephemeral_key)
 
@@ -126,5 +121,3 @@ class FileBehavior(object):
       'previewSmall': '/iot/files/thumbs/S/{}'.format(unique_key)
     }
 
-  def generate_presigned_url(self, key, expires_in=600):
-    return self.__client.generate_presigned_url(key, expires_in)
