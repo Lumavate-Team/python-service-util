@@ -8,6 +8,7 @@ from dateutil.parser import *
 from dateutil.tz import *
 from datetime import *
 from time import time
+import pytz
 import re
 import json
 
@@ -84,6 +85,8 @@ class DataBaseModel(BaseModel):
 
     schema_columns = self.get_column_definitions(self.asset_id)
     column_dict = {column_def.get('columnName'): DataColumn.from_json(column_def) for column_def in schema_columns}
+    time_patterns = self.get_compiled_time_patterns()
+    tzinfo_dict = dict(self.gen_tzinfos())
 
     for data_key, value in data.items():
       column = column_dict.get(data_key.lower())
@@ -115,7 +118,7 @@ class DataBaseModel(BaseModel):
           data[data_key] = False
 
       if column.column_type == 'datetime':
-        data[data_key] = self.validate_datetime(value, column.name)
+        data[data_key] = self.validate_datetime(value, column.name, time_patterns, tzinfo_dict)
 
     return data
 
@@ -129,16 +132,16 @@ class DataBaseModel(BaseModel):
   def get_column_definitions(self, asset_id):
     return DataAssetBaseModel.get_column_definitions(self.asset_id)
 
-  def validate_datetime(self, value, column_name):
+  def validate_datetime(self, value, column_name, time_patterns=[], tzinfo_dict={}):
     if not value:
       return None
 
     value = value.strip()
     try:
-      if self.is_time_only(value):
+      if self.is_time_only(value, time_patterns):
         return parse(value).strftime("0001-01-01 %H:%M:%S")
       else:
-        dt = parse(value)
+        dt = parse(value, tzinfos=tzinfo_dict)
         if dt.tzinfo:
           return dt.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S")
         else:
@@ -148,23 +151,25 @@ class DataBaseModel(BaseModel):
     except UnknownTimezoneWarning as e:
       raise ValidationException(f'Unknown timezone in value: {value} for column {column_name}', column_name)
 
-  def is_time_only(self, value):
-    # patterns
-    #HH:MM 12-hour, optional leading 0 and optional seconds am/pm,
-    #HH:MM 24-hour, optional leading 0 and optional seconds
-    time_formats = [
-      "/^(0?[1-9]|1[0-2])(:[0-5][0-9])(:[0-5][0-9])? ?([AaPp][Mm])$/",
-      "/^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/"
-    ]
-
-    time_patterns = [re.compile(pattern) for pattern in time_formats]
-
+  def is_time_only(self, value, time_patterns):
     for pattern in time_patterns:
       match = pattern.match(str(value))
       if bool(match):
         return True
 
     return False
+
+  def get_compiled_time_patterns(self):
+    # patterns to compile for reuse
+    #HH:MM 12-hour, optional leading 0 and optional seconds am/pm,
+    #HH:MM 24-hour, optional leading 0 and optional seconds
+    time_formats = [
+      "^(0?[1-9]|1[0-2])(:[0-5][0-9])(:[0-5][0-9])? ?([AaPp][Mm])$",
+      "^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$"
+    ]
+
+    return [re.compile(pattern) for pattern in time_formats]
+
 
   def to_json(self):
     response = {
@@ -181,3 +186,17 @@ class DataBaseModel(BaseModel):
     }
 
     return response
+
+  # From https://www.py4u.net/discuss/11495 on how to get timezone mappings
+  def gen_tzinfos(self):
+    for zone in pytz.common_timezones:
+      try:
+        tzdate = pytz.timezone(zone).localize(datetime.utcnow(), is_dst=None)
+      except pytz.NonExistentTimeError:
+        pass
+      else:
+        tzinfo = gettz(zone)
+
+        if tzinfo:
+          yield tzdate.tzname(), tzinfo
+
