@@ -1,3 +1,4 @@
+from flask import request, g, make_response, abort
 import io
 import json
 import gzip
@@ -10,15 +11,9 @@ class AwsObject(object):
 
   def build_content_path(self, filename=None):
     return '{}content/{}/{}'.format(
-        self.__client.default_bucket_prefix(),
+        self.__client.default_bucket_prefix,
         org_hash(g.org_id),
-        filename if filename is not None else self.generate_unique_key)
-
-  def build_temp_content_path(self, filename=None):
-    return '{}content/{}/temp/{}'.format(
-        self.__client.default_bucket_prefix(),
-        org_hash(g.org_id),
-        filename if filename is not None else self.generate_unique_key)
+        filename if filename is not None else self.generate_unique_key())
 
   def get(self, path):
     return self.__client.s3_bucket.Object(path).get()

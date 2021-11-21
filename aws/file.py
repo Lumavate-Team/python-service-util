@@ -2,24 +2,44 @@ from flask import request, g, make_response, abort
 import urllib.parse
 import uuid
 from ..aws import AwsClient
-from lumavate_exceptions import ValidationException
+from ..util import org_hash
+from lumavate_exceptions import ValidationException, NotFoundException
 
 class FileBehavior(object):
   def __init__(self):
     self.__client = AwsClient()
 
-  def generate_presigned_url(self, key, expires_in=600):
-    return self.__client.generate_presigned_url(key, expires_in)
-
-  def get_ephemeral_token(self):
+  # Used to generate a presigned post for client side file uploads
+  # When a file is uploaded using this, it has a TempFile=True tag
+  # which is tied to a lifecycle rule to delete the file after a day.
+  # When property sheets or a form is saved, the TempFile tag is removed and the file becomes permanent.
+  def generate_presigned_post(self):
     content_type = request.args.get("contentType", None)
     if content_type is None:
       raise ValidationException("contentType must be specified")
 
-    key = self.__client.objects.build_temp_content_path()
+    key = self.__client.objects.build_content_path()
+    tags = {
+        'TempFile': 'True',
+        'OrgId': g.org_id
+        }
+    tag_xml = ''
+    for k,v in tags.items():
+      tag_xml = f'{tag_xml}<Tag><Key>{k}</Key><Value>{v}</Value></Tag>'
 
-    return self.__client.generate_presigned_post(key,
-      conditions=[{'Content-Type': urllib.parse.unquote(content_type)}])
+    tagging_xml = f'<Tagging><TagSet>{tag_xml}</TagSet></Tagging>'
+    fields = {
+      'tagging': tagging_xml
+        }
+
+    conditions=[
+        {'Content-Type': urllib.parse.unquote(content_type)},
+        ['starts-with', '$tagging', tagging_xml]]
+
+    return self.__client.generate_presigned_post(key,fields=fields, conditions=conditions)
+
+  def generate_presigned_url(self, key, expires_in=600):
+    return self.__client.generate_presigned_url(key, expires_in)
 
   def get_ephemeral_content(self, ephemeral_key, gzipped=False):
     if gzipped:
@@ -71,9 +91,41 @@ class FileBehavior(object):
 
     return full_path
 
-  def upload_ephemeral_file(self, path=None, file_name=None):
-    data = request.get_json()
-    ephemeral_key = data.get('ephemeralKey')
+  # update_file_tags overrides existing object tags
+  # This is used to effectively remove the TempFile tag set on initial upload(before save)
+  # and make the file permanent.
+  # If you need additional tags, it needs to be a list of dictionaries of Key/Value pairs
+  # tagging = [{'Key': <tag name>, 'Value': <value of tag, must be string>},...]
+  #
+  # OrgId tag is included already
+  def update_file_tags(self, object_key, tagging=[]):
+    obj = self.__client.objects.get(object_key)
+
+    tags = [{ 'Key': 'OrgId', 'Value': str(g.org_id)}]
+    for tag in tagging:
+      tags.append(tag)
+
+    self.__client.put_object_tags(object_key, tags=tags)
+
+  def get_file(self, file_path):
+    hashed_jwt_org = org_hash(g.org_id)
+    file_path_split = file_path.split('/')
+
+    # get the hashed org_id from the s3 file_path which is 2nd to last index
+    hashed_path_org = file_path_split[len(file_path_split)-2]
+
+    # validate jwt owner and file path are for same org
+    if hashed_jwt_org != hashed_path_org:
+      raise NotFoundException('Invalid file path')
+
+    obj = self.__client.objects.get(file_path)
+
+    response = make_response(self.__client.objects.read(s3_object=obj))
+    response.headers['Content-Type'] = obj.get('ContentType')
+    response.cache_control.max_age = 1209600
+    return response
+
+  def upload_ephemeral_file(self, ephemeral_key, path=None, file_name=None, tagging=None):
     if file_name is None:
       file_name = self.__client.objects.generate_unique_key()
 
@@ -89,18 +141,14 @@ class FileBehavior(object):
     self.__client.objects.write(
       full_path,
       self.__client.objects.read_bytes(s3_object=obj),
-      content_type=obj.get('ContentType'))
+      content_type=obj.get('ContentType'),
+      tagging=tagging)
 
     return {
       'key': full_path
     }
 
-  # copied from luthor but we might want to change this for service images
-  def upload_ephemeral_content(self, data=None):
-    if data is None:
-      data = request.get_json()
-
-    ephemeral_key = data.get('ephemeralKey')
+  def upload_ephemeral_content(self, ephemeral_key, tagging=None):
     unique_key = self.__client.objects.generate_unique_key()
     obj = self.__client.objects.get(ephemeral_key)
 
@@ -108,7 +156,8 @@ class FileBehavior(object):
     self.__client.objects.write(
       self.__client.objects.build_content_path(unique_key),
       self.__client.objects.read_bytes(s3_object=obj),
-      content_type=obj.get('ContentType'))
+      content_type=obj.get('ContentType'),
+      tagging=tagging)
 
     # Thumbnails
     self.__client.imaging.thumbnail(ephemeral_key, unique_key, [ 's', 'm', 'l' ])

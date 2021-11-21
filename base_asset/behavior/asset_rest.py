@@ -7,13 +7,18 @@ import re
 import json
 from lumavate_properties import Properties, Components
 from lumavate_exceptions import ValidationException, ApiException
-from app import db
 from ...rest import RestBehavior, camel_to_underscore, underscore_to_camel
 from ...request import LumavateRequest
 from ...resolver import Resolver
 from ...paging import Paging
 from ...name_sort import NameSort
+from ...aws import FileBehavior
 from ..models import AssetBaseModel
+
+try:
+  from app import db
+except:
+  db = None
 
 class AssetRestBehavior(RestBehavior):
   def __init__(self, model_class=AssetBaseModel, data=None):
@@ -35,6 +40,7 @@ class AssetRestBehavior(RestBehavior):
   def post(self):
     asset_data = self.get_data()
     self.validate_asset_name(asset_data)
+    asset_data = self.update_file_tags(asset_data)
     post_data = {
       'name': asset_data.get('assetName'),
       'orgId': self.get_org_id(),
@@ -51,6 +57,7 @@ class AssetRestBehavior(RestBehavior):
     asset_data = asset_update_data.get('data', {})
 
     self.validate_asset_name(asset_data, record_id)
+    asset_update_data['data'] = self.update_file_tags(asset_data)
     self.data = asset_update_data
     if 'assetName' in asset_data:
       self.data['name'] = asset_data['assetName']
@@ -138,3 +145,16 @@ class AssetRestBehavior(RestBehavior):
       asset_data[prop.name] = prop.read(values)
 
     return asset_data
+
+  def update_file_tags(self, data):
+    if not data or not isinstance(data, dict):
+      return data
+
+    for prop_name, prop_value in data.items():
+      if isinstance(prop_value, dict) and 'ephemeralKey' in prop_value:
+        FileBehavior().update_file_tags(prop_value.get('ephemeralKey'))
+
+        prop_value['url'] = prop_value['ephemeralKey']
+        del prop_value['ephemeralKey']
+
+    return data
