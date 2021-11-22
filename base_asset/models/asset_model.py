@@ -19,8 +19,8 @@ class AssetBaseModel(BaseModel):
   data = Column(JSONB)
   dependency_assets = Column(JSONB)
 
-  created_by = db.Column(db.String(250), nullable=False)
-  last_modified_by = db.Column(db.String(250), nullable=False)
+  created_by = Column(db.String(250), nullable=False)
+  last_modified_by = Column(db.String(250), nullable=False)
 
   @classmethod
   def get_all(cls, args=None):
