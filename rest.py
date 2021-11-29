@@ -155,7 +155,6 @@ class RestBehavior:
     q = self.apply_filter(q)
     q = self.apply_sort(q)
     q = self.apply_select(q)
-    print(f'QUERY\n{str(q)}',flush=True)
     return q
 
   def get_collection(self):
