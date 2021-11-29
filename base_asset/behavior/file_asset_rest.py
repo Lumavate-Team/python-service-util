@@ -4,12 +4,14 @@ from lumavate_properties import Properties, Components
 from lumavate_exceptions import ValidationException, NotFoundException, ApiException
 from sqlalchemy import or_, cast, VARCHAR, func
 import itertools
+import rollbar
 from app import db
 import os
 import re
 import json
 from .asset_rest import AssetRestBehavior
 from ..models import AssetBaseModel
+from ...aws import FileBehavior
 from ..file_filter import FileFilter
 
 class FileAssetRestBehavior(AssetRestBehavior):
@@ -54,4 +56,12 @@ class FileAssetRestBehavior(AssetRestBehavior):
 
   def delete(self, record_id):
     # Delete s3 object
+    record = self.get_single(record_id)
+    file_path = record.get('data', {}).get('file',{}).get('url','')
+    if file_path:
+      try:
+        FileBehavior().delete(file_path)
+      except Exception as e:
+        rollbar.report_message(f'Unable to delete file path: {file_path}')
+
     return super().delete(record_id)
