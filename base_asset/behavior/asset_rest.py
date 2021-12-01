@@ -12,7 +12,7 @@ from ...request import LumavateRequest
 from ...resolver import Resolver
 from ...paging import Paging
 from ...name_sort import NameSort
-from ...aws import FileBehavior
+from ...aws import FileBehavior, AwsClient
 from ..models import AssetBaseModel
 
 try:
@@ -150,11 +150,13 @@ class AssetRestBehavior(RestBehavior):
     if not data or not isinstance(data, dict):
       return data
 
+    file_behavior = FileBehavior()
     for prop_name, prop_value in data.items():
       if isinstance(prop_value, dict) and 'ephemeralKey' in prop_value:
-        FileBehavior().update_file_tags(prop_value.get('ephemeralKey'))
+        file_behavior.update_file_tags(prop_value.get('ephemeralKey'))
+        prop_value['path'] = prop_value['ephemeralKey']
+        prop_value['url'] = AwsClient().objects.get_public_url(prop_value['ephemeralKey'])
 
-        prop_value['url'] = prop_value['ephemeralKey']
         del prop_value['ephemeralKey']
 
     return data

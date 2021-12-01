@@ -18,6 +18,9 @@ class AwsObject(object):
   def get(self, path):
     return self.__client.s3_bucket.Object(path).get()
 
+  def get_public_url(self, path):
+    return f'https://s3.{self.__client.default_region_name}.amazonaws.com/{self.__client.default_bucket_name}/{path}'
+
   def generate_unique_key(self):
     return str(uuid.uuid4())[:8]
 

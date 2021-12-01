@@ -15,10 +15,10 @@ class FileFilter(Filter):
   def apply_column(self, base_query, column_name, op, value):
     if op == 'ct' and column_name == 'name':
       column = self.get_column(base_query, column_name)
-      data_column = self.get_column(base_query, 'data')
+      filename_column = self.get_column(base_query, 'filename')
       clauses = [
-        data_column['file'].astext.contains(value),
-        cast(column, String).ilike('%' + value + '%')
+        cast(filename_column, String).ilike('%' + value.strip() + '%'),
+        cast(column, String).ilike('%' + value.strip() + '%')
       ]
       return base_query.filter(or_(*[c for c in clauses]))
     else:

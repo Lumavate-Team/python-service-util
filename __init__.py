@@ -25,6 +25,7 @@ class BaseAsset:
   from .base_asset import AssetBaseModel
   from .base_asset import SecuredAssetBaseModel
   from .base_asset import DataAssetBaseModel
+  from .base_asset import FileAssetBaseModel
   from .base_asset import AssetAccessBaseModel
   from .base_asset import DataBaseModel
   from .base_asset import SettingsModel

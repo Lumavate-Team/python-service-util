@@ -13,7 +13,7 @@ class FileBehavior(object):
   # When a file is uploaded using this, it has a TempFile=True tag
   # which is tied to a lifecycle rule to delete the file after a day.
   # When property sheets or a form is saved, the TempFile tag is removed and the file becomes permanent.
-  def generate_presigned_post(self):
+  def generate_presigned_post(self, fields={}, conditions=[]):
     content_type = request.args.get("contentType", None)
     if content_type is None:
       raise ValidationException("contentType must be specified")
@@ -28,15 +28,23 @@ class FileBehavior(object):
       tag_xml = f'{tag_xml}<Tag><Key>{k}</Key><Value>{v}</Value></Tag>'
 
     tagging_xml = f'<Tagging><TagSet>{tag_xml}</TagSet></Tagging>'
-    fields = {
+    all_fields = {
       'tagging': tagging_xml
         }
 
-    conditions=[
+    if fields:
+      for k, v in fields.items():
+        all_fields[k] = v
+
+    all_conditions=[
         {'Content-Type': urllib.parse.unquote(content_type)},
         ['starts-with', '$tagging', tagging_xml]]
 
-    return self.__client.generate_presigned_post(key,fields=fields, conditions=conditions)
+    if conditions:
+      for c in conditions:
+        all_conditions.append(c)
+
+    return self.__client.generate_presigned_post(key,fields=all_fields, conditions=all_conditions)
 
   def generate_presigned_url(self, key, expires_in=600):
     return self.__client.generate_presigned_url(key, expires_in)
