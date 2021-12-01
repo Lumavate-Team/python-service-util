@@ -11,6 +11,7 @@ from .file_filter import FileFilter
 from .models import AssetBaseModel
 from .models import AssetAccessBaseModel
 from .models import DataAssetBaseModel
+from .models import FileAssetBaseModel
 from .models import DataBaseModel
 from .models import SecuredAssetBaseModel
 from .models import SettingsModel
