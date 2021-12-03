@@ -12,16 +12,23 @@ from .asset_model import AssetBaseModel
 import json
 
 
-class FileAssetBaseModel(AssetBaseModel):
-  __tablename__ = 'asset'
-  __table_args__ = {'extend_existing': True}
-  # Add custom columns
+class FileAssetBaseModel(BaseModel):
+  __tablename__ = 'file_asset'
+  org_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)
+  name = Column(db.String(35), nullable=False)
+  image = Column(JSONB, default=lambda: {}, nullable=True)
+  is_active = Column(db.Boolean, server_default=expression.true(), nullable=True)
+  data = Column(JSONB)
+  dependency_assets = Column(JSONB)
   filename = Column(db.String(250))
+
+  created_by = Column(db.String(250), nullable=False)
+  last_modified_by = Column(db.String(250), nullable=False)
 
   @classmethod
   def get_all(cls, args=None):
-    return super(FileAssetBaseModel, cls).get_all(args)
+    return cls.query.filter(and_(cls.org_id==g.org_id, cls.is_active==True))
 
   @classmethod
   def get(cls, id):
-    return super(FileAssetBaseModel, cls).get(id)
+    return cls.get_all().filter_by(id=id).first()

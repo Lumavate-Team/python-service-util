@@ -22,7 +22,7 @@ class FileAssetRestBehavior(AssetRestBehavior):
     return self._get_document_content(asset_id)
 
   def _get_document_content(self, record_id):
-    asset = models.Asset.get(record_id)
+    asset = self._model_class.get(record_id)
 
     image = {}
     # Document Asset Type content response has not been finalized
