@@ -29,8 +29,8 @@ class FileBehavior(object):
 
     tagging_xml = f'<Tagging><TagSet>{tag_xml}</TagSet></Tagging>'
     all_fields = {
-      'tagging': tagging_xml
-        }
+      'tagging': tagging_xml,
+      'Content-Type': urllib.parse.unquote(content_type)}
 
     if fields:
       for k, v in fields.items():
