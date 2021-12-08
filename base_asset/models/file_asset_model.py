@@ -21,6 +21,7 @@ class FileAssetBaseModel(BaseModel):
   data = Column(JSONB)
   dependency_assets = Column(JSONB)
   filename = Column(db.String(250))
+  public_id = Column(db.String(200), nullable=False)
 
   created_by = Column(db.String(250), nullable=False)
   last_modified_by = Column(db.String(250), nullable=False)
@@ -32,3 +33,7 @@ class FileAssetBaseModel(BaseModel):
   @classmethod
   def get(cls, id):
     return cls.get_all().filter_by(id=id).first()
+
+  @classmethod
+  def get_by_public_id(cls, public_id):
+    return cls.get_all().filter_by(public_id=public_id).first()

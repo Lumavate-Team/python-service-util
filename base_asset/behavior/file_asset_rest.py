@@ -19,17 +19,24 @@ class FileAssetRestBehavior(AssetRestBehavior):
     super().__init__(model_class, data)
 
   def get_asset_content(self, asset_id):
-    return self._get_document_content(asset_id)
+    asset = self._model_class.get(asset_id)
+    return self._get_document_content(asset)
 
-  def _get_document_content(self, record_id):
-    asset = self._model_class.get(record_id)
+  def get_asset_content_by_public_id(self, public_id):
+    asset = self._model_class.get_by_public_id(public_id)
+    return self._get_document_content(asset)
 
+  def _get_document_content(self, asset):
+    if asset is None:
+      return {}
+
+    file = asset.data.get('file',{})
     image = {}
     # Document Asset Type content response has not been finalized
     return {
-      'url': image['url'],
-      'filename': image['filename'],
-      'filetype': image['filetype']
+      'url': file['url'],
+      'filename': file['filename'],
+      'filetype': file['filetype'],
     }
 
   def apply_filter(self, q, ignore_fields=None):
