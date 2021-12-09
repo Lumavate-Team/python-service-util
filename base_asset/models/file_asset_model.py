@@ -1,10 +1,12 @@
 from app import db
+from time import time,sleep
 from flask import request, g
 from sqlalchemy import ForeignKey, and_
 from sqlalchemy.sql import text, expression
 from sqlalchemy.orm import validates, relationship, load_only
 from sqlalchemy import or_, cast, VARCHAR, func
 from sqlalchemy.dialects.postgresql import JSONB
+from hashids import Hashids
 from lumavate_exceptions import ValidationException, NotFoundException
 
 from ...db import BaseModel, Column
@@ -37,3 +39,16 @@ class FileAssetBaseModel(BaseModel):
   @classmethod
   def get_by_public_id(cls, public_id):
     return cls.get_all().filter_by(public_id=public_id).first()
+
+  def before_insert(self):
+    self.set_public_id()
+    super().before_insert()
+
+  def set_public_id(self):
+    #imports are too fast
+    sleep(0.01)
+    # get a timestamp to make hash unique since there is no id yet.
+    timestamp = int(time() * 1000)
+    self.public_id = 'p{}'.format(Hashids(min_length=8,
+        salt='T2uDF0uSWF8RwU6IdL0x',
+        alphabet='abcdefghijklmnopqrstuvwxyz1234567890').encode(timestamp))
