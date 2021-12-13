@@ -87,7 +87,7 @@ class FileAssetRestBehavior(AssetRestBehavior):
     response = super().put(record_id)
 
     # delete the old file when a new one is uploaded
-    if file and file.get('ephemeralKey'):
+    if file and file.get('path','') != original_path:
       FileBehavior().delete(original_path)
 
     return response
