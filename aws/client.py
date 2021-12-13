@@ -82,9 +82,26 @@ class AwsClient(object):
       Delete={'Objects': matching_keys})
 
   def delete_object(self, key):
-    return self.s3_client.delete_object(
-        Bucket=self.default_bucket_name,
-        Key=key)
+    versioning_response = self.s3_client.get_bucket_versioning(Bucket=self.default_bucket_name)
+    if versioning_response.get('Status') == 'Enabled':
+      for version in self.get_all_versions(key):
+        self.s3_client.delete_object(
+            Bucket=self.default_bucket_name,
+            Key=key,
+            VersionId=version)
+    else:
+      self.s3_client.delete_object(
+          Bucket=self.default_bucket_name,
+          Key=key)
+
+  def get_all_versions(self, key):
+    keys = ["Versions", "DeleteMarkers"]
+    results = []
+    for k in keys:
+        response = self.s3_client.list_object_versions(Bucket=self.default_bucket_name)[k]
+        to_delete = [r["VersionId"] for r in response if r["Key"] == key]
+        results.extend(to_delete)
+    return results
 
   def put_object_tags(self, key, tags=[]):
     return self.s3_client.put_object_tagging(
