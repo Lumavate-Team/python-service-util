@@ -27,12 +27,12 @@ class AwsClient(object):
   def is_bucket_versioned(self):
     is_versioned = os.environ.get('S3_BUCKET_VERSIONED')
     if is_versioned is None:
-      return False
-
-    if is_versioned.strip().lower() == 'true':
       return True
 
-    return False
+    if is_versioned.strip().lower() == 'false':
+      return False
+
+    return True
 
   @property
   def default_bucket_prefix(self):
