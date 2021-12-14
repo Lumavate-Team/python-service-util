@@ -20,6 +20,20 @@ class AwsClient(object):
   def default_bucket_name(self):
     return os.environ.get('S3_BUCKET')
 
+  # Due to bucket policy permissioned we can't get working
+  # We're going to use an environment variable instead at setup time
+  # to avoid the policy permission check.
+  @property
+  def is_bucket_versioned(self):
+    is_versioned = os.environ.get('S3_BUCKET_VERSIONED')
+    if is_versioned is None:
+      return False
+
+    if is_versioned.strip().lower() == 'true':
+      return True
+
+    return False
+
   @property
   def default_bucket_prefix(self):
     prefix = os.environ.get('S3_BUCKET_PREFIX','').strip()
@@ -82,8 +96,7 @@ class AwsClient(object):
       Delete={'Objects': matching_keys})
 
   def delete_object(self, key):
-    versioning_response = self.s3_client.get_bucket_versioning(Bucket=self.default_bucket_name)
-    if versioning_response.get('Status') == 'Enabled':
+    if self.is_bucket_versioned:
       for version in self.get_all_versions(key):
         self.s3_client.delete_object(
             Bucket=self.default_bucket_name,
