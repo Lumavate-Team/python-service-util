@@ -98,7 +98,7 @@ class AwsClient(object):
     keys = ["Versions", "DeleteMarkers"]
     results = []
     for k in keys:
-        response = self.s3_client.list_object_versions(Bucket=self.default_bucket_name)[k]
+        response = self.s3_client.list_object_versions(Bucket=self.default_bucket_name).get(k, [])
         to_delete = [r["VersionId"] for r in response if r["Key"] == key]
         results.extend(to_delete)
     return results
