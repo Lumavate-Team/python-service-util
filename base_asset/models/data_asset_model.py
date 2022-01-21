@@ -13,6 +13,7 @@ import json
 
 class DataAssetBaseModel(SecuredAssetBaseModel):
   # Add custom columns
+  schema_last_modified_at = db.Column(db.DateTime(timezone=True), server_default=db.func.current_timestamp())
 
   @classmethod
   def get_all(cls, args=None):
@@ -37,4 +38,7 @@ class DataAssetBaseModel(SecuredAssetBaseModel):
     return [c['componentData'] for c in columns if c['componentData']['isActive']]
 
   def to_json(self):
-    return super().to_json()
+    json = super().to_json()
+    json['schema_last_modified_at'] = self.schema_last_modified_at
+
+    return json

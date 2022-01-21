@@ -3,6 +3,7 @@ from flask import Blueprint, jsonify, request, make_response, redirect, render_t
 from lumavate_properties import Properties, Components
 from lumavate_exceptions import ValidationException, NotFoundException
 from sqlalchemy import or_, cast, VARCHAR, func
+from datetime import datetime
 import itertools
 from app import db
 import os
@@ -62,11 +63,16 @@ class DataAssetRestBehavior(AssetRestBehavior):
       request_json['data'] = data
 
       # compare data and see if anything has changed, otherwise just return so lastModified isn't updated
-      if not self._is_table_changed(data, existing_columns):
+      existing_data = self._model_class.get(record_id).to_json().get('data', {})
+
+      if existing_data == data:
         return {
           'state': 'cancelled',
           'payload': {'data': None}
           }
+
+      if self._is_table_changed(data, existing_columns):
+        request_json['schema_last_modified_at'] = datetime.utcnow()
 
     # update the data with added columnName field
     request_json['state'] = 'promoted'
@@ -132,3 +138,6 @@ class DataAssetRestBehavior(AssetRestBehavior):
       raise ValidationException('Column name must contain at least one letter or number.', api_field=f'columns|{row_index}|columnDisplayName')
 
     return sanitized.strip('_')
+
+  def get(self, record_id):
+    return self._model_class.get(record_id)
