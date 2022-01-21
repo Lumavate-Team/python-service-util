@@ -62,7 +62,7 @@ class DataAssetRestBehavior(AssetRestBehavior):
       request_json['data'] = data
 
       # compare data and see if anything has changed, otherwise just return so lastModified isn't updated
-      existing_data = self._model_class.get(record_id).__dict__.get('data', {})
+      existing_data = self._model_class.get(record_id).to_json().get('data', {})
 
       if existing_data == data:
         return {
