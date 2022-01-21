@@ -3,6 +3,7 @@ from flask import Blueprint, jsonify, request, make_response, redirect, render_t
 from lumavate_properties import Properties, Components
 from lumavate_exceptions import ValidationException, NotFoundException
 from sqlalchemy import or_, cast, VARCHAR, func
+from datetime import datetime
 import itertools
 from app import db
 import os
@@ -69,6 +70,9 @@ class DataAssetRestBehavior(AssetRestBehavior):
           'state': 'cancelled',
           'payload': {'data': None}
           }
+
+      if self._is_table_changed(data, existing_columns):
+        request_json['schema_last_modified_at'] = datetime.utcnow()
 
     # update the data with added columnName field
     request_json['state'] = 'promoted'
