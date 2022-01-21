@@ -1,4 +1,5 @@
 from .paging import Paging
+from .email import Email
 from .filter import Filter
 from .select import Select
 from .sort import Sort

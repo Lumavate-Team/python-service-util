@@ -62,7 +62,9 @@ class DataAssetRestBehavior(AssetRestBehavior):
       request_json['data'] = data
 
       # compare data and see if anything has changed, otherwise just return so lastModified isn't updated
-      if not self._is_table_changed(data, existing_columns):
+      existing_data = self._model_class.get(record_id).__dict__.get('data', {})
+
+      if existing_data == data:
         return {
           'state': 'cancelled',
           'payload': {'data': None}
@@ -132,3 +134,6 @@ class DataAssetRestBehavior(AssetRestBehavior):
       raise ValidationException('Column name must contain at least one letter or number.', api_field=f'columns|{row_index}|columnDisplayName')
 
     return sanitized.strip('_')
+
+  def get(self, record_id):
+    return self._model_class.get(record_id)
