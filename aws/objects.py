@@ -66,9 +66,10 @@ class AwsObject(object):
 
     new_file = self.__client.s3_bucket.Object(path)
 
-    tags = f'org_id={g.org_id}'
+    tags = f'OrgId={g.org_id}'
     if tagging:
       tags = f'{tags}&{tagging}'
+
 
     if cache_control is None:
       new_file.put(
@@ -76,7 +77,7 @@ class AwsObject(object):
         ContentType=content_type,
         ContentEncoding=content_encoding,
         Metadata=metadata,
-        Tagging=tagging)
+        Tagging=tags)
     else:
       max_age = 'max-age=' + str(cache_control)
       metadata['Cache-Control'] = max_age
@@ -86,7 +87,7 @@ class AwsObject(object):
         ContentType=content_type,
         ContentEncoding=content_encoding,
         Metadata=metadata,
-        Tagging=tagging,
+        Tagging=tags,
         CacheControl=max_age)
 
     new_file.Acl().put(ACL='public-read')
