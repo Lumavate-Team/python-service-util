@@ -70,7 +70,6 @@ class AwsObject(object):
     if tagging:
       tags = f'{tags}&{tagging}'
 
-
     if cache_control is None:
       new_file.put(
         Body=file_contents.read(),
