@@ -60,7 +60,7 @@ class AwsObject(object):
         for obj in page['Contents']:
           yield obj
 
-  def write(self, path, file_contents, content_type='text/plain', content_encoding='', cache_control=None, metadata=None, tagging=''):
+  def write(self, path, file_contents, content_type='text/plain', content_encoding='', cache_control=None, metadata=None, tagging='', content_disposition=''):
     if metadata is None:
       metadata = {}
 
@@ -74,6 +74,7 @@ class AwsObject(object):
       new_file.put(
         Body=file_contents.read(),
         ContentType=content_type,
+        ContentDisposition=content_disposition,
         ContentEncoding=content_encoding,
         Metadata=metadata,
         Tagging=tags)
@@ -84,6 +85,7 @@ class AwsObject(object):
       new_file.put(
         Body=file_contents,
         ContentType=content_type,
+        ContentDisposition=content_disposition,
         ContentEncoding=content_encoding,
         Metadata=metadata,
         Tagging=tags,
