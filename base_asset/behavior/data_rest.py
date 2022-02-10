@@ -10,6 +10,7 @@ from lumavate_properties import Properties, Components
 from lumavate_exceptions import ApiException, ValidationException, NotFoundException
 from ..models import DataBaseModel
 from ...rest import RestBehavior, Paging, camel_to_underscore, underscore_to_camel
+from ...enums import ColumnDataType
 from app import db
 
 class DataRestBehavior(RestBehavior):
@@ -132,7 +133,7 @@ class DataRestBehavior(RestBehavior):
 
     if self.is_batch_request:
       column_defs = self._model_class.get_column_definitions(self._asset_id)
-      file_columns = [ column['columnName'] for column in column_defs if column['columnType']['value'] == 'file']
+      file_columns = [ column['columnName'] for column in column_defs if column['columnType']['value'] == ColumnDataType.FILE]
       return [*excluded_properties, *file_columns]
 
     return excluded_properties
