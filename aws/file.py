@@ -4,6 +4,7 @@ import uuid
 from ..aws import AwsClient
 from ..util import org_hash
 from lumavate_exceptions import ValidationException, NotFoundException
+from urllib.parse import quote
 
 class FileBehavior(object):
   def __init__(self):
@@ -86,15 +87,19 @@ class FileBehavior(object):
 
   def upload_file(self, file_content, content_type, destination_path=None, destination_file_name=None, temporary=False):
     metadata = {}
-    full_path = self.get_full_path(destination_path, destination_file_name)
+    full_path = self.get_full_path(destination_path)
     if temporary:
       metadata['temporary'] = 'true'
       full_path = self.__client.objects.build_temp_content_Path(destination_file_name)
 
+    encoded_name = quote(destination_file_name)
+    utf_8_name = f"filename*=UTF-8''{encoded_name};"
+    content_disposition = f'Content-Disposition: attachment; {utf_8_name} filename="{encoded_name}"'
     self.__client.objects.write(
       full_path,
       file_content,
       content_type=content_type,
+      content_disposition=content_disposition,
       metadata=metadata)
 
     return full_path

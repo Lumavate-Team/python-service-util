@@ -10,11 +10,13 @@ from lumavate_properties import Properties, Components
 from lumavate_exceptions import ApiException, ValidationException, NotFoundException
 from ..models import DataBaseModel
 from ...rest import RestBehavior, Paging, camel_to_underscore, underscore_to_camel
+from ...enums import ColumnDataType
 from app import db
 
 class DataRestBehavior(RestBehavior):
-  def __init__(self, asset_id, model_class=DataBaseModel, data=None):
+  def __init__(self, asset_id, model_class=DataBaseModel, data=None, batch=False):
     self._asset_id = asset_id
+    self.is_batch_request = batch
     super().__init__(model_class, data)
 
   def make_user_id(self, id):
@@ -127,5 +129,12 @@ class DataRestBehavior(RestBehavior):
     return results
 
   def get_ignored_properties(self):
-    return ['createdBy', 'createdAt', 'lastModifiedBy', 'lastModifiedAt', 'activationCode', 'ACTION', 'lumavateId', 'namespace','orgId']
+    excluded_properties = ['createdBy', 'createdAt', 'lastModifiedBy', 'lastModifiedAt', 'activationCode', 'ACTION', 'lumavateId', 'namespace','orgId']
+
+    if self.is_batch_request:
+      column_defs = self._model_class.get_column_definitions(self._asset_id)
+      file_columns = [ column['columnName'] for column in column_defs if column['columnType']['value'] == ColumnDataType.FILE]
+      return [*excluded_properties, *file_columns]
+
+    return excluded_properties
 
