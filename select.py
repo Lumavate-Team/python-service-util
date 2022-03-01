@@ -9,7 +9,7 @@ from app import db
 class Select:
   def __init__(self, model_class, args=None):
     self.camel_pat = re.compile(r'([A-Z0-9])')
-    self.columns = [key for key in model_class.__table__.columns.keys()]
+    self.columns = [key for key in model_class.__mapper__.column_attrs.keys()]
 
     self.args = args
     self.included_fields = self.convert_arg_model_names('fields')
