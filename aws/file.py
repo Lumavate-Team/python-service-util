@@ -94,7 +94,7 @@ class FileBehavior(object):
 
     encoded_name = quote(destination_file_name)
     utf_8_name = f"filename*=UTF-8''{encoded_name};"
-    content_disposition = f'Content-Disposition: attachment; {utf_8_name} filename="{encoded_name}"'
+    content_disposition = f'attachment; {utf_8_name} filename="{encoded_name}"'
     self.__client.objects.write(
       full_path,
       file_content,
