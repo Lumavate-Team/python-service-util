@@ -83,6 +83,8 @@ class DataBaseModel(BaseModel):
       data.replace("'", '"')
       data = json.loads(data)
 
+
+    print(dir(data),flush=True)
     schema_columns = self.get_column_definitions(self.asset_id)
     column_dict = {column_def.get('columnName'): DataColumn.from_json(column_def) for column_def in schema_columns}
     time_patterns = self.get_compiled_time_patterns()
@@ -90,13 +92,14 @@ class DataBaseModel(BaseModel):
 
     for data_key, value in data.items():
       column = column_dict.get(data_key.lower())
+      print(column, flush=True)
       if column is None:
         # not all submitted values are tied to the columns, some are asset related, just skip them
         continue
 
       if column.column_type == 'text':
         if type(value) != str:
-          raise ValidationException('Field must be text', column.dev_name)
+          raise ValidationException('Field must be text', column.name)
 
       elif column.column_type == 'numeric':
         if value in ["", None]:
