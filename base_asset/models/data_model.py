@@ -96,7 +96,7 @@ class DataBaseModel(BaseModel):
 
       if column.column_type == 'text':
         if type(value) != str:
-          raise ValidationException('Field must be text', column.dev_name)
+          raise ValidationException('Field must be text', column.name)
 
       elif column.column_type == 'numeric':
         if value in ["", None]:
