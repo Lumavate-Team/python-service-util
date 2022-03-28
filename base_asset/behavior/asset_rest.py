@@ -41,16 +41,19 @@ class AssetRestBehavior(RestBehavior):
     asset_data = self.get_data()
     self.validate_asset_name(asset_data)
     asset_data = self.update_file_tags(asset_data)
-    post_data = {
+    post_data = self.get_post_data(asset_data)
+
+    self.data = post_data
+    return super().post()
+
+  def get_post_data(self, asset_data):
+    return {
       'name': asset_data.get('assetName'),
       'orgId': self.get_org_id(),
       'isActive': True,
       'data': asset_data,
       'dependencyAssets': self.get_dependencies(asset_data)
     }
-
-    self.data = post_data
-    return super().post()
 
   def put(self, record_id):
     asset_update_data = self.get_data()
