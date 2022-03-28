@@ -1,17 +1,59 @@
-from jinja2 import Environment, BaseLoader
 from functools import partial
-from flask import Blueprint, jsonify, request, make_response, redirect, render_template, g, abort
-from sqlalchemy import or_, cast, VARCHAR, func
-from sqlalchemy.orm.attributes import flag_modified
-import os
-import re
-import json
-from lumavate_properties import Properties, Components
-from lumavate_exceptions import ApiException, ValidationException, NotFoundException
+from flask import request
+from sqlalchemy import Float, DateTime, desc
 from ..models import DataBaseModel
-from ...rest import RestBehavior, Paging, camel_to_underscore, underscore_to_camel
+from ..column import DataColumn
+from ...rest import RestBehavior
 from ...enums import ColumnDataType
+from ...filter import Filter
+from ...sort import Sort
 from app import db
+
+
+
+class DataRestSort(Sort):
+  def __init__(self, model, asset_id):
+    self.model = model
+    schema_columns = self.model.get_column_definitions(asset_id)
+    self.columns = {column_def.get('columnName'): DataColumn.from_json(column_def) for column_def in schema_columns}
+    super().__init__()
+
+  def apply_column(self,base_query, column_name, direction):
+    if column_name in ['id', 'org_id' ,'asset_id','submitted_data', 'activation_code', 'is_draft', 'public_id','created_by' ,'created_at' ,'last_modified_by' ,'last_modified_at' ]:
+      return super().apply_column(base_query, column_name, direction)
+
+    if self.columns.get(column_name).column_type == 'numeric':
+      column = self.model.submitted_data[column_name].astext.cast(Float)
+    elif self.columns.get(column_name).column_type == 'datetime':
+      column = self.model.submitted_data[column_name].astext.cast(DateTime)
+    else:
+      column = self.model.submitted_data[column_name].astext
+
+    if direction == 'desc':
+      column = desc(column)
+
+    base_query = base_query.order_by(column)
+    return base_query
+
+
+class DataRestFilter(Filter):
+  def __init__(self, model, asset_id, args=None, ignore_fields=None):
+    self.model = model
+    schema_columns = self.model.get_column_definitions(asset_id)
+    self.columns = {column_def.get('columnName'): DataColumn.from_json(column_def) for column_def in schema_columns}
+    super().__init__(args, ignore_fields)
+
+  def get_column(self, base_query, column_name):
+    if self.columns.get(column_name) is None:
+      return super().get_column(base_query, column_name)
+
+    if self.columns.get(column_name).column_type == 'numeric':
+      return self.model.submitted_data[column_name].astext.cast(Float)
+    elif self.columns.get(column_name).column_type == 'datetime':
+      return self.model.submitted_data[column_name].astext.cast(DateTime)
+    else:
+      return self.model.submitted_data[column_name].astext
+
 
 class DataRestBehavior(RestBehavior):
   def __init__(self, asset_id, model_class=DataBaseModel, data=None, batch=False):
@@ -59,6 +101,12 @@ class DataRestBehavior(RestBehavior):
     except Exception as e:
       db.session.expunge(rec)
       raise
+
+  def apply_sort(self, q):
+    return DataRestSort(self._model_class, self._asset_id).apply(q)
+
+  def apply_filter(self, q, ignore_fields=None):
+    return DataRestFilter(self._model_class, self._asset_id, args=self.get_args(), ignore_fields=ignore_fields).apply(q)
 
   def get_collection_query(self):
     q = self._model_class.get_all_by_asset_id(self._asset_id, self.get_args())
