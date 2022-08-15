@@ -69,7 +69,7 @@ class AssetRestBehavior(RestBehavior):
 
     response_data = super().put(record_id)
     asset_response = {
-      'state': asset_update_data.get('state'),
+      'state': asset_update_data.get('state', 'promoted'),
       'payload': response_data
     }
     return asset_response
