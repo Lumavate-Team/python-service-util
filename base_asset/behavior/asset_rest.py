@@ -24,6 +24,9 @@ class AssetRestBehavior(RestBehavior):
   def __init__(self, model_class=AssetBaseModel, data=None):
     super().__init__(model_class, data)
 
+    # override to specify fields to filter out during clone if cloning
+    self.copy_ignore_fields = []
+
   def apply_sort(self, q):
     return NameSort().apply(q)
 
@@ -54,6 +57,15 @@ class AssetRestBehavior(RestBehavior):
       'data': asset_data,
       'dependencyAssets': self.get_dependencies(asset_data)
     }
+
+  def clone(self):
+    clone_request = self.get_data()
+    print(f'CLONE REQUEST\n{clone_request}', flush=True)
+    print(f'parsing source data', flush=True)
+    asset_data = self._parse_source_data(clone_request)
+    print(f'PARSED ASSET_DATA\n{asset_data}')
+    
+    return {}
 
   def put(self, record_id):
     asset_update_data = self.get_data()
@@ -163,3 +175,34 @@ class AssetRestBehavior(RestBehavior):
         del prop_value['ephemeralKey']
 
     return data
+
+  def _parse_source_data(self, clone_request):
+    scrubbed_source_data = self._scrub_source_data(clone_request.get('sourceAsset'))
+    print(f'SCRUBBED: {scrubbed_source_data}',flush=True)
+
+    return  self.map_source_to_target(scrubbed_source_data, clone_request.get('target',{}))
+
+  # remove all source asset specific fields that are created or retrieved at create/get time
+  # these are defined in overridden 
+  def _scrub_source_data(self, source_asset_data):
+    # these are specific to form, each asset might have their own fields to ignore
+    ignore_fields = self.copy_ignore_fields if self.copy_ignore_fields is not None else []
+    if not ignore_fields:
+      return source_asset_data
+
+
+    clean_source_data = {}
+    for key, value in source_asset_data.items():
+      if key in ignore_fields:
+        continue
+
+      clean_source_data[key] = value
+      
+    return clean_source_data
+      
+  # Override in python-service-util/asset services asset specific mapping as needed
+  def map_source_to_target(self, source_data, target):
+    mapped_data = source_data
+    mapped_data['assetName'] = target['assetName']
+
+    return mapped_data
