@@ -13,7 +13,7 @@ class DataColumn():
       'name': self.name,
       'displayName': self.display_name,
       'columnType': {
-        'value': self.type,
+        'value': self.column_type,
         'options': self.options
       },
       'isActive': self.is_active

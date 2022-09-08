@@ -2,7 +2,7 @@ from jinja2 import Environment, BaseLoader
 from flask import Blueprint, jsonify, request, make_response, redirect, render_template, g, abort
 from sqlalchemy import or_, cast, VARCHAR, func
 from datetime import datetime
-import os
+import rollbar
 import re
 import json
 from lumavate_properties import Properties, Components
@@ -23,6 +23,9 @@ except:
 class AssetRestBehavior(RestBehavior):
   def __init__(self, model_class=AssetBaseModel, data=None):
     super().__init__(model_class, data)
+
+    # override to specify fields to filter out during clone if cloning
+    self.copy_ignore_fields = []
 
   def apply_sort(self, q):
     return NameSort().apply(q)
@@ -53,6 +56,18 @@ class AssetRestBehavior(RestBehavior):
       'isActive': True,
       'data': asset_data,
       'dependencyAssets': self.get_dependencies(asset_data)
+    }
+
+  def clone(self):
+    clone_request = self.get_data()
+    parsed_result = self._parse_source_data(clone_request)
+      
+    self.data = parsed_result['data']
+    new_asset = self.post()
+    return {
+      'data': new_asset, 
+      'unmappedFields': parsed_result.get('unmappedFields', []) ,
+      'updatedFields': parsed_result.get('updatedFields', [])
     }
 
   def put(self, record_id):
@@ -96,8 +111,6 @@ class AssetRestBehavior(RestBehavior):
 
   def get_dependencies(self, asset_data):
     dependencies = self._get_nested_dependencies(asset_data)
-    if dependencies is None:
-      return []
 
     flattened = []
     for d in dependencies:
@@ -110,18 +123,15 @@ class AssetRestBehavior(RestBehavior):
     return flattened
 
   def _get_nested_dependencies(self, asset_data, dependencies=None):
-    asset_data = asset_data
     dependencies = [] if dependencies is None else dependencies
 
     if isinstance(asset_data, list):
       return [self._get_nested_dependencies(x, dependencies) for x in asset_data]
 
     elif isinstance(asset_data, dict):
-      component_data = {}
-
       for k, v in asset_data.items():
         if isinstance(v, list) and k != 'componentTemplate':
-          dependencies.extend([self._get_nested_dependencies(x, dependencies) for x in v])
+          return [self._get_nested_dependencies(x, dependencies) for x in v]
 
         elif isinstance(v, dict):
           assetRef = v.get('assetRef',None)
@@ -132,9 +142,6 @@ class AssetRestBehavior(RestBehavior):
               'assetId': assetRef['assetId'],
               'containerId': assetRef['containerId']
             })
-
-    if len(dependencies)==0:
-      return
 
     return dependencies
 
@@ -163,3 +170,37 @@ class AssetRestBehavior(RestBehavior):
         del prop_value['ephemeralKey']
 
     return data
+
+  def _parse_source_data(self, clone_request):
+    scrubbed_source_data = self._scrub_source_data(clone_request.get('sourceAsset'))
+
+    return  self.map_source_to_target(scrubbed_source_data, clone_request.get('target',{}))
+
+  # remove all source asset specific fields that are created or retrieved at create/get time
+  # these are defined in overridden 
+  def _scrub_source_data(self, source_asset_data):
+    # these are specific to form, each asset might have their own fields to ignore
+    ignore_fields = self.copy_ignore_fields if self.copy_ignore_fields is not None else []
+    if not ignore_fields:
+      return source_asset_data
+
+
+    clean_source_data = {}
+    for key, value in source_asset_data.items():
+      if key in ignore_fields:
+        continue
+
+      clean_source_data[key] = value
+      
+    return clean_source_data
+      
+  # Override in python-service-util/asset services asset specific mapping as needed
+  def map_source_to_target(self, source_data, target):
+    mapped_data = source_data
+    mapped_data['assetName'] = target['assetName']
+
+    return {
+      'data': mapped_data, 
+      'unmappedFields': [], 
+      'updatedFields': [] 
+    }
