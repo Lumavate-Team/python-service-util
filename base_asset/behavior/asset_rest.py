@@ -2,7 +2,7 @@ from jinja2 import Environment, BaseLoader
 from flask import Blueprint, jsonify, request, make_response, redirect, render_template, g, abort
 from sqlalchemy import or_, cast, VARCHAR, func
 from datetime import datetime
-import os
+import rollbar
 import re
 import json
 from lumavate_properties import Properties, Components
@@ -60,12 +60,15 @@ class AssetRestBehavior(RestBehavior):
 
   def clone(self):
     clone_request = self.get_data()
-    print(f'CLONE REQUEST\n{clone_request}', flush=True)
-    print(f'parsing source data', flush=True)
-    asset_data = self._parse_source_data(clone_request)
-    print(f'PARSED ASSET_DATA\n{asset_data}')
-    
-    return {}
+    parsed_result = self._parse_source_data(clone_request)
+      
+    self.data = parsed_result['data']
+    new_asset = self.post()
+    return {
+      'data': new_asset, 
+      'unmappedFields': parsed_result.get('unmappedFields', []) ,
+      'updatedFields': parsed_result.get('updatedFields', [])
+    }
 
   def put(self, record_id):
     asset_update_data = self.get_data()
@@ -122,18 +125,15 @@ class AssetRestBehavior(RestBehavior):
     return flattened
 
   def _get_nested_dependencies(self, asset_data, dependencies=None):
-    asset_data = asset_data
     dependencies = [] if dependencies is None else dependencies
 
     if isinstance(asset_data, list):
       return [self._get_nested_dependencies(x, dependencies) for x in asset_data]
 
     elif isinstance(asset_data, dict):
-      component_data = {}
-
       for k, v in asset_data.items():
         if isinstance(v, list) and k != 'componentTemplate':
-          dependencies.extend([self._get_nested_dependencies(x, dependencies) for x in v])
+          return [self._get_nested_dependencies(x, dependencies) for x in v]
 
         elif isinstance(v, dict):
           assetRef = v.get('assetRef',None)
@@ -146,7 +146,7 @@ class AssetRestBehavior(RestBehavior):
             })
 
     if len(dependencies)==0:
-      return
+      return dependencies
 
     return dependencies
 
@@ -178,7 +178,6 @@ class AssetRestBehavior(RestBehavior):
 
   def _parse_source_data(self, clone_request):
     scrubbed_source_data = self._scrub_source_data(clone_request.get('sourceAsset'))
-    print(f'SCRUBBED: {scrubbed_source_data}',flush=True)
 
     return  self.map_source_to_target(scrubbed_source_data, clone_request.get('target',{}))
 
@@ -205,4 +204,8 @@ class AssetRestBehavior(RestBehavior):
     mapped_data = source_data
     mapped_data['assetName'] = target['assetName']
 
-    return mapped_data
+    return {
+      'data': mapped_data, 
+      'unmappedFields': [], 
+      'updatedFields': [] 
+    }
