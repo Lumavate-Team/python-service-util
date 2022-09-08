@@ -111,7 +111,7 @@ class AssetRestBehavior(RestBehavior):
 
   def get_dependencies(self, asset_data):
     dependencies = self._get_nested_dependencies(asset_data)
-    if dependencies is None:
+    if not dependencies:
       return []
 
     flattened = []
@@ -144,9 +144,6 @@ class AssetRestBehavior(RestBehavior):
               'assetId': assetRef['assetId'],
               'containerId': assetRef['containerId']
             })
-
-    if len(dependencies)==0:
-      return dependencies
 
     return dependencies
 
