@@ -111,8 +111,6 @@ class AssetRestBehavior(RestBehavior):
 
   def get_dependencies(self, asset_data):
     dependencies = self._get_nested_dependencies(asset_data)
-    if not dependencies:
-      return []
 
     flattened = []
     for d in dependencies:
