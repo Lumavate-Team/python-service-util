@@ -1,6 +1,7 @@
 from jinja2 import Environment, BaseLoader
 from flask import Blueprint, jsonify, request, make_response, redirect, render_template, g, abort
 from sqlalchemy import or_, cast, VARCHAR, func
+from sqlalchemy.orm.attributes import flag_modified
 from datetime import datetime
 import rollbar
 import re
@@ -80,9 +81,10 @@ class AssetRestBehavior(RestBehavior):
     if 'assetName' in asset_data:
       self.data['name'] = asset_data['assetName']
 
-    self.data['dependencyAssets'] = self.get_dependencies(asset_data)
+    self.data['dependencyAssets'] = self.get_dependencies(asset_update_data)
 
     response_data = super().put(record_id)
+
     asset_response = {
       'state': asset_update_data.get('state', 'promoted'),
       'payload': response_data
@@ -126,22 +128,21 @@ class AssetRestBehavior(RestBehavior):
     dependencies = [] if dependencies is None else dependencies
 
     if isinstance(asset_data, list):
-      return [self._get_nested_dependencies(x, dependencies) for x in asset_data]
+      for x in asset_data:
+        self._get_nested_dependencies(x, dependencies)
 
     elif isinstance(asset_data, dict):
       for k, v in asset_data.items():
-        if isinstance(v, list) and k != 'componentTemplate':
-          return [self._get_nested_dependencies(x, dependencies) for x in v]
+        if k == 'componentTemplate' or not v or (not isinstance(v, dict) and not isinstance(v, list)):
+          continue
 
-        elif isinstance(v, dict):
-          assetRef = v.get('assetRef',None)
-          if assetRef and isinstance(assetRef, dict) \
-            and 'assetId' in assetRef and 'containerId' in assetRef:
-
-            dependencies.append({
-              'assetId': assetRef['assetId'],
-              'containerId': assetRef['containerId']
-            })
+        if k == 'assetRef' and isinstance(v, dict) and 'assetId' in v and 'containerId' in v:
+          dependencies.append({
+            'assetId': v['assetId'],
+            'containerId': v['containerId']
+          })
+        else:
+          self._get_nested_dependencies(v, dependencies)
 
     return dependencies
 
