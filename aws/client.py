@@ -107,6 +107,16 @@ class AwsClient(object):
           Bucket=self.default_bucket_name,
           Key=key)
 
+  def delete_objects(self, path_list):
+    if not path_list:
+      return
+
+    matching_keys = [{'Key': k} for k in path_list]
+    response = self.s3_client.delete_objects(
+      Bucket=self.default_bucket_name,
+      Delete={'Objects': matching_keys, 'Quiet': True})
+    return response
+
   def get_all_versions(self, key):
     keys = ["Versions", "DeleteMarkers"]
     results = []

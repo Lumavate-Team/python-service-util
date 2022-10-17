@@ -73,6 +73,12 @@ class FileBehavior(object):
     if full_path is not None:
       self.__client.delete_object(full_path)
 
+  def delete_objects(self, path_list):
+    if not path_list:
+      return
+
+    self.__client.delete_objects(path_list)
+
   def get_full_path(self, path=None, file_name=None):
     if file_name is None:
       file_name = self.__client.objects.generate_unique_key()
