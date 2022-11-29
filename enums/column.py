@@ -7,3 +7,7 @@ class ColumnDataType(str, Enum):
   NUMERIC = 'numeric'
   TEXT = 'text'
   FILE = 'file'
+  RICHTEXT = 'richtext'
+  DOCUMENT = 'document'
+  IMAGE = 'image'
+  VIDEO = 'video'
