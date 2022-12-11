@@ -1,6 +1,6 @@
 from jinja2 import Environment, BaseLoader
 from flask import Blueprint, jsonify, request, make_response, redirect, render_template, g, abort
-from lumavate_properties import Properties, Components
+from lumavate_properties import Properties, Components, ColumnDataType
 from lumavate_exceptions import ValidationException, NotFoundException
 from sqlalchemy import or_, cast, VARCHAR, func
 from datetime import datetime
@@ -141,3 +141,73 @@ class DataAssetRestBehavior(AssetRestBehavior):
 
   def get(self, record_id):
     return self._model_class.get(record_id)
+
+  # This converts a base property to a custom column definition which are used on field selections(asset-field-selector)
+  def convert_property_to_columns(self, properties):
+    columns = []
+    for prop in properties:
+      column_type_value = self.get_column_type(prop.property_type.type_name)
+      if column_type_value is None:
+        continue
+
+      columns.append({
+        'columnDisplayName': prop.label, 
+        'columnName': prop.name, 
+        'columnType': {
+          'value': column_type_value,
+          'options': self.get_column_property_options(column_type_value, prop)
+        },
+        'id': None, 
+        'isActive': True, 
+        'baseProperty': True
+      })
+
+    return columns
+  
+  def get_column_property_options(self, column_type, property):
+    options = ''
+    if column_type == ColumnDataType.DROPDOWN:
+      options = ','.join([f'{key}|{value}' for key,value in property.options.items()])
+
+    return options
+
+  def get_column_type(self, property_type):
+    types = {
+      'asset-select': None,
+      'asset-field': None,
+      'text' : ColumnDataType.TEXT,
+      'color': ColumnDataType.TEXT,
+      'image-upload': ColumnDataType.FILE,
+      'component': None,
+      'components': None,
+      'checkbox': ColumnDataType.BOOLEAN,
+      'toggle': ColumnDataType.BOOLEAN,
+      'translated-text': ColumnDataType.TEXT,
+      'dropdown': ColumnDataType.DROPDOWN,
+      'dropdown-options': None,
+      'multiselect': None,
+      'numeric': ColumnDataType.NUMERIC,
+      'page-link': ColumnDataType.DOCUMENT,
+      'code-editor': None,
+      'theme-color': ColumnDataType.TEXT,
+      'admin-launcher': None,
+      'html-editor': ColumnDataType.RICHTEXT,
+      'html-editor-view': ColumnDataType.RICHTEXT,
+      'dynamic-component': None,
+      'dynamic-components': None,
+      'dynamic-asset-select': None,
+      'asset-data-select': None,
+      'data-column-components': None,
+      'data-column-row-input': None,
+      'font': None,
+      'file-upload': ColumnDataType.FILE,
+      'email-list': ColumnDataType.TEXT,
+      'font-style': None,
+      'font-style-selector': None,
+      'dynamic-property-list':None,
+      'datetime': ColumnDataType.DATETIME, #doesn't exist yet
+      'video': ColumnDataType.VIDEO #doesn't exist yet
+    }
+
+    return types.get(property_type)
+
