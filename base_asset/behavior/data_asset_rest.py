@@ -143,7 +143,7 @@ class DataAssetRestBehavior(AssetRestBehavior):
     return self._model_class.get(record_id)
 
   # This converts a base property to a custom column definition which are used on field selections(asset-field-selector)
-  def convert_property_to_columns(self, properties):
+  def convert_properties_to_data_columns(self, properties):
     columns = []
     for prop in properties:
       column_type_value = self.get_column_type(prop.property_type.type_name)
