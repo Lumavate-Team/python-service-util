@@ -186,3 +186,5 @@ class DataRestBehavior(RestBehavior):
 
     return excluded_properties
 
+  def get_asset_fields(self):
+    return ['submitted_data']
