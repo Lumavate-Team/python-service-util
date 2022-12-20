@@ -17,6 +17,7 @@ import json
 from .select import Select
 from .filter import Filter
 from .sort import Sort
+from .asset_resolver import AssetResolver
 
 try:
   from app import db
@@ -396,10 +397,33 @@ class RestBehavior:
 
   def pack(self, rec):
     if rec is not None:
+      self.resolve_assets(rec)
       return rec.to_json()
 
   def unpack(self, rec):
     return rec
+
+  def get_asset_fields(self):
+    return []
+
+  def resolve_assets(self, rec):
+    for field in self.get_asset_fields():
+      self.do_resolve(getattr(rec, field)) 
+
+  def do_resolve(self, data):
+    if not isinstance(data, dict):
+      return
+    
+    for key in data:
+      if key == 'assetRef':
+        data[key] = AssetResolver().resolve(data[key])
+      elif isinstance(data[key], dict):
+        self.do_resolve(data[key])
+      elif isinstance(data[key], list):
+        for item in data[key]:
+          self.do_resolve(item)
+    
+
 
 rest_blueprint = Blueprint('rest_blueprint', __name__)
 icon_blueprint = Blueprint('icon_blueprint', __name__)

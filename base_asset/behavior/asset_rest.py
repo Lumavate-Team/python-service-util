@@ -41,6 +41,18 @@ class AssetRestBehavior(RestBehavior):
   def get_default_user_id(self):
     return 'lmvt!-1'
 
+  def get_asset_content(self, asset_id):
+    #overridden in most cases
+    return self.get(asset_id)
+
+  def get_batch_asset_content(self):
+    asset_ids = self.get_data()
+    response = {}
+    for id in asset_ids:
+      response[id] = self.get_asset_content(id)
+
+    return response
+
   def post(self):
     asset_data = self.get_data()
     self.validate_asset_name(asset_data)
@@ -109,7 +121,6 @@ class AssetRestBehavior(RestBehavior):
       return rec.to_json()
     else:
       return {self.underscore_to_camel(key):value for(key,value) in rec._asdict().items()}
-
 
   def get_dependencies(self, asset_data):
     dependencies = self._get_nested_dependencies(asset_data)
