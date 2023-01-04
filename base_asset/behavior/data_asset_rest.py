@@ -177,7 +177,7 @@ class DataAssetRestBehavior(AssetRestBehavior):
       'asset-field': None,
       'text' : ColumnDataType.TEXT,
       'color': ColumnDataType.TEXT,
-      'image-upload': ColumnDataType.FILE,
+      'image-upload': ColumnDataType.IMAGE,
       'component': None,
       'components': None,
       'checkbox': ColumnDataType.BOOLEAN,
