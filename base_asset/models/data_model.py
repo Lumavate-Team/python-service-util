@@ -22,7 +22,7 @@ from ..models import AssetBaseModel, DataAssetBaseModel
 class DataBaseModel(BaseModel):
   __tablename__='data'
   __table_args__ = {'extend_existing': True}
-  org_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False)
+  org_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)
   asset_id = Column(db.BigInteger, ForeignKey('asset.id'), nullable=False)
   submitted_data = Column(JSONB, server_default='{}', nullable=True)
   activation_code = Column(db.String(35), nullable=True)
@@ -170,11 +170,9 @@ class DataBaseModel(BaseModel):
 
     return [re.compile(pattern) for pattern in time_formats]
 
-
   def to_json(self):
     response = {
       'id': self.public_id,
-      'orgId': self.org_id,
       'assetId': self.asset_id,
       'activationCode': self.activation_code,
       'createdBy': self.created_by,
