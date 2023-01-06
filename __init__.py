@@ -31,6 +31,7 @@ class BaseAsset:
   from .base_asset import DataBaseModel
   from .base_asset import SettingsModel
   from .base_asset import DataColumn
+  from .base_asset import DataRestFilter
   from .base_asset import FileFilter
 
   from .base_asset import AssetAccessRestBehavior

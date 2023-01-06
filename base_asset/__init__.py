@@ -6,6 +6,7 @@ from .behavior import DataRestBehavior
 from .behavior import FileAssetRestBehavior
 
 from .column import DataColumn
+from .data_filter import DataRestFilter
 from .file_filter import FileFilter
 
 from .models import AssetBaseModel
