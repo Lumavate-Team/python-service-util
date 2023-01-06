@@ -8,12 +8,13 @@ import json
 from lumavate_properties import Properties, Components
 from lumavate_exceptions import ValidationException, ApiException
 from app import db
-from ...rest import RestBehavior, camel_to_underscore, underscore_to_camel
+from ...rest import RestBehavior
 from ...request import LumavateRequest
 from ...resolver import Resolver
 from ...paging import Paging
 from ...name_sort import NameSort
 from ..models import AssetAccessBaseModel
+from ...util import camel_to_underscore, underscore_to_camel
 
 class AssetAccessRestBehavior(RestBehavior):
   def __init__(self, model_class=AssetAccessBaseModel, data=None):

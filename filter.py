@@ -6,10 +6,7 @@ from dateutil.parser import parse
 from lumavate_exceptions import ValidationException
 from sqlalchemy.inspection import inspect
 import re
-
-camel_pat = re.compile(r'([A-Z0-9])')
-def camel_to_underscore(name):
-	return camel_pat.sub(lambda x: '_' + x.group(1).lower(), name)
+from .util import camel_to_underscore
 
 class Filter:
   def __init__(self, args=None, ignore_fields=None):
