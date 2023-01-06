@@ -7,7 +7,7 @@ class AssetResolver():
     self._data = None
 
   def resolve(self, data):
-    if not 'containerId' in data or not 'assetId' in data or not 'assetType' in data:
+    if not data or not 'containerId' in data or not 'assetId' in data or not 'assetType' in data:
       return lambda: None
     
     container_id = data['containerId']
@@ -37,5 +37,5 @@ class AssetResolver():
     if self._data is None:
       self.lookup_data()
 
-    return self._data.get(str(container_id), {}).get('assets', {}).get(str(asset_id), {})
+    return self._data.get(str(container_id), {}).get('assets', {}).get(str(asset_id), {}).get('asset', {})
 
