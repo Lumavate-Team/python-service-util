@@ -416,7 +416,9 @@ class RestBehavior:
     
     for key in data:
       if key == 'assetRef':
-        data[key] = AssetResolver().resolve(data[key])
+        if not data[key]:
+          data[key] = {}
+        data[key]['asset'] = AssetResolver().resolve(data[key])
       elif isinstance(data[key], dict):
         self.do_resolve(data[key])
       elif isinstance(data[key], list):
