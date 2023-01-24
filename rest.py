@@ -36,6 +36,7 @@ class RestBehavior:
     self._model_class = model_class
     self.data = data
     self.args = args
+    self._asset_resolver = AssetResolver()
 
   def get_data(self, override_data=None):
     if override_data:
@@ -406,7 +407,7 @@ class RestBehavior:
       if key == 'assetRef':
         if not data[key]:
           data[key] = {}
-        data[key]['asset'] = AssetResolver().resolve(data[key])
+        data[key]['asset'] = self._asset_resolver.resolve(data[key])
       elif isinstance(data[key], dict):
         self.do_resolve(data[key])
       elif isinstance(data[key], list):
