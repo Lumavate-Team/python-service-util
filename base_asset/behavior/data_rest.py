@@ -21,10 +21,14 @@ class DataRestSort(Sort):
     if column_name in ['id', 'org_id' ,'asset_id','submitted_data', 'activation_code', 'is_draft', 'public_id','created_by' ,'created_at' ,'last_modified_by' ,'last_modified_at' ]:
       return super().apply_column(base_query, column_name, direction)
 
-    if self.columns.get(column_name).column_type == 'numeric':
-      column = self.model.submitted_data[column_name].astext.cast(Float)
-    elif self.columns.get(column_name).column_type == 'datetime':
-      column = self.model.submitted_data[column_name].astext.cast(DateTime)
+    column = self.columns.get(column_name)
+    if column is not None:
+      if self.columns.get(column_name).column_type == 'numeric':
+        column = self.model.submitted_data[column_name].astext.cast(Float)
+      elif self.columns.get(column_name).column_type == 'datetime':
+        column = self.model.submitted_data[column_name].astext.cast(DateTime)
+      else:
+        column = self.model.submitted_data[column_name].astext
     else:
       column = self.model.submitted_data[column_name].astext
 
@@ -91,6 +95,7 @@ class DataRestBehavior(RestBehavior):
     q = self._model_class.get_all_by_asset_id(self._asset_id, self.get_args())
     q = self.apply_filter(q)
     q = self.apply_sort(q)
+    q = self.apply_select(q)
     return q
 
   def get_rec_by_public_id(self, public_id):
