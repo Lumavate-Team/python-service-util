@@ -404,12 +404,16 @@ class RestBehavior:
       return
     
     if 'assetRef' in data:
-      if not data['assetRef']:
-        data['assetRef'] = {}
+      resolved_data = {}
+      if data['assetRef']:
+        resolved_data = self._asset_resolver.resolve(data['assetRef'])
+    
       if self._asset_resolver.is_app_scope and parent and parent_key:
-        parent[parent_key] = self._asset_resolver.resolve(data['assetRef'])
+        parent[parent_key] = resolved_data
+      elif data['assetRef']:
+        data['assetRef']['asset'] = resolved_data
       else:
-        data['assetRef']['asset'] = self._asset_resolver.resolve(data['assetRef'])
+        data['assetRef'] = resolved_data
       return
 
     for key in data:
