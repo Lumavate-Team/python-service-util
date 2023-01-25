@@ -1,9 +1,8 @@
 from .request import get_lumavate_request
-from .resolver import Resolver
 from flask import request, g
 import copy
 
-class AssetResolver(Resolver):
+class AssetResolver():
   def __init__(self):
     self._containers = {}
     self._data = None
