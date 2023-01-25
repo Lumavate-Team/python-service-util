@@ -6,6 +6,10 @@ class AssetResolver():
   def __init__(self):
     self._containers = {}
     self._data = None
+    # this is used to determine if a resolved asset should be pushed all the way back as the field value(app), or just the assetRef(platform)
+    # it has to be done here due to the resolves switching scope
+    is_app_scope = g.get('token_data',{}).get('scope','') == 'runtime'
+    self.is_app_scope = is_app_scope
 
   def resolve(self, asset_ref):
     #otherwise asset_ref.asset will recurse
