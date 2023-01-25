@@ -399,23 +399,29 @@ class RestBehavior:
     for field in self.get_asset_fields():
       self.do_resolve(getattr(rec, field)) 
 
-  def do_resolve(self, data):
+  def do_resolve(self, data, parent=None, parent_key=None):
     if not isinstance(data, dict):
       return
     
+    if 'assetRef' in data:
+      resolved_data = {}
+      if data['assetRef']:
+        resolved_data = self._asset_resolver.resolve(data['assetRef'])
+    
+      if self._asset_resolver.is_app_scope and parent and parent_key:
+        parent[parent_key] = resolved_data
+      elif data['assetRef']:
+        data['assetRef']['asset'] = resolved_data
+      else:
+        data['assetRef'] = resolved_data
+      return
+
     for key in data:
-      if key == 'assetRef':
-        if not data[key]:
-          data[key] = {}
-        if self._asset_resolver.is_app_scope:
-          data[key] = self._asset_resolver.resolve(data[key])
-        else:
-          data[key]['asset'] = self._asset_resolver.resolve(data[key])
-      elif isinstance(data[key], dict):
-        self.do_resolve(data[key])
+      if isinstance(data[key], dict):
+        self.do_resolve(data[key], data, key)
       elif isinstance(data[key], list):
         for item in data[key]:
-          self.do_resolve(item)
+          self.do_resolve(item, data)
     
 
 
