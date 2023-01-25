@@ -407,7 +407,10 @@ class RestBehavior:
       if key == 'assetRef':
         if not data[key]:
           data[key] = {}
-        data[key]['asset'] = self._asset_resolver.resolve(data[key])
+        if self._asset_resolver.is_app_scope:
+          data[key] = self._asset_resolver.resolve(data[key])
+        else:
+          data[key]['asset'] = self._asset_resolver.resolve(data[key])
       elif isinstance(data[key], dict):
         self.do_resolve(data[key])
       elif isinstance(data[key], list):
