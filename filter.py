@@ -32,7 +32,7 @@ class Filter:
           self.args[arg_key] = str(arg_value)
 
   def apply(self, base_query):
-    ops = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'sw', 'ct','aeq', 'adeq', 'act']
+    ops = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'sw', 'ct','aeq', 'adeq', 'act', 'in']
     for a in self.args:
       if a != 'sort' and a not in self.ignore_fields:
         parts = self.args[a].split(":", 1)
@@ -70,7 +70,10 @@ class Filter:
       if str(column.type) == 'DATETIME' or str(column.type) == 'DATE':
         value = parse(value)
       elif str(column.type) == 'BIGINT' or str(column.type) == 'INT':
-        value = int(str(value))
+        if op == 'in':
+          value = str(value).split(',')
+        else:
+          value = int(str(value))
       elif str(column.type) == 'FLOAT':
         value = float(str(value))
       elif str(column.type) == 'BOOLEAN':
@@ -103,6 +106,8 @@ class Filter:
         return and_(column.op('@>')(value),column.op('<@')(value))
       elif op == 'act':
         return column.contains(value)
+      elif op == 'in':
+        return column.in_(value)
 
 
 class ColumnResolver:
