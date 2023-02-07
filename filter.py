@@ -107,8 +107,9 @@ class Filter:
       elif op == 'act':
         return column.contains(value)
       elif op == 'in':
+        if isinstance(value, str):
+          value = value.split(',')
         return column.in_(value)
-
 
 class ColumnResolver:
   def __init__(self, mapper):
