@@ -25,7 +25,7 @@ class DataAssetRestBehavior(AssetRestBehavior):
     request_json = self.get_data()
     if 'data' in request_json:
       existing_columns = [DataColumn.from_json(c) for c in self.get_column_definitions(record_id, include_inactive=True)]
-
+      column_names = {c.name: True for c in existing_columns}
       asset_data = request_json.get('data', {})
       column_components = asset_data.get('columns', [])
       for index, component in enumerate(column_components):
@@ -34,7 +34,6 @@ class DataAssetRestBehavior(AssetRestBehavior):
         # convert display name to column name, check for uniqueness
         component_data['columnDisplayName'] = component_data['columnDisplayName'].strip()
         existing_column = next((col for col in existing_columns if col.id == component_data['id']),None)
-
         if existing_column is None:
           component_data['columnName'] = self.generate_column_name(component_data, index)
 
