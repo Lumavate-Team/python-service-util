@@ -145,7 +145,13 @@ class DataAssetRestBehavior(AssetRestBehavior):
   def convert_properties_to_data_columns(self, properties):
     columns = []
     for prop in properties:
-      column_type_value = self.get_column_type(prop.property_type.type_name)
+      if prop.property_type.type_name == 'dynamic-property-list':
+        column_type_value = self.get_column_type(prop.options.get('propertyDef', {}).get('type', None))
+        if column_type_value:
+          column_type_value = 'dynamic-property-list:' + column_type_value
+      else:
+        column_type_value = self.get_column_type(prop.property_type.type_name)
+
       if column_type_value is None:
         continue
 
