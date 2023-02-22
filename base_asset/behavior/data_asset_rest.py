@@ -198,6 +198,8 @@ class DataAssetRestBehavior(AssetRestBehavior):
       'admin-launcher': None,
       'html-editor': ColumnDataType.RICHTEXT,
       'html-editor-view': ColumnDataType.RICHTEXT,
+      'simple-html-editor': ColumnDataType.RICHTEXT,
+      'simple-html-editor-view': ColumnDataType.RICHTEXT,
       'dynamic-component': None,
       'dynamic-components': None,
       'dynamic-asset-select': None,
