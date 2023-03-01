@@ -168,6 +168,15 @@ class DataAssetRestBehavior(AssetRestBehavior):
       })
 
     return columns
+
+  def get_luma_properties(self):
+    return [
+      Properties.Property(None, None, 'publicId', 'ID', 'text', options={}),
+      Properties.Property(None, None, 'createdAt', 'Created At', 'text', options={}),
+      Properties.Property(None, None, 'lastModifiedAt', 'Last Modified At', 'text', options={}),
+      Properties.Property(None, None, 'createdBy', 'Created By', 'text', options={}),
+      Properties.Property(None, None, 'LastModifiedBy', 'Last Modified By', 'text', options={})
+    ]
   
   def get_column_property_options(self, column_type, property):
     options = ''
