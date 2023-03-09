@@ -149,7 +149,13 @@ class DataAssetRestBehavior(AssetRestBehavior):
   def convert_properties_to_data_columns(self, properties):
     columns = []
     for prop in properties:
-      column_type_value = self.get_column_type(prop.property_type.type_name)
+      if prop.property_type.type_name == 'dynamic-property-list':
+        column_type_value = self.get_column_type(prop.options.get('propertyDef', {}).get('type', None))
+        if column_type_value:
+          column_type_value = 'dynamic-property-list:' + column_type_value
+      else:
+        column_type_value = self.get_column_type(prop.property_type.type_name)
+
       if column_type_value is None:
         continue
 
@@ -166,6 +172,15 @@ class DataAssetRestBehavior(AssetRestBehavior):
       })
 
     return columns
+
+  def get_luma_properties(self):
+    return [
+      Properties.Property(None, None, 'publicId', 'ID', 'text', options={}),
+      Properties.Property(None, None, 'createdAt', 'Created At', 'text', options={}),
+      Properties.Property(None, None, 'lastModifiedAt', 'Last Modified At', 'text', options={}),
+      Properties.Property(None, None, 'createdBy', 'Created By', 'text', options={}),
+      Properties.Property(None, None, 'LastModifiedBy', 'Last Modified By', 'text', options={})
+    ]
   
   def get_column_property_options(self, column_type, property):
     options = ''
@@ -196,6 +211,8 @@ class DataAssetRestBehavior(AssetRestBehavior):
       'admin-launcher': None,
       'html-editor': ColumnDataType.RICHTEXT,
       'html-editor-view': ColumnDataType.RICHTEXT,
+      'simple-html-editor': ColumnDataType.RICHTEXT,
+      'simple-html-editor-view': ColumnDataType.RICHTEXT,
       'dynamic-component': None,
       'dynamic-components': None,
       'dynamic-asset-select': None,
