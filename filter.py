@@ -75,7 +75,10 @@ class Filter:
         else:
           value = int(str(value))
       elif str(column.type) == 'FLOAT':
-        value = float(str(value))
+        if op == 'in':
+          value = str(value).split(',')
+        else:
+          value = float(str(value))
       elif str(column.type) == 'BOOLEAN':
         value = str(value).lower() == 'true'
         if op != 'eq':

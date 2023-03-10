@@ -126,7 +126,11 @@ class DataAssetRestBehavior(AssetRestBehavior):
 
   # return column definitions in easily consumable json format(remove unnecessary fields in response)
   def get_column_definitions(self, record_id, include_inactive=False):
-    return self._model_class.get_column_definitions(record_id, include_inactive=include_inactive)
+    luma_columns = []
+    if request.args.get('showLuma'):
+      luma_columns = self.convert_properties_to_data_columns(self.get_luma_properties())
+
+    return luma_columns + self._model_class.get_column_definitions(record_id, include_inactive=include_inactive)
 
   # Converts the initial column display name to lowercase snake case after
   # removing all non alphanumeric characters
