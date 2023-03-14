@@ -9,7 +9,7 @@ class AssetResolver():
     # this is used to determine if a resolved asset should be pushed all the way back as the field value(app), or just the assetRef(platform)
     # it has to be done here due to the resolves switching scope
     is_app_scope = False
-    if g:
+    if g and g.get('token_data', None):
       is_app_scope = g.get('token_data',{}).get('scope','') == 'runtime'
   
     self.is_app_scope = is_app_scope
