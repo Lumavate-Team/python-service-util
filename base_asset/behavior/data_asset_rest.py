@@ -128,7 +128,7 @@ class DataAssetRestBehavior(AssetRestBehavior):
   def get_column_definitions(self, record_id, include_inactive=False):
     luma_columns = []
     if request.args.get('showLuma'):
-      luma_columns = self.convert_properties_to_data_columns(self.get_luma_properties())
+      luma_columns = self.convert_properties_to_data_columns(self.get_luma_properties(), is_metadata=True)
 
     return luma_columns + self._model_class.get_column_definitions(record_id, include_inactive=include_inactive)
 
@@ -146,7 +146,7 @@ class DataAssetRestBehavior(AssetRestBehavior):
     return self._model_class.get(record_id)
 
   # This converts a base property to a custom column definition which are used on field selections(asset-field-selector)
-  def convert_properties_to_data_columns(self, properties):
+  def convert_properties_to_data_columns(self, properties, is_metadata=False):
     columns = []
     for prop in properties:
       if prop.property_type.type_name == 'dynamic-property-list':
@@ -168,7 +168,8 @@ class DataAssetRestBehavior(AssetRestBehavior):
         },
         'id': None, 
         'isActive': True, 
-        'baseProperty': True
+        'baseProperty': True,
+        'isMetadata': is_metadata
       })
 
     return columns
@@ -216,7 +217,7 @@ class DataAssetRestBehavior(AssetRestBehavior):
       'dynamic-component': None,
       'dynamic-components': None,
       'dynamic-asset-select': None,
-      'asset-data-select': None,
+      'asset-data-select': ColumnDataType.ASSETDATA,
       'data-column-components': None,
       'data-column-row-input': None,
       'font': None,
