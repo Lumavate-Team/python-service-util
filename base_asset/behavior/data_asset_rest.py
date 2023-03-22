@@ -204,6 +204,7 @@ class DataAssetRestBehavior(AssetRestBehavior):
       'dropdown': ColumnDataType.DROPDOWN,
       'dropdown-options': None,
       'multiselect': None,
+      'multiselect-chip': ColumnDataType.MULTISELECT,
       'numeric': ColumnDataType.NUMERIC,
       'page-link': ColumnDataType.DOCUMENT,
       'code-editor': None,
