@@ -15,10 +15,8 @@ class DataRestFilter(Filter):
       return super().get_column(base_query, column_name)
 
     if self.columns.get(column_name).column_type == 'numeric':
-      return self.model.submitted_data['columns'][column_name].astext.cast(Float)
+      return self.model.submitted_data[column_name].astext.cast(Float)
     elif self.columns.get(column_name).column_type == 'datetime':
-      return self.model.submitted_data['columns'][column_name].astext.cast(DateTime)
-    elif self.columns.get(column_name).column_type == 'multiselect':
-      return self.model.submitted_data['columns'][column_name]
+      return self.model.submitted_data[column_name].astext.cast(DateTime)
     else:
-      return self.model.submitted_data['columns'][column_name].astext
+      return self.model.submitted_data[column_name].astext
