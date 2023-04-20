@@ -1,5 +1,4 @@
-from sqlalchemy import Float, DateTime, desc, VARCHAR
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy import Float, DateTime, desc
 from .column import DataColumn
 from ..filter import Filter
 
