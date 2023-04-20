@@ -32,7 +32,7 @@ class Filter:
           self.args[arg_key] = str(arg_value)
 
   def apply(self, base_query):
-    ops = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'sw', 'ct','aeq', 'adeq', 'act', 'in']
+    ops = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'sw', 'ct','aeq', 'adeq', 'act', 'any', 'in']
     for a in self.args:
       if a != 'sort' and a not in self.ignore_fields:
         parts = self.args[a].split(":", 1)
@@ -109,6 +109,8 @@ class Filter:
         return and_(column.op('@>')(value),column.op('<@')(value))
       elif op == 'act':
         return column.contains(value)
+      elif op == 'any':
+        return column.op('@>')(cast(value, sqlalchemy.dialects.postgresql.JSONB))
       elif op == 'in':
         if isinstance(value, str):
           value = value.split(',')
