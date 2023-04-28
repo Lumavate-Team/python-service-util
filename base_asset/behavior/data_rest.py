@@ -55,7 +55,12 @@ class DataRestBehavior(RestBehavior):
   def post(self):
     data = self.get_data()
     host_split = request.host.split('.')
-    data['isDraft'] = host_split[0].endswith("__test") or host_split[0].endswith("--test")
+
+    if(data.get('manualEntry',False)):
+      data['isDraft'] = False
+    else:
+      data['isDraft'] = host_split[0].endswith("__test") or host_split[0].endswith("--test")
+
     self.data = data
     return super().post()
 
