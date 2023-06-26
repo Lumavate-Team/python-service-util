@@ -26,8 +26,11 @@ class DataAssetRestBehavior(AssetRestBehavior):
     if 'data' in request_json:
       existing_columns = [DataColumn.from_json(c) for c in self.get_column_definitions(record_id, include_inactive=True)]
       column_names = {c.name: True for c in existing_columns}
+      column_display_names = {c.display_name.lower(): True for c in existing_columns}
       asset_data = request_json.get('data', {})
       column_components = asset_data.get('columns', [])
+
+      forbidden_names = ['type', 'null', 'none', 'undefined']
       for index, component in enumerate(column_components):
         component_data = component.get('componentData',{})
 
@@ -43,14 +46,17 @@ class DataAssetRestBehavior(AssetRestBehavior):
         else:
           component_data['columnName'] = existing_column.name
 
-        if component_data['columnDisplayName'] in column_display_names:
+        if component_data['columnName'].lower() in forbidden_names or component_data['columnDisplayName'] in forbidden_names:
+            raise ValidationException('This field name cannot be used.', f'columns|{index}|columnDisplayName')
+
+        if component_data['columnDisplayName'].lower() in column_display_names:
             # show the error on display name since column name isn't being displayed in the edit
             raise ValidationException('Column Name is already in use.', f'columns|{index}|columnDisplayName')
 
 
         # add columnName to dictionary for unique name check
         column_names[component_data['columnName']] = True
-        column_display_names[component_data['columnDisplayName']] = True
+        column_display_names[component_data['columnDisplayName'].lower()] = True
 
         if existing_column and component_data['columnType']['value'] != existing_column.column_type:
           raise ValidationException('Cannot change data type on an existing column.', f'columns|{index}|columnDisplayName')
