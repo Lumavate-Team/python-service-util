@@ -24,9 +24,10 @@ class DataAssetRestBehavior(AssetRestBehavior):
 
     request_json = self.get_data()
     if 'data' in request_json:
+      base_columns = [DataColumn.from_json(c) for c in self.get_column_definitions(record_id, include_inactive=True) if c.get('baseProperty', False)]
       existing_columns = [DataColumn.from_json(c) for c in self.get_column_definitions(record_id, include_inactive=True)]
       column_names = {c.name: True for c in existing_columns}
-      column_display_names = {c.display_name.lower(): True for c in existing_columns}
+      column_display_names = {c.display_name.lower(): True for c in base_columns}
       asset_data = request_json.get('data', {})
       column_components = asset_data.get('columns', [])
 
