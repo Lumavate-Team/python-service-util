@@ -143,7 +143,7 @@ class DataAssetRestBehavior(AssetRestBehavior):
   # removing all non alphanumeric characters
   def generate_column_name(self, component_data, row_index):
     column_display_name = component_data.get('columnDisplayName', '')
-    sanitized = re.sub('\W+', '_', column_display_name).lower()
+    sanitized = re.sub('[^a-zA-Z0-9]+', '_', column_display_name).lower()
     if bool(re.match('^.*(?=.*[a-zA-Z]|[0-9]).*$', sanitized)) == False:
       raise ValidationException('Column name must contain at least one letter or number.', api_field=f'columns|{row_index}|columnDisplayName')
 
