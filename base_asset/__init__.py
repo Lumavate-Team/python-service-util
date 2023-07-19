@@ -3,6 +3,7 @@ from .behavior import AssetAccessRestBehavior
 from .behavior import SettingsRestBehavior
 from .behavior import DataAssetRestBehavior
 from .behavior import DataRestBehavior
+from .behavior import DataRestSort
 from .behavior import FileAssetRestBehavior
 
 from .column import DataColumn
