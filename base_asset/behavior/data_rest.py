@@ -1,6 +1,6 @@
 from functools import partial
 from flask import request
-from sqlalchemy import Float, DateTime, desc
+from sqlalchemy import Float, DateTime, desc, func
 from ..models import DataBaseModel
 from ..column import DataColumn
 from ...rest import RestBehavior
@@ -28,12 +28,12 @@ class DataRestSort(Sort):
       elif self.columns.get(column_name).column_type == 'datetime':
         column = self.model.submitted_data[column_name].astext.cast(DateTime)
       else:
-        column = self.model.submitted_data[column_name].astext
+        column = func.lower(self.model.submitted_data[column_name].astext)
     else:
       column = self.model.submitted_data[column_name].astext
 
     if direction == 'desc':
-      column = desc(column)
+      column = desc(column)()
 
     base_query = base_query.order_by(column)
     return base_query
