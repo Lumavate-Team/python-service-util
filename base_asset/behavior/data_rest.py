@@ -33,7 +33,7 @@ class DataRestSort(Sort):
       column = self.model.submitted_data[column_name].astext
 
     if direction == 'desc':
-      column = desc(column)()
+      column = desc(column)
 
     base_query = base_query.order_by(column)
     return base_query
