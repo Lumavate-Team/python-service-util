@@ -41,6 +41,7 @@ class BaseAsset:
   from .base_asset import DataAssetRestBehavior
   from .base_asset import DataRestBehavior
   from .base_asset import SettingsRestBehavior
+  from .base_asset import TagRestBehavior
 
 class Util:
   from .util import org_hash
