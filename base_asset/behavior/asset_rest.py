@@ -13,6 +13,7 @@ from ...request import LumavateRequest
 from ...resolver import Resolver
 from ...paging import Paging
 from ...name_sort import NameSort
+from .asset_tag_rest import AssetTagRestBehavior
 from ...aws import FileBehavior, AwsClient
 from ..models import AssetBaseModel
 from ...util import camel_to_underscore, underscore_to_camel
@@ -31,6 +32,9 @@ class AssetRestBehavior(RestBehavior):
 
   def apply_sort(self, q):
     return NameSort().apply(q)
+
+  def supports_tags(self):
+    return False
 
   def get_preview(self, asset_id):
     # implemented at the child class
@@ -61,7 +65,11 @@ class AssetRestBehavior(RestBehavior):
     post_data = self.get_post_data(asset_data)
 
     self.data = post_data
-    return super().post()
+    result = super().post()
+    
+    asset_data = self.update_user_tags(asset_data, result['id'])
+
+    return result
 
   def get_post_data(self, asset_data):
     return {
@@ -89,6 +97,7 @@ class AssetRestBehavior(RestBehavior):
     asset_data = asset_update_data.get('data', {})
 
     self.validate_asset_name(asset_data, record_id)
+    asset_data = self.update_user_tags(asset_data, record_id)
     asset_update_data['data'] = self.update_file_tags(asset_data)
     self.data = asset_update_data
     if 'assetName' in asset_data:
@@ -119,7 +128,13 @@ class AssetRestBehavior(RestBehavior):
       return {}
 
     if type(rec) is self._model_class:
-      return rec.to_json()
+      json = rec.to_json()
+      if self.expanded('tags') and self.supports_tags():
+        json['expand'] = {}
+        tags = AssetTagRestBehavior().get_categories_by_asset(rec.id)
+        json['expand']['tags'] = [tag.to_json() for tag in tags]
+
+      return json
     else:
       return {self.underscore_to_camel(key):value for(key,value) in rec._asdict().items()}
 
@@ -183,6 +198,12 @@ class AssetRestBehavior(RestBehavior):
         del prop_value['ephemeralKey']
 
     return data
+
+  def update_user_tags(self, data, asset_id):
+    if not data or not isinstance(data, dict) or not 'tags' in data or not self.supports_tags():
+      return data
+
+    return AssetTagRestBehavior(data=data).update_asset_tags(asset_id)
 
   def _parse_source_data(self, clone_request):
     scrubbed_source_data = self._scrub_source_data(clone_request.get('sourceAsset'))

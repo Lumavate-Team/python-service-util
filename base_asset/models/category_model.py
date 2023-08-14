@@ -9,7 +9,6 @@ from sqlalchemy.dialects.postgresql import JSONB
 from hashids import Hashids
 
 from ...db import BaseModel, Column
-from .asset_model import AssetBaseModel
 import json
 
 
@@ -35,3 +34,7 @@ class CategoryModel(BaseModel):
   @classmethod
   def get_by_type(cls, id, type):
     return cls.get_all_by_type(type).filter_by(id=id).first()
+
+  @classmethod
+  def get_by_ids(cls, ids):
+    return cls.get_all().filter(cls.id.in_(ids))

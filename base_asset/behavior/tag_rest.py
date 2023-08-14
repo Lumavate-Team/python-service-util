@@ -30,3 +30,6 @@ class TagRestBehavior(CategoryRestBehavior):
         response.append(handler.delete(tag['id']))
 
     return response
+  
+  def get_asset_tags(self, asset_id):
+    return self._model_class.get_by_asset_id(asset_id)

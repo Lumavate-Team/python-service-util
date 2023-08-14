@@ -66,7 +66,9 @@ class FileAssetRestBehavior(AssetRestBehavior):
 
     self.data = post_data
     # skip asset rest since we already built up the post data
-    return super(AssetRestBehavior, self).post()
+    result = super(AssetRestBehavior, self).post()
+    self.update_user_tags(asset_data, result['id'])
+    return result
 
   def put(self, record_id):
     record = self.get_single(record_id)
@@ -76,6 +78,7 @@ class FileAssetRestBehavior(AssetRestBehavior):
     asset_data = asset_update_data.get('data', {})
 
     properties = self.get_asset_properties()
+    asset_data = self.update_user_tags(asset_data, record_id)
     asset_update_data['data'] = self.read_property_values(asset_data, properties)
     file = asset_update_data['data'].get('file',{})
 
