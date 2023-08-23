@@ -6,7 +6,7 @@ import re
 from app import db
 
 
-class Select:
+class ColumnSelect:
   def __init__(self, model_class, args=None):
     self.camel_pat = re.compile(r'([A-Z0-9])')
     self.columns = [key for key in model_class.__mapper__.columns.keys()]
@@ -42,10 +42,7 @@ class Select:
     s = set(list2)
     return [x for x in list1 if x not in list2]
 
-  def apply(self, base_query):
-    if len(self.included_fields) == 0 and len(self.excluded_fields) == 0:
-      return base_query
-
+  def get_column_list(self):
     # get all columns
     fields = self.columns
 
@@ -56,6 +53,11 @@ class Select:
     if len(self.excluded_fields) > 0:
       fields = self.diff(fields, self.excluded_fields)
 
-    column_list = [field for field in fields if field in self.columns]
+    return [field for field in fields if field in self.columns]
 
+  def apply(self, base_query):
+    if len(self.included_fields) == 0 and len(self.excluded_fields) == 0:
+      return base_query
+      
+    column_list = self.get_column_list()
     return base_query.with_entities(*column_list)

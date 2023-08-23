@@ -14,7 +14,7 @@ from io import StringIO
 import re
 import os
 import json
-from .select import Select
+from .column_select import ColumnSelect
 from .filter import Filter
 from .sort import Sort
 from .asset_resolver import AssetResolver
@@ -121,7 +121,7 @@ class RestBehavior:
     return Filter(self.args, ignore_fields).apply(q)
 
   def apply_select(self, q):
-    return Select(model_class=self._model_class, args=self.get_args()).apply(q)
+    return ColumnSelect(model_class=self._model_class, args=self.get_args()).apply(q)
 
   def resolve_value(self, val):
     if '.' in val:
@@ -386,6 +386,7 @@ class RestBehavior:
 
   def pack(self, rec):
     if rec is not None:
+      print(f'REC: {rec._asdict()}',flush=True)
       self.resolve_assets(rec)
       return rec.to_json()
 
