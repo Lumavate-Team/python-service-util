@@ -9,6 +9,7 @@ from .behavior import TagRestBehavior
 
 from .column import DataColumn
 from .data_filter import DataRestFilter
+from .data_select import DataRestSelect
 from .file_filter import FileFilter
 
 from .models import AssetBaseModel

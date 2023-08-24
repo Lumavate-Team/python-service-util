@@ -1,7 +1,7 @@
 from .paging import Paging
 from .email import Email
 from .filter import Filter
-from .select import Select
+from .column_select import ColumnSelect
 from .sort import Sort
 from .rest import RestBehavior, icon_blueprint, make_id
 from .request import api_response, browser_response, LumavateRequest, LumavateMockRequest, get_lumavate_request, set_lumavate_request_factory
@@ -33,6 +33,7 @@ class BaseAsset:
   from .base_asset import DataColumn
   from .base_asset import DataRestFilter
   from .base_asset import DataRestSort
+  from .base_asset import DataRestSelect
   from .base_asset import FileFilter
 
   from .base_asset import AssetAccessRestBehavior
