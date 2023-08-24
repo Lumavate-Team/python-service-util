@@ -1,14 +1,13 @@
 from sqlalchemy import or_, cast, VARCHAR, func, Float
 from sqlalchemy.inspection import inspect
 import json
-import re
 
 from app import db
+from .util import camel_to_underscore
 
 
 class ColumnSelect:
   def __init__(self, model_class, args=None):
-    self.camel_pat = re.compile(r'([A-Z0-9])')
     self.columns = [key for key in model_class.__mapper__.columns.keys()]
 
     self.args = args
@@ -36,7 +35,7 @@ class ColumnSelect:
     return [self.to_underscore(item) if self.to_underscore(item) in self.columns else item for item in field_list]
 
   def to_underscore(self, field):
-    return self.camel_pat.sub(lambda x: '_' + x.group(1).lower(), field)
+    return camel_to_underscore(field)
 
   def diff(self,list1, list2):
     s = set(list2)
