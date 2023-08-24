@@ -386,7 +386,6 @@ class RestBehavior:
 
   def pack(self, rec):
     if rec is not None:
-      print(f'REC: {rec._asdict()}',flush=True)
       self.resolve_assets(rec)
       return rec.to_json()
 
