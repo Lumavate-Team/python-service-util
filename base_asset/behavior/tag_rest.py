@@ -5,10 +5,14 @@ import re
 import json
 from ..models import CategoryModel
 from .category_rest import CategoryRestBehavior
+from lumavate_exceptions import ValidationException
 
 class TagRestBehavior(CategoryRestBehavior):
   def __init__(self, model_class=CategoryModel, data=None):
     super().__init__(model_class, data, 'tag')
+
+  def banned_tags(self):
+    return ['undefined', 'none', 'true', 'false', 'null', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']
 
   def batch_tags(self):
     data = self.get_data().get('data', [])
@@ -21,6 +25,8 @@ class TagRestBehavior(CategoryRestBehavior):
 
       tag['type'] = 'tag'
       handler = CategoryRestBehavior(data=tag, category_type='tag')
+      if tag['name'].lower() in self.banned_tags():
+        raise ValidationException("Invalid tag name", api_field='name')
 
       if operation == 'add':
         response.append(handler.post())

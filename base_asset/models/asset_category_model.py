@@ -20,6 +20,10 @@ class AssetCategoryModel(BaseModel):
   category_id = Column(db.BigInteger, ForeignKey('category.id'), nullable=False)
 
   @classmethod
+  def get(cls, id):
+    return cls.get_all().filter_by(id=id).first()
+
+  @classmethod
   def get_all(cls, args=None):
     return cls.query.filter(cls.org_id==g.org_id)
 
