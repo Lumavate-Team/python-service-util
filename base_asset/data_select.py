@@ -14,7 +14,6 @@ class DataRestSelect(ColumnSelect):
     self.model = model_class
     self.asset_id = asset_id
     self.data_column_names = {column_def.get('columnName') for column_def in self.data_columns}
-    print(f'\ndata columns: {self.data_column_names}\n',flush=True)
 
     super().__init__(model_class=model_class, args=args)
 
