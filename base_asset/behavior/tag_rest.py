@@ -12,7 +12,7 @@ class TagRestBehavior(CategoryRestBehavior):
     super().__init__(model_class, data, 'tag')
 
   def banned_tags(self):
-    return ['undefined', 'none', 'true', 'false', 'null', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']
+    return ['undefined', 'none', 'true', 'false', 'null', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'bmp', 'csv', 'exe', 'jpg', 'jpeg', 'mov', 'mp3', 'mp4', 'png', 'tif', 'tiff', 'tmp', 'txt', 'zip', 'svg', 'gif']
 
   def validate_tag_name(self, property_data, record_id=None):
     if 'name' not in property_data:
