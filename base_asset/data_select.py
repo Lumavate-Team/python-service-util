@@ -1,4 +1,4 @@
-from sqlalchemy import update, select, func, case, cast, literal_column, and_, column,union, Text
+from sqlalchemy import update, select, func, case, cast, literal_column, and_, column,union, Text, join
 from sqlalchemy.orm import load_only
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY,aggregate_order_by
 from sqlalchemy.sql.functions import coalesce
@@ -14,6 +14,7 @@ class DataRestSelect(ColumnSelect):
     self.model = model_class
     self.asset_id = asset_id
     self.data_column_names = {column_def.get('columnName') for column_def in self.data_columns}
+    print(f'\ndata columns: {self.data_column_names}\n',flush=True)
 
     super().__init__(model_class=model_class, args=args)
 
@@ -55,6 +56,7 @@ class DataRestSelect(ColumnSelect):
     
     if len(data_column_list) > 0:
       data_columns = func.jsonb_each(self.model.submitted_data)
+      custom_data_columns = func.jsonb_each(self.model.submitted_data.op('->')('columns'))
 
       all_columns_cte = select([
         self.model.id,
@@ -62,17 +64,35 @@ class DataRestSelect(ColumnSelect):
         (Grouping(data_columns)).op('.')(literal_column('value')).cast(JSONB).label('value')
       ])\
       .select_from(self.model)\
-      .cte('component_properties_cte')
+      .cte('all_columns_cte')
       
-      data_column_query = select([all_columns_cte.c.id, all_columns_cte.c.key, all_columns_cte.c.value])\
+      data_column_query = select([all_columns_cte.c.id, coalesce(func.jsonb_object_agg(all_columns_cte.c.key, all_columns_cte.c.value), cast({}, JSONB)).label('submitted_data')])\
         .select_from(all_columns_cte)\
         .where(all_columns_cte.c.key.in_(data_column_list))\
-        .alias('data_columns_query')
+        .group_by(all_columns_cte.c.id)\
+        .cte('data_columns_query_cte')
 
-      query = select([data_column_query.c.id, coalesce(func.jsonb_object_agg(data_column_query.c.key, data_column_query.c.value), cast({}, JSONB)).label('submitted_data')])\
-              .select_from(all_columns_cte) \
-              .group_by(data_column_query.c.id)\
-              .alias('submitted_data_query')
+      all_custom_columns_cte = select([
+        self.model.id,
+        (Grouping(custom_data_columns).op('.')(literal_column('key'))).cast(Text).label('key'),
+        (Grouping(custom_data_columns)).op('.')(literal_column('value')).cast(JSONB).label('value')
+      ])\
+      .select_from(self.model)\
+      .cte('all_custom_columns_cte')
+      
+      data_custom_column_query = select([all_custom_columns_cte.c.id, coalesce(func.jsonb_object_agg(all_custom_columns_cte.c.key, all_custom_columns_cte.c.value), cast({}, JSONB)).label('columns')])\
+        .select_from(all_custom_columns_cte)\
+        .where(all_custom_columns_cte.c.key.in_(data_column_list))\
+        .group_by(all_custom_columns_cte.c.id)\
+        .cte('data_custom_columns_query_cte')
+              
+      # merge custom columns back into main submitted data returned columns
+      query = select([data_column_query.c.id, 
+                      func.jsonb_set(data_column_query.c.submitted_data, 
+                                     '{columns}',
+                                     coalesce(data_custom_column_query.c.columns, cast({}, JSONB))).label('submitted_data')])\
+              .select_from(join(data_column_query, data_custom_column_query, data_custom_column_query.c.id == data_column_query.c.id, isouter=True))\
+              .alias('filtered_submitted_data_columns')
 
       if 'submitted_data' not in model_column_list:
         model_column_list.append(query.c.submitted_data)
