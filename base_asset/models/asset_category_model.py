@@ -43,6 +43,6 @@ class AssetCategoryModel(BaseModel):
   @classmethod
   def get_all_by_type_and_ids(cls, type, category_ids):
     return cls.query.filter(and_(cls.org_id==g.org_id)).\
-      join(CategoryModel, and_(and_(CategoryModel.type==type, CategoryModel.id.in_(category_ids))))
+      join(CategoryModel, and_(CategoryModel.id == cls.category_id, CategoryModel.type==type, CategoryModel.id.in_(category_ids)))
 
       
