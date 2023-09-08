@@ -21,7 +21,7 @@ class CategoryModel(BaseModel):
 
   @classmethod
   def get_all(cls, args=None):
-    return cls.query.filter(and_(cls.org_id==g.org_id, cls.is_active==True))
+    return cls.query.filter(and_(or_(cls.org_id==g.org_id, cls.org_id==None), cls.is_active==True))
 
   @classmethod
   def get(cls, id):
@@ -38,3 +38,11 @@ class CategoryModel(BaseModel):
   @classmethod
   def get_by_ids(cls, ids):
     return cls.get_all().filter(cls.id.in_(ids))
+
+  @classmethod
+  def get_by_ids_and_type(cls, ids, type):
+    return cls.get_all().filter(and_(cls.id.in_(ids), cls.type==type))
+
+  @classmethod
+  def get_by_name_and_type(cls, name, type):
+    return cls.get_all().filter_by(and_(name=name, type=type)).first()
