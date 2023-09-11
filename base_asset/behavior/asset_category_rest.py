@@ -17,9 +17,18 @@ class AssetCategoryRestBehavior(RestBehavior):
       return self._model_class().get_all_by_asset(asset_id)
 
     return self._model_class().get_all_by_type_and_asset(self._category_type, asset_id)
-  
+
+  def delete_by_asset(self, asset_id):
+    if not self._category_type:
+      return self._model_class().delete_all_by_asset(asset_id)
+
+    return self._model_class().delete_all_by_type_and_asset(self._category_type, asset_id)
+
   def get_categories_by_asset(self, asset_id):
-    return self._model_class.get_categories_by_asset(asset_id)
+    if not self._category_type:
+      return self._model_class.get_categories_by_asset(asset_id)
+
+    return self._model_class.get_categories_by_type_and_asset(self._category_type, asset_id)
 
   def create_asset_category(self, asset_id, category_id):
     self.data = {'assetId': asset_id, 'categoryId': category_id, 'orgId': self.get_org_id()}

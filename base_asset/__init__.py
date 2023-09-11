@@ -6,6 +6,7 @@ from .behavior import DataRestBehavior
 from .behavior import DataRestSort
 from .behavior import FileAssetRestBehavior
 from .behavior import TagRestBehavior
+from .behavior import CategoryRestBehavior
 
 from .column import DataColumn
 from .data_filter import DataRestFilter

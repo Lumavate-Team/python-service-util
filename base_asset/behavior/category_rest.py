@@ -13,18 +13,20 @@ class CategoryRestBehavior(RestBehavior):
     super().__init__(model_class, data)
 
   def get_collection_query(self):
-    if not self._category_type:
-      return super().get_collection_query()
-
     if self._model_class is None:
       return None
 
-    q = self._model_class.get_all_by_type(self._category_type)
+    q = None
+    if not self._category_type:
+      q = self._model_class.get_all(self._category_type)
+    else:
+      q = self._model_class.get_all_by_type(self._category_type)
 
     q = self.apply_filter(q)
     q = self.apply_sort(q)
     q = self.apply_select(q)
     return q
+
 
   def post(self):
     if not self._category_type:
