@@ -16,7 +16,8 @@ from ...aws import FileBehavior
 from ..file_filter import FileFilter
 
 class FileAssetRestBehavior(AssetRestBehavior):
-  def __init__(self, model_class=FileAssetBaseModel, data=None):
+  def __init__(self, model_class=FileAssetBaseModel, data=None, file_mapping={}):
+    self._filetype_category_mapping = file_mapping
     super().__init__(model_class, data)
 
   def supports_filetype_category(self):
@@ -49,6 +50,11 @@ class FileAssetRestBehavior(AssetRestBehavior):
   def get_asset_properties(self):
     raise ApiException(500, "get asset properties not implemented")
 
+  def set_asset_filetype(self, asset_id, filetype):
+    if filetype in self._filetype_category_mapping:
+      filetype = self._filetype_category_mapping[filetype]
+    AssetFileTypeRestBehavior().set_asset_filetype(asset_id, filetype)
+
   def post(self):
     asset_data = self.get_data()
 
@@ -74,7 +80,7 @@ class FileAssetRestBehavior(AssetRestBehavior):
 
     self.update_user_tags(asset_data, result['id'])
     if self.supports_filetype_category():
-      AssetFileTypeRestBehavior().set_asset_filetype(result['id'], file.get('extension'))
+      self.set_asset_filetype(result['id'], file.get('extension'))
   
     return result
 
@@ -98,7 +104,7 @@ class FileAssetRestBehavior(AssetRestBehavior):
     response = super().put(record_id)
 
     if self.supports_filetype_category():
-      AssetFileTypeRestBehavior().set_asset_filetype(record_id, file.get('extension'))
+      self.set_asset_filetype(record_id, file.get('extension'))
 
     # delete the old file when a new one is uploaded
     if file and file.get('path','') != original_path:

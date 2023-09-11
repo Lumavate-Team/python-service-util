@@ -16,9 +16,6 @@ class AssetFileTypeRestBehavior(AssetCategoryRestBehavior):
     
     self.delete_by_asset(asset_id)
 
-    if filetype == 'jpg':
-      filetype = 'jpeg'
-
     tag = FileTypeCategoryRestBehavior().get_tag_by_name(filetype)
     if not tag:
       raise ValidationException('File type not found')

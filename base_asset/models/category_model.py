@@ -45,4 +45,4 @@ class CategoryModel(BaseModel):
 
   @classmethod
   def get_by_name_and_type(cls, name, type):
-    return cls.get_all().filter_by(and_(name=name, type=type)).first()
+    return cls.get_all().filter_by(name=name, type=type).first()
