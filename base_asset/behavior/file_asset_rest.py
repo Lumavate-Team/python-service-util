@@ -80,7 +80,7 @@ class FileAssetRestBehavior(AssetRestBehavior):
 
     self.update_user_tags(asset_data, result['id'])
     if self.supports_filetype_category():
-      self.set_asset_filetype(result['id'], file.get('extension'))
+      self.set_asset_filetype(result['id'], asset_data.get('file', {}).get('extension', ''))
   
     return result
 
