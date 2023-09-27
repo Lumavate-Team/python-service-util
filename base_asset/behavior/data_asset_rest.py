@@ -214,6 +214,7 @@ class DataAssetRestBehavior(AssetRestBehavior):
       'multiselect': None,
       'multiselect-chip': ColumnDataType.MULTISELECT,
       'numeric': ColumnDataType.NUMERIC,
+      'currency': ColumnDataType.CURRENCY,
       'page-link': ColumnDataType.DOCUMENT,
       'code-editor': None,
       'theme-color': ColumnDataType.TEXT,
