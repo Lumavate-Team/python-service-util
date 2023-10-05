@@ -1,4 +1,4 @@
-from flask import current_app
+from flask import current_app, g
 import boto3
 import botocore
 import os
@@ -205,3 +205,21 @@ class AwsClient(object):
       },
       'Status': 'Enabled'
     }
+
+  def add_sqs_message(self, data, queue_name):
+    sqs = boto3.client('sqs', region_name=self.default_region_name)
+    data['orgId'] = {
+      'DataType': 'String',
+      'StringValue': str(g.org_id)
+    }
+    data['bucket'] = {
+      'DataType': 'String',
+      'StringValue': self.default_bucket_name
+    }
+
+    return sqs.send_message(
+      QueueUrl=queue_name,
+      DelaySeconds=10,
+      MessageAttributes=data,
+      MessageBody=('Attributes Only')
+    )
