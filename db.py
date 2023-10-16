@@ -16,7 +16,7 @@ import json
 import os
 import re
 from .util import camel_to_underscore, underscore_to_camel
-
+from flask import request
 from lumavate_exceptions import ValidationException
 import lumavate_service_util as util
 try:
@@ -237,3 +237,6 @@ class BaseModel(db.Model):
   def check_column_for_null(self, col):
     if getattr(self, col.name) == None:
       raise ValidationException("Expected value", api_field=underscore_to_camel(self.get_column_name(col)))
+    
+  def _get_current_container():
+    return request.headers.get("Container-Id")  

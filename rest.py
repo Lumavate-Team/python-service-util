@@ -215,7 +215,7 @@ class RestBehavior:
   def validate(self, rec):
     if not db:
       raise Exception('Unable to validate record without db context')
-
+    
     db.session.flush()
     required = [col.name for col in self._model_class.__table__.columns if not col.nullable if col.name != 'id']
     for r in required:
@@ -365,7 +365,7 @@ class RestBehavior:
   def put(self, record_id):
     record_id = self.get_id(record_id)
     rec = self._model_class.get(record_id)
-
+    print(record_id, flush=True)
     self.apply_values(rec)
     self.validate(rec)
     return self.pack(rec)

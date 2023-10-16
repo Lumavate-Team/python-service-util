@@ -1,40 +1,36 @@
 from app import db
 from time import time,sleep
-from flask import request, g
-from sqlalchemy import ForeignKey, and_
-from sqlalchemy.sql import text, expression
-from sqlalchemy.orm import validates, relationship, load_only
-from sqlalchemy import or_, cast, VARCHAR, func
+from flask import g
+from sqlalchemy import and_
+from sqlalchemy.sql import expression
 from sqlalchemy.dialects.postgresql import JSONB
 from hashids import Hashids
-from lumavate_exceptions import ValidationException, NotFoundException
-
 from ...db import BaseModel, Column
-from .asset_model import AssetBaseModel
-import json
 
 
-class FileAssetBaseModel(BaseModel):
-  __tablename__ = 'file_asset'
+class MediaAssetModel(BaseModel):
+  __tablename__ = 'media_asset'
   org_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)
+  container_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)
+  old_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)
+  asset_type = Column(db.String(35), nullable=False)
+  public_id = Column(db.String(200), nullable=False)
   name = Column(db.String(35), nullable=False)
+  filename = Column(db.String(250))
   image = Column(JSONB, default=lambda: {}, nullable=True)
-  is_active = Column(db.Boolean, server_default=expression.true(), nullable=True)
   data = Column(JSONB)
   dependency_assets = Column(JSONB)
-  filename = Column(db.String(250))
-  public_id = Column(db.String(200), nullable=False)
-
+  is_active = Column(db.Boolean, server_default=expression.true(), nullable=True)
   created_by = Column(db.String(250), nullable=False)
   last_modified_by = Column(db.String(250), nullable=False)
 
   @classmethod
   def get_all(cls, args=None):
-    return cls.query.filter(and_(cls.org_id==g.org_id, cls.is_active==True))
+    return cls.query.filter(and_(cls.org_id==g.org_id, cls.container_id==cls._get_current_container(), cls.is_active==True))
 
   @classmethod
-  def get(cls, id):
-    return cls.get_all().filter_by(id=id).first()
+  def get(cls, old_id):
+    return cls.get_all().filter_by(old_id=old_id).first()
 
   @classmethod
   def get_by_public_id(cls, public_id):

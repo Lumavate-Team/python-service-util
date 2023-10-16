@@ -1,11 +1,11 @@
 from sqlalchemy import func
 from app import db
-from ..models import CategoryModel
+from ..models import ContentCategoryModel
 from .category_rest import CategoryRestBehavior
-from lumavate_exceptions import ValidationException
+from lumavate_exceptions import NotFoundException, ValidationException, InvalidOperationException
 
-class TagRestBehavior(CategoryRestBehavior):
-  def __init__(self, model_class=CategoryModel, data=None):
+class ContentCategoryRestBehavior(CategoryRestBehavior):
+  def __init__(self, model_class=ContentCategoryModel, data=None):
     super().__init__(model_class, data, 'tag')
 
   def banned_tags(self):
@@ -50,16 +50,22 @@ class TagRestBehavior(CategoryRestBehavior):
         continue
 
       tag['type'] = 'tag'
-      handler = CategoryRestBehavior(data=tag, category_type='tag')
+
+      if operation is 'add':
+        lastCategory = self._model_class.get_last_by_old_id()
+        tag['containerId'] = self._model_class._get_current_container()
+        tag['oldId'] = 1 if lastCategory == None else lastCategory.old_id+1
+
+      handler = CategoryRestBehavior(model_class=ContentCategoryModel, data=tag, category_type='tag')
       if tag['name'].lower() in self.banned_tags():
         raise ValidationException("Invalid tag name", api_field='name')
 
       if operation == 'add':
         response.append(handler.post())
       if operation == 'modify':
-        response.append(handler.put(tag['id']))
+        response.append(handler.put(tag['oldId']))
       if operation == 'delete':
-        response.append(handler.delete(tag['id']))
+        response.append(handler.delete(tag['oldId']))
 
     return response
   

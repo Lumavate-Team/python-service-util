@@ -2,7 +2,7 @@ from sqlalchemy import or_, cast, VARCHAR, func
 import json
 from ..models import AssetCategoryModel
 from .asset_category_rest import AssetCategoryRestBehavior
-from .filetype_category_rest import FileTypeCategoryRestBehavior
+from .content_category_rest import ContentCategoryRestBehavior
 from ...rest import RestBehavior
 from lumavate_exceptions import ValidationException
 
@@ -16,7 +16,7 @@ class AssetFileTypeRestBehavior(AssetCategoryRestBehavior):
     
     self.delete_by_asset(asset_id)
 
-    tag = FileTypeCategoryRestBehavior().get_tag_by_name(filetype)
+    tag = ContentCategoryRestBehavior().get_tag_by_name(filetype)
     if not tag:
       raise ValidationException('File type not found')
 

@@ -26,7 +26,7 @@ class BaseAsset:
   from .base_asset import AssetBaseModel
   from .base_asset import SecuredAssetBaseModel
   from .base_asset import DataAssetBaseModel
-  from .base_asset import FileAssetBaseModel
+  from .base_asset import MediaAssetModel
   from .base_asset import AssetAccessBaseModel
   from .base_asset import DataBaseModel
   from .base_asset import SettingsModel
@@ -35,15 +35,18 @@ class BaseAsset:
   from .base_asset import DataRestSort
   from .base_asset import DataRestSelect
   from .base_asset import FileFilter
+  from .base_asset import ContentCategoryModel
 
   from .base_asset import AssetAccessRestBehavior
   from .base_asset import AssetRestBehavior
-  from .base_asset import FileAssetRestBehavior
+  from .base_asset import MediaAssetRestBehavior
   from .base_asset import DataAssetRestBehavior
   from .base_asset import DataRestBehavior
   from .base_asset import SettingsRestBehavior
   from .base_asset import TagRestBehavior
   from .base_asset import CategoryRestBehavior
+  from .base_asset import ContentCategoryRestBehavior
+  from .base_asset import ContentCategoryMediaAssetRestBehavior
 
 class Util:
   from .util import org_hash

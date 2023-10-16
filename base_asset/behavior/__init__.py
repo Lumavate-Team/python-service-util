@@ -3,11 +3,12 @@ from .asset_access_rest import AssetAccessRestBehavior
 from .settings_rest import SettingsRestBehavior
 from .data_asset_rest import DataAssetRestBehavior
 from .data_rest import DataRestBehavior, DataRestFilter, DataRestSort
-from .file_asset_rest import FileAssetRestBehavior
+from .media_asset_rest import MediaAssetRestBehavior
 from .tag_rest import TagRestBehavior
 from .category_rest import CategoryRestBehavior
 from .asset_category_rest import AssetCategoryRestBehavior
 from .asset_tag_rest import AssetTagRestBehavior
 from .static_category_rest import StaticCategoryRestBehavior
-from .filetype_category_rest import FileTypeCategoryRestBehavior
+from .content_category_rest import ContentCategoryRestBehavior
 from .asset_filetype_rest import AssetFileTypeRestBehavior
+from .content_category_media_asset_rest import ContentCategoryMediaAssetRestBehavior
