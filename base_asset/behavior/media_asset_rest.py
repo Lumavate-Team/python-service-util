@@ -47,6 +47,12 @@ class MediaAssetRestBehavior(AssetRestBehavior):
       filetype = self._filetype_category_mapping[filetype]
     AssetFileTypeRestBehavior().set_asset_filetype(asset_id, filetype)
 
+  def get_single(self, record_id):
+    record_id = self.get_id(record_id)
+    q = self.apply_filter(self._model_class.get_all()).filter(self._model_class.old_id == record_id)
+    r = self.apply_select(q).first()
+    return self.pack(r)
+
   def post(self):
     asset_data = self.get_data()
 
@@ -56,7 +62,7 @@ class MediaAssetRestBehavior(AssetRestBehavior):
     asset_data = self.update_file_tags(asset_data)
 
     lastCategory = self._model_class.get_last_by_old_id()
-
+    
     post_data = {
       'name': asset_data.get('assetName'),
       'orgId': self.get_org_id(),
@@ -71,7 +77,7 @@ class MediaAssetRestBehavior(AssetRestBehavior):
     # pull filename out into column for easy search query
     if filename:
       post_data['filename'] = filename
-
+    
     self.data = post_data
     # skip asset rest since we already built up the post data
     rec = self.create_record(self._model_class)
@@ -87,12 +93,12 @@ class MediaAssetRestBehavior(AssetRestBehavior):
   def put(self, record_id):
     record = self.get_single(record_id)
     original_path = record.get('data',{}).get('file',{}).get('path','')
-
+  
     asset_update_data = self.get_data()
     asset_data = asset_update_data.get('data', {})
 
     properties = self.get_asset_properties()
-    asset_data = self.update_user_tags(asset_data, record_id)
+    asset_data = self.update_user_tags(asset_data, record['id'])
     asset_update_data['data'] = self.read_property_values(asset_data, properties)
     file = asset_update_data['data'].get('file',{})
 
@@ -101,7 +107,29 @@ class MediaAssetRestBehavior(AssetRestBehavior):
       asset_update_data['filename']=file['filename']
 
     self.data = asset_update_data
-    response = super().put(record_id)
+    asset_update_data = self.get_data()
+    asset_data = asset_update_data.get('data', {})
+
+    self.validate_asset_name(asset_data, record['id'])
+    asset_data = self.update_user_tags(asset_data, record['id'])
+    asset_update_data['data'] = self.update_file_tags(asset_data)
+    self.data = asset_update_data
+    if 'assetName' in asset_data:
+      self.data['name'] = asset_data['assetName']
+
+    self.data['dependencyAssets'] = self.get_dependencies(asset_update_data)
+
+    record_id = self.get_id(record_id)
+    rec = self._model_class.get(record_id)
+
+    self.apply_values(rec)
+    self.validate(rec)
+    response_data = self.pack(rec)
+
+    response = {
+      'state': asset_update_data.get('state', 'promoted'),
+      'payload': response_data
+    }
 
     if self.supports_filetype_category():
       self.set_asset_filetype(record_id, file.get('extension'))
@@ -142,5 +170,5 @@ class MediaAssetRestBehavior(AssetRestBehavior):
   def update_user_tags(self, data, asset_id):
     if not data or not isinstance(data, dict) or not 'tags' in data or not self.supports_tags():
       return data
-
+  
     return ContentCategoryMediaAssetRestBehavior(data=data).update_asset_tags(asset_id)  

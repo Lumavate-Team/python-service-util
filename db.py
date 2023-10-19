@@ -7,6 +7,7 @@ from sqlalchemy_utils.functions import get_query_entities
 from sqlalchemy.engine.url import make_url
 from flask import g, current_app
 from sqlalchemy.inspection import inspect
+from sqlalchemy import desc
 from flask_sqlalchemy import (SQLAlchemy, BaseQuery, SignallingSession,
         SessionBase, _record_queries, _EngineDebuggingSignalEvents)
 from itsdangerous import URLSafeSerializer
@@ -240,3 +241,7 @@ class BaseModel(db.Model):
     
   def _get_current_container():
     return request.headers.get("Container-Id")  
+  
+  @classmethod
+  def get_last_by_old_id(cls):
+    return cls.get_all().order_by(desc(cls.old_id)).first()

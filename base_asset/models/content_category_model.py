@@ -41,7 +41,3 @@ class ContentCategoryModel(BaseModel):
   @classmethod
   def get_by_name_and_type(cls, name, type):
     return cls.get_all().filter_by(name=name, type=type).first()
-  
-  @classmethod
-  def get_last_by_old_id(cls):
-    return cls.get_all().order_by(desc(cls.old_id)).first()

@@ -11,8 +11,8 @@ from ...db import BaseModel, Column
 class MediaAssetModel(BaseModel):
   __tablename__ = 'media_asset'
   org_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)
-  container_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)
-  old_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)
+  container_id = Column(db.BigInteger, nullable=False, createable=True, updateable=True, viewable=True)
+  old_id = Column(db.BigInteger, nullable=False, createable=True, updateable=True, viewable=True)
   asset_type = Column(db.String(35), nullable=False)
   public_id = Column(db.String(200), nullable=False)
   name = Column(db.String(35), nullable=False)

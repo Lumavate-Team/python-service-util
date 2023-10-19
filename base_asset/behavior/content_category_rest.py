@@ -50,8 +50,8 @@ class ContentCategoryRestBehavior(CategoryRestBehavior):
         continue
 
       tag['type'] = 'tag'
-
-      if operation is 'add':
+      
+      if operation == 'add':
         lastCategory = self._model_class.get_last_by_old_id()
         tag['containerId'] = self._model_class._get_current_container()
         tag['oldId'] = 1 if lastCategory == None else lastCategory.old_id+1
@@ -59,7 +59,7 @@ class ContentCategoryRestBehavior(CategoryRestBehavior):
       handler = CategoryRestBehavior(model_class=ContentCategoryModel, data=tag, category_type='tag')
       if tag['name'].lower() in self.banned_tags():
         raise ValidationException("Invalid tag name", api_field='name')
-
+      
       if operation == 'add':
         response.append(handler.post())
       if operation == 'modify':
