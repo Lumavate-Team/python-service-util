@@ -1,5 +1,6 @@
 from sqlalchemy import or_, cast, VARCHAR, func
 import json
+from ..models import ContentCategoryModel
 from ..models import ContentCategoryMediaAssetModel
 from .asset_category_rest import AssetCategoryRestBehavior
 from ...rest import RestBehavior
@@ -15,12 +16,14 @@ class ContentCategoryMediaAssetRestBehavior(AssetCategoryRestBehavior):
     added_tags = []
     deleted_tags = []
 
-    for tag in current_tags:
-      if tag not in existing_tags:
-        added_tags.append(tag)
+    full_data = ContentCategoryModel.get_by_ids_and_type(current_tags, 'tag').all();
+    
+    for tag in full_data:
+      if tag.id not in existing_tags:
+        added_tags.append(tag.id)
     
     for tag in existing_tags.keys():
-      if tag not in current_tags:
+      if not any(current_tag.id == tag for current_tag in full_data):
         deleted_tags.append(tag)
 
     for tag_id in added_tags:

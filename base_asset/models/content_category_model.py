@@ -41,3 +41,11 @@ class ContentCategoryModel(BaseModel):
   @classmethod
   def get_by_name_and_type(cls, name, type):
     return cls.get_all().filter_by(name=name, type=type).first()
+  
+  @classmethod
+  def get_by_primary_ids(cls, ids):
+    return cls.get_all().filter(cls.id.in_(ids))
+
+  @classmethod
+  def get_by_primary_ids_and_type(cls, ids, type):
+    return cls.get_all().filter(and_(cls.id.in_(ids), cls.type==type))

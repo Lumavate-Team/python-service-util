@@ -25,11 +25,11 @@ class ContentCategoryMediaAssetModel(BaseModel):
 
   @classmethod
   def get_categories_by_asset(cls, media_asset_id):
-    return ContentCategoryModel.get_by_ids(cls.query.with_entities(ContentCategoryMediaAssetModel.content_category_id).filter(and_(cls.org_id==g.org_id, cls.media_asset_id==media_asset_id)).all())
+    return ContentCategoryModel.get_by_primary_ids(cls.query.with_entities(ContentCategoryMediaAssetModel.content_category_id).filter(and_(cls.org_id==g.org_id, cls.media_asset_id==media_asset_id)).all())
   
   @classmethod
   def get_categories_by_type_and_asset(cls, type, media_asset_id):
-    return ContentCategoryModel.get_by_ids_and_type(cls.query.with_entities(ContentCategoryMediaAssetModel.content_category_id).filter(and_(cls.org_id==g.org_id, cls.media_asset_id==media_asset_id)).all(), type)
+    return ContentCategoryModel.get_by_primary_ids_and_type(cls.query.with_entities(ContentCategoryMediaAssetModel.content_category_id).filter(and_(cls.org_id==g.org_id, cls.media_asset_id==media_asset_id)).all(), type)
 
   @classmethod
   def get_all_by_type_and_asset(cls, type, media_asset_id):

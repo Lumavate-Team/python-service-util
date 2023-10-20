@@ -71,3 +71,6 @@ class ContentCategoryRestBehavior(CategoryRestBehavior):
   
   def get_asset_tags(self, asset_id):
     return self._model_class.get_by_asset_id(asset_id)
+  
+  def get_by_old_ids_and_tag(self, old_ids):
+    return self._model_class.get_by_ids_and_type(old_ids, 'tag')

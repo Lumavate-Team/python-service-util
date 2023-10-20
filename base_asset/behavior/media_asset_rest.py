@@ -93,12 +93,11 @@ class MediaAssetRestBehavior(AssetRestBehavior):
   def put(self, record_id):
     record = self.get_single(record_id)
     original_path = record.get('data',{}).get('file',{}).get('path','')
-  
+
     asset_update_data = self.get_data()
     asset_data = asset_update_data.get('data', {})
 
     properties = self.get_asset_properties()
-    asset_data = self.update_user_tags(asset_data, record['id'])
     asset_update_data['data'] = self.read_property_values(asset_data, properties)
     file = asset_update_data['data'].get('file',{})
 
@@ -160,7 +159,7 @@ class MediaAssetRestBehavior(AssetRestBehavior):
       json = rec.to_json()
       if self.expanded('tags') and self.supports_tags():
         json['expand'] = {}
-        tags = ContentCategoryMediaAssetRestBehavior().get_categories_by_asset(rec.id)
+        tags = ContentCategoryMediaAssetRestBehavior().get_categories_by_asset(rec.id).all()
         json['expand']['tags'] = [tag.to_json() for tag in tags]
 
       return json
