@@ -35,12 +35,11 @@ class CategoryRestBehavior(RestBehavior):
     data = self.get_data()
     data['type'] = self._category_type
     self.data = data
-    
+
     return super().post()
 
   def put(self, record_id):
     record = self._model_class.get(record_id)
-
     if self._category_type and record.type != self._category_type:
       raise NotFoundException(404, '')
 

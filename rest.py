@@ -215,7 +215,7 @@ class RestBehavior:
   def validate(self, rec):
     if not db:
       raise Exception('Unable to validate record without db context')
-    
+
     db.session.flush()
     required = [col.name for col in self._model_class.__table__.columns if not col.nullable if col.name != 'id']
     for r in required:
