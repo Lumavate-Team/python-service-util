@@ -205,6 +205,22 @@ class AwsClient(object):
       },
       'Status': 'Enabled'
     }
+  
+  def convert_s3_to_https(self, uri):
+    if not uri.startswith('s3://'):
+      return uri
+
+    uri = uri[5:]
+    return f'https://s3.amazonaws.com/{uri}'
+
+  def get_path_from_uri(self, uri):
+    index = uri.find(self.default_bucket_name + '/')
+    if index < 0:
+      return uri
+
+    index = index + len(self.default_bucket_name + '/')
+
+    return uri[index:]
 
   def add_sqs_message(self, data, queue_name):
     sqs = boto3.client('sqs', region_name=self.default_region_name)
