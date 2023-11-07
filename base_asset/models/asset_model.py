@@ -24,6 +24,7 @@ class AssetBaseModel(BaseModel):
 
   @classmethod
   def get_all(cls, args=None):
+    print(g.org_id, flush=True)
     return cls.query.filter(and_(cls.org_id==g.org_id, cls.is_active==True))
 
   @classmethod
