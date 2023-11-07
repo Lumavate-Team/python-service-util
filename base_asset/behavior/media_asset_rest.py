@@ -6,6 +6,7 @@ from ..models import MediaAssetModel
 from .content_category_media_asset_rest import ContentCategoryMediaAssetRestBehavior
 from ...aws import FileBehavior
 from ..file_filter import FileFilter
+from ...paging import Paging
 
 class MediaAssetRestBehavior(AssetRestBehavior):
   def __init__(self, model_class=MediaAssetModel, data=None, file_mapping={}):
@@ -14,6 +15,28 @@ class MediaAssetRestBehavior(AssetRestBehavior):
 
   def supports_filetype_category(self):
     return False
+  
+  def get_collection(self, current_container = False):
+    if self._model_class is None:
+      return None
+
+    q = self.get_collection_query(current_container)
+
+    return Paging().run(q, self.pack)
+  
+  def get_collection_query(self, current_container = False):
+    if self._model_class is None:
+      return None
+
+    if(current_container):
+      q = self._model_class.get_all_current_container()
+    else:
+      q = self._model_class.get_all()
+
+    q = self.apply_filter(q)
+    q = self.apply_sort(q)
+    q = self.apply_select(q)
+    return q
 
   def get_asset_content(self, asset_id):
     asset = self._model_class.get(asset_id)

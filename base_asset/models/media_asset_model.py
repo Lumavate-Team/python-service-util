@@ -29,7 +29,7 @@ class MediaAssetModel(BaseModel):
     return cls.query.filter(and_(cls.org_id==g.org_id, cls.is_active==True))
   
   @classmethod
-  def get_all_in_container(cls):
+  def get_all_current_container(cls):
     return cls.query.filter(and_(cls.org_id==g.org_id, cls.container_id==cls._get_current_container(), cls.is_active==True))
 
   @classmethod
