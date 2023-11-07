@@ -25,9 +25,11 @@ class MediaAssetModel(BaseModel):
   last_modified_by = Column(db.String(250), nullable=False)
 
   @classmethod
-  def get_all(cls, args=None):
-    print(cls._get_current_container, flush=True)
-    print(g.org_id, flush=True)
+  def get_all(cls):
+    return cls.query.filter(and_(cls.org_id==g.org_id, cls.is_active==True))
+  
+  @classmethod
+  def get_all_in_container(cls):
     return cls.query.filter(and_(cls.org_id==g.org_id, cls.container_id==cls._get_current_container(), cls.is_active==True))
 
   @classmethod

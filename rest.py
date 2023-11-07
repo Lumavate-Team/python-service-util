@@ -33,7 +33,6 @@ def make_id(id, classification):
 
 class RestBehavior:
   def __init__(self, model_class, data=None, args=None):
-    print(model_class, flush=True)
     self._model_class = model_class
     self.data = data
     self.args = args
