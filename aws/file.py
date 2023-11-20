@@ -79,6 +79,12 @@ class FileBehavior(object):
 
     self.__client.delete_objects(path_list)
 
+  def delete_by_prefix(self, path):
+    if not path:
+      return
+    
+    self.__client.delete_objects_with_prefix(path)
+
   def get_full_path(self, path=None, file_name=None):
     if file_name is None:
       file_name = self.__client.objects.generate_unique_key()
