@@ -6,7 +6,7 @@ from dateutil.parser import parse
 from lumavate_exceptions import ValidationException
 from sqlalchemy.inspection import inspect
 from ..filter import Filter
-from .models import AssetCategoryModel, CategoryModel
+from .models import ContentCategoryMediaAssetModel, CategoryModel
 import re
 
 class FileFilter(Filter):
@@ -28,13 +28,13 @@ class FileFilter(Filter):
 
       return base_query.filter(\
         self.get_column(base_query, 'id').\
-          in_(AssetCategoryModel.get_all_by_type_and_ids('tag', values).with_entities(AssetCategoryModel.asset_id)))
+          in_(ContentCategoryMediaAssetModel.get_all_by_type_and_ids('tag', values).with_entities(ContentCategoryMediaAssetModel.media_asset_id)))
 
     if op == 'eq' and column_name == 'filetype':
       values = value.split('||')
 
       return base_query.filter(\
         self.get_column(base_query, 'id').\
-          in_(AssetCategoryModel.get_all_by_type_and_ids('filetype', values).with_entities(AssetCategoryModel.asset_id)))
+          in_(ContentCategoryMediaAssetModel.get_all_by_type_and_ids('filetype', values).with_entities(ContentCategoryMediaAssetModel.media_asset_id)))
     else:
       return super().apply_column(base_query, column_name, op, value)
