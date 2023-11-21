@@ -6,7 +6,7 @@ from lumavate_exceptions import NotFoundException, ValidationException, InvalidO
 
 class ContentCategoryRestBehavior(CategoryRestBehavior):
   def __init__(self, model_class=ContentCategoryModel, data=None):
-    super().__init__(model_class, data, 'tag')
+    super().__init__(model_class, data)
 
   def banned_tags(self):
     return ['undefined', 'none', 'true', 'false', 'null', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'bmp', 'csv', 'exe', 'jpg', 'jpeg', 'mov', 'mp3', 'mp4', 'png', 'tif', 'tiff', 'tmp', 'txt', 'zip', 'svg', 'gif']
