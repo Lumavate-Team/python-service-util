@@ -37,7 +37,7 @@ class FileFilter(Filter):
       
       for value in values:
         key = [{'extension': 'pdf'}]
-        queries.append(data_column.params.contains(key))
+        queries.append(data_column.contains(key))
         # queries.append(func.json_contains(data_column, func.json_object("file.extension", value)))
 
       return base_query.filter(or_(*[query for query in queries]))
