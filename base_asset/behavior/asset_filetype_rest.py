@@ -1,13 +1,10 @@
-from sqlalchemy import or_, cast, VARCHAR, func
-import json
-from ..models import AssetCategoryModel
-from .asset_category_rest import AssetCategoryRestBehavior
-from .content_category_rest import ContentCategoryRestBehavior
-from ...rest import RestBehavior
+from ..models import ContentCategoryMediaAssetModel
+from .content_category_media_asset_rest import ContentCategoryMediaAssetRestBehavior
+from .asset_filetype_rest import FileTypeCategoryRestBehavior
 from lumavate_exceptions import ValidationException
 
-class AssetFileTypeRestBehavior(AssetCategoryRestBehavior):
-  def __init__(self, model_class=AssetCategoryModel, data=None):
+class AssetFileTypeRestBehavior(ContentCategoryMediaAssetRestBehavior):
+  def __init__(self, model_class=ContentCategoryMediaAssetModel, data=None):
     super().__init__(model_class, data, 'filetype')
 
   def set_asset_filetype(self, asset_id, filetype):
@@ -16,7 +13,7 @@ class AssetFileTypeRestBehavior(AssetCategoryRestBehavior):
     
     self.delete_by_asset(asset_id)
 
-    tag = ContentCategoryRestBehavior().get_tag_by_name(filetype)
+    tag = FileTypeCategoryRestBehavior().get_tag_by_name(filetype)
     if not tag:
       raise ValidationException('File type not found')
 

@@ -31,19 +31,19 @@ class FileFilter(Filter):
           in_(ContentCategoryMediaAssetModel.get_all_by_type_and_ids('tag', values).with_entities(ContentCategoryMediaAssetModel.media_asset_id)))
 
     if op == 'eq' and column_name == 'filetype':
-      data_column = self.get_column(base_query, 'data')
+      # data_column = self.get_column(base_query, 'data')
       values = value.split('||')
-      queries = []
+      # queries = []
       
-      for value in values:
-        key = [{'extension': 'pdf'}]
-        queries.append(data_column.contains(key))
-        # queries.append(func.json_contains(data_column, func.json_object("file.extension", value)))
+      # for value in values:
+      #   key = [{'file.extension': 'pdf'}]
+      #   queries.append(data_column.contains(key))
+      #   # queries.append(func.json_contains(data_column, func.json_object("file.extension", value)))
 
-      return base_query.filter(or_(*[query for query in queries]))
+      # return base_query.filter(or_(*[query for query in queries]))
 
-      # return base_query.filter(\
-      #   self.get_column(base_query, 'id').\
-      #     in_(ContentCategoryMediaAssetModel.get_all_by_type_and_ids('filetype', values).with_entities(ContentCategoryMediaAssetModel.media_asset_id)))
+      return base_query.filter(\
+        self.get_column(base_query, 'id').\
+          in_(ContentCategoryMediaAssetModel.get_all_by_type_and_ids('filetype', values).with_entities(ContentCategoryMediaAssetModel.media_asset_id)))
     else:
       return super().apply_column(base_query, column_name, op, value)
