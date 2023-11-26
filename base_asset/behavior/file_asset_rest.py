@@ -14,6 +14,7 @@ from .asset_filetype_rest import AssetFileTypeRestBehavior
 from ..models import FileAssetBaseModel
 from ...aws import FileBehavior
 from ..file_filter import FileFilter
+from ...paging import Paging
 
 class FileAssetRestBehavior(AssetRestBehavior):
   def __init__(self, model_class=FileAssetBaseModel, data=None, file_mapping={}):
