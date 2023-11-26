@@ -33,11 +33,11 @@ class AssetCategoryModel(BaseModel):
 
   @classmethod
   def get_categories_by_asset(cls, asset_id):
-    return CategoryModel.get_by_ids(cls.query.with_entities(AssetCategoryModel.category_id).filter(and_(cls.org_id==g.org_id, cls.asset_id==asset_id)).all())
+    return CategoryModel.get_by_primary_ids(cls.query.with_entities(AssetCategoryModel.category_id).filter(and_(cls.org_id==g.org_id, cls.asset_id==asset_id)).all())
   
   @classmethod
   def get_categories_by_type_and_asset(cls, type, asset_id):
-    return CategoryModel.get_by_ids_and_type(cls.query.with_entities(AssetCategoryModel.category_id).filter(and_(cls.org_id==g.org_id, cls.asset_id==asset_id)).all(), type)
+    return CategoryModel.get_by_primary_ids_and_type(cls.query.with_entities(AssetCategoryModel.category_id).filter(and_(cls.org_id==g.org_id, cls.asset_id==asset_id)).all(), type)
 
   @classmethod
   def get_all_by_type_and_asset(cls, type, asset_id):

@@ -17,14 +17,16 @@ import json
 class FileAssetBaseModel(BaseModel):
   __tablename__ = 'file_asset'
   org_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)
+  container_id = Column(db.BigInteger, nullable=False, createable=True, updateable=True, viewable=True)
+  old_id = Column(db.BigInteger, nullable=False, createable=True, updateable=True, viewable=True)
+  asset_type = Column(db.String(35), nullable=False)
+  public_id = Column(db.String(200), nullable=False)
   name = Column(db.String(35), nullable=False)
+  filename = Column(db.String(250))
   image = Column(JSONB, default=lambda: {}, nullable=True)
-  is_active = Column(db.Boolean, server_default=expression.true(), nullable=True)
   data = Column(JSONB)
   dependency_assets = Column(JSONB)
-  filename = Column(db.String(250))
-  public_id = Column(db.String(200), nullable=False)
-
+  is_active = Column(db.Boolean, server_default=expression.true(), nullable=True)
   created_by = Column(db.String(250), nullable=False)
   last_modified_by = Column(db.String(250), nullable=False)
 
@@ -33,8 +35,12 @@ class FileAssetBaseModel(BaseModel):
     return cls.query.filter(and_(cls.org_id==g.org_id, cls.is_active==True))
 
   @classmethod
+  def get_all_current_container(cls):
+    return cls.query.filter(and_(cls.org_id==g.org_id, cls.container_id==cls._get_current_container(), cls.is_active==True))
+
+  @classmethod
   def get(cls, id):
-    return cls.get_all().filter_by(id=id).first()
+    return cls.get_all().filter_by(old_id=id).first()
 
   @classmethod
   def get_by_public_id(cls, public_id):

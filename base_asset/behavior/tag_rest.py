@@ -1,4 +1,4 @@
-from sqlalchemy import or_, cast, VARCHAR, func
+from sqlalchemy import and_, or_, cast, VARCHAR, func
 from app import db
 import os
 import re
@@ -19,7 +19,7 @@ class TagRestBehavior(CategoryRestBehavior):
       return
 
     existing_tags = self._model_class.get_all_by_type('tag') \
-        .filter(func.lower(self._model_class.name) == func.lower(property_data.get('name'))).first()
+        .filter(and_(self._model_class.container_id==self._model_class._get_current_container(), func.lower(self._model_class.name) == func.lower(property_data.get('name')))).first()
 
     if existing_tags is not None and (record_id is None or existing_tags.id != record_id):
       name = property_data.get('name')
@@ -29,7 +29,7 @@ class TagRestBehavior(CategoryRestBehavior):
     new_data = [tag for tag in data if tag.get('operation', '') and tag.get('operation') != 'delete']
     names = [tag['name'].lower() for tag in new_data]
     existing_tags = self._model_class.get_all_by_type('tag') \
-        .filter(func.lower(self._model_class.name).in_(names))
+        .filter(and_(self._model_class.container_id==self._model_class._get_current_container(), func.lower(self._model_class.name).in_(names)))
 
     for tag in existing_tags:
       found = False
@@ -53,6 +53,12 @@ class TagRestBehavior(CategoryRestBehavior):
         continue
 
       tag['type'] = 'tag'
+
+      if operation == 'add':
+        lastCategory = self._model_class.get_last_by_old_id()
+        tag['containerId'] = self._model_class._get_current_container()
+        tag['oldId'] = 1 if lastCategory == None else lastCategory.old_id+1
+
       handler = CategoryRestBehavior(data=tag, category_type='tag')
       if tag['name'].lower() in self.banned_tags():
         raise ValidationException("Invalid tag name", api_field='name')
@@ -60,11 +66,14 @@ class TagRestBehavior(CategoryRestBehavior):
       if operation == 'add':
         response.append(handler.post())
       if operation == 'modify':
-        response.append(handler.put(tag['id']))
+        response.append(handler.put(tag['oldId']))
       if operation == 'delete':
-        response.append(handler.delete(tag['id']))
+        response.append(handler.delete(tag['oldId']))
 
     return response
   
   def get_asset_tags(self, asset_id):
     return self._model_class.get_by_asset_id(asset_id)
+
+  def get_by_old_ids_and_tag(self, old_ids):
+    return self._model_class.get_by_ids_and_type(old_ids, 'tag')

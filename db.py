@@ -1,11 +1,12 @@
 from sqlalchemy.orm.interfaces import MapperExtension
 from datetime import datetime, date
 import sqlalchemy
+from sqlalchemy import desc
 from sqlalchemy.schema import Sequence
 from sqlalchemy.inspection import inspect
 from sqlalchemy_utils.functions import get_query_entities
 from sqlalchemy.engine.url import make_url
-from flask import g, current_app
+from flask import g, current_app, request
 from sqlalchemy.inspection import inspect
 from flask_sqlalchemy import (SQLAlchemy, BaseQuery, SignallingSession,
         SessionBase, _record_queries, _EngineDebuggingSignalEvents)
@@ -237,3 +238,11 @@ class BaseModel(db.Model):
   def check_column_for_null(self, col):
     if getattr(self, col.name) == None:
       raise ValidationException("Expected value", api_field=underscore_to_camel(self.get_column_name(col)))
+
+
+  def _get_current_container():
+    return request.headers.get("Container-Id")
+
+  @classmethod
+  def get_last_by_old_id(cls):
+    return cls.get_all().order_by(desc(cls.old_id)).first()
