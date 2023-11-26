@@ -6,8 +6,9 @@ from .asset_category_rest import AssetCategoryRestBehavior
 from ...rest import RestBehavior
 
 class ContentCategoryMediaAssetRestBehavior(AssetCategoryRestBehavior):
-  def __init__(self, model_class=ContentCategoryMediaAssetModel, data=None):
-    super().__init__(model_class, data, 'tag')
+  def __init__(self, model_class=ContentCategoryMediaAssetModel, data=None, category_type=''):
+    self._category_type = category_type
+    super().__init__(model_class, data, category_type)
 
   def update_asset_tags(self, asset_id):
     data = self.get_data()
