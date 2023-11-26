@@ -12,3 +12,4 @@ from .static_category_rest import StaticCategoryRestBehavior
 from .content_category_rest import ContentCategoryRestBehavior
 from .asset_filetype_rest import AssetFileTypeRestBehavior
 from .content_category_media_asset_rest import ContentCategoryMediaAssetRestBehavior
+from .filetype_category_rest import FileTypeCategoryRestBehavior

@@ -9,6 +9,7 @@ from .behavior import TagRestBehavior
 from .behavior import CategoryRestBehavior
 from .behavior import ContentCategoryRestBehavior
 from .behavior import ContentCategoryMediaAssetRestBehavior
+from .behavior import FileTypeCategoryRestBehavior
 
 from .column import DataColumn
 from .data_filter import DataRestFilter
