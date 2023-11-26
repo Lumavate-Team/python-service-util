@@ -47,7 +47,6 @@ class BaseAsset:
   from .base_asset import CategoryRestBehavior
   from .base_asset import ContentCategoryRestBehavior
   from .base_asset import ContentCategoryMediaAssetRestBehavior
-  from .base_asset import FileTypeCategoryRestBehavior
 
 class Util:
   from .util import org_hash

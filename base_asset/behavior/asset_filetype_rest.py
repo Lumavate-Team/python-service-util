@@ -1,6 +1,6 @@
 from ..models import ContentCategoryMediaAssetModel
 from .content_category_media_asset_rest import ContentCategoryMediaAssetRestBehavior
-from .asset_filetype_rest import FileTypeCategoryRestBehavior
+from .filetype_category_rest import FileTypeCategoryRestBehavior
 from lumavate_exceptions import ValidationException
 
 class AssetFileTypeRestBehavior(ContentCategoryMediaAssetRestBehavior):
