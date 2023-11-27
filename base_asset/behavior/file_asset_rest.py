@@ -96,7 +96,7 @@ class FileAssetRestBehavior(AssetRestBehavior):
       'name': asset_data.get('assetName'),
       'orgId': self.get_org_id(),
       'containerId': int(self._model_class._get_current_container()),
-      'oldId': 1 if lastCategory == None else lastCategory.old_id+1,
+      # 'oldId': 1 if lastCategory == None else lastCategory.old_id+1,
       'assetType': self.get_asset_type(),
       'isActive': True,
       'data': asset_data,
@@ -117,7 +117,6 @@ class FileAssetRestBehavior(AssetRestBehavior):
     self.validate(rec)
     result = self.pack(rec)
     asset_data = self.update_user_tags(asset_data, result['id'])
-    self.update_file_tags(asset_data)
     if self.supports_filetype_category():
       self.set_asset_filetype(result['id'], asset_data.get('file', {}).get('extension', ''))
   

@@ -57,7 +57,7 @@ class TagRestBehavior(CategoryRestBehavior):
       if operation == 'add':
         lastCategory = self._model_class.get_last_by_old_id()
         tag['containerId'] = self._model_class._get_current_container()
-        tag['oldId'] = 1 if lastCategory == None else lastCategory.old_id+1
+        # tag['oldId'] = 1 if lastCategory == None else lastCategory.old_id+1
 
       handler = CategoryRestBehavior(data=tag, category_type='tag')
       if tag['name'].lower() in self.banned_tags():
