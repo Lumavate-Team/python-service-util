@@ -16,7 +16,7 @@ class CategoryModel(BaseModel):
   __tablename__ = 'category'
   org_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)
   container_id = Column(db.BigInteger, nullable=False, createable=True, updateable=True, viewable=True)
-  old_id = Column(db.BigInteger, nullable=False, createable=True, updateable=True, viewable=True)
+  old_id = Column(db.BigInteger, nullable=False, createable=False, updateable=False, viewable=True)
   name = Column(db.String(35), nullable=False)
   type = Column(db.String(35), nullable=False)
   is_active = Column(db.Boolean, server_default=expression.true(), nullable=True)
