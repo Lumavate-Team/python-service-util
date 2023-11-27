@@ -207,7 +207,7 @@ class BaseModel(db.Model):
     return True
 
   def get_required_columns(self):
-    return [col for col in self.__table__.columns if not col.nullable and col.name != 'id']
+    return [col for col in self.__table__.columns if not col.nullable and col.name != 'id' and col.name != 'old_id']
 
   def to_json(self):
     payload = {
