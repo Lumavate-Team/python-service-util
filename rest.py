@@ -217,7 +217,7 @@ class RestBehavior:
       raise Exception('Unable to validate record without db context')
 
     db.session.flush()
-    required = [col.name for col in self._model_class.__table__.columns if not col.nullable if col.name != 'id']
+    required = [col.name for col in self._model_class.__table__.columns if not col.nullable if col.name != 'id' if col.name != 'old_id']
     for r in required:
       if getattr(rec, r) is None or not str(getattr(rec, r)).strip():
         raise ValidationException('Field is Required', self.underscore_to_camel(r))
