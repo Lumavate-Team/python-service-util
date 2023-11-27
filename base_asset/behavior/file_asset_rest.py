@@ -102,27 +102,22 @@ class FileAssetRestBehavior(AssetRestBehavior):
       'data': asset_data,
       'dependencyAssets': self.get_dependencies(asset_data)
     }
-    print(post_data, flush=True)
     filename = asset_data.get('file',{}).get('filename')
     # pull filename out into column for easy search query
     if filename:
       post_data['filename'] = filename
-
+    
     self.data = post_data
     # skip asset rest since we already built up the post data
-    asset_data = self.get_data()
+    
     self.validate_asset_name(asset_data)
-    asset_data = self.update_file_tags(asset_data)
-    post_data = self.get_post_data(asset_data)
 
-    self.data = post_data
     rec = self.create_record(self._model_class)
     self.apply_values(rec)
     self.validate(rec)
     result = self.pack(rec)
-
     asset_data = self.update_user_tags(asset_data, result['id'])
-
+    self.update_file_tags(asset_data)
     if self.supports_filetype_category():
       self.set_asset_filetype(result['id'], asset_data.get('file', {}).get('extension', ''))
   
