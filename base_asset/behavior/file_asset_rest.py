@@ -102,6 +102,7 @@ class FileAssetRestBehavior(AssetRestBehavior):
       'data': asset_data,
       'dependencyAssets': self.get_dependencies(asset_data)
     }
+    print(post_data, flush=True)
     filename = asset_data.get('file',{}).get('filename')
     # pull filename out into column for easy search query
     if filename:
