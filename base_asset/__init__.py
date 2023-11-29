@@ -20,4 +20,5 @@ from .models import FileAssetBaseModel
 from .models import DataBaseModel
 from .models import SecuredAssetBaseModel
 from .models import SettingsModel
+from .models import DocumentAssetModel
 

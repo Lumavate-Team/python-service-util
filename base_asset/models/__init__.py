@@ -7,3 +7,4 @@ from .data_model import DataBaseModel
 from .file_asset_model import FileAssetBaseModel
 from .category_model import CategoryModel
 from .asset_category_model import AssetCategoryModel
+from .document_asset_model import DocumentAssetModel

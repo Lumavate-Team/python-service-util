@@ -35,6 +35,7 @@ class BaseAsset:
   from .base_asset import DataRestSort
   from .base_asset import DataRestSelect
   from .base_asset import FileFilter
+  from .base_asset import DocumentAssetModel
 
   from .base_asset import AssetAccessRestBehavior
   from .base_asset import AssetRestBehavior
