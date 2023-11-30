@@ -6,7 +6,7 @@ from .image_category_model import ImageCategoryModel
 
 
 class ImageAssetImageCategoryModel(BaseModel):
-  __tablename__ = 'image_asset_document_category'
+  __tablename__ = 'image_asset_image_category'
   org_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)
   asset_id = Column(db.BigInteger, ForeignKey('asset.id'), nullable=False)
   category_id = Column(db.BigInteger, ForeignKey('category.id'), nullable=False)
