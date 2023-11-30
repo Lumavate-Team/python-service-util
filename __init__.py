@@ -36,6 +36,8 @@ class BaseAsset:
   from .base_asset import DataRestSelect
   from .base_asset import FileFilter
   from .base_asset import DocumentAssetModel
+  from .base_asset import DocumentCategoryModel
+  from .base_asset import DocumentAssetDocumentCategoryModel
 
   from .base_asset import AssetAccessRestBehavior
   from .base_asset import AssetRestBehavior
@@ -45,6 +47,12 @@ class BaseAsset:
   from .base_asset import SettingsRestBehavior
   from .base_asset import TagRestBehavior
   from .base_asset import CategoryRestBehavior
+  from .base_asset import DocumentAssetFileTypeRestBehavior
+  from .base_asset import DocumentAssetRestBehavior
+  from .base_asset import DocumentAssetTagRestBehavior
+  from .base_asset import DocumentCategoryRestBehavior
+  from .base_asset import DocumentFileTypeCategoryRestBehavior
+  from .base_asset import DocumentTagRestBehavior
 
 class Util:
   from .util import org_hash

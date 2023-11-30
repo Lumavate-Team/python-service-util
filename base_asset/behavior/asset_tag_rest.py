@@ -5,8 +5,8 @@ from .asset_category_rest import AssetCategoryRestBehavior
 from ...rest import RestBehavior
 
 class AssetTagRestBehavior(AssetCategoryRestBehavior):
-  def __init__(self, model_class=AssetCategoryModel, data=None):
-    super().__init__(model_class, data, 'tag')
+  def __init__(self, model_class=AssetCategoryModel, data=None, category_type='tag'):
+    super().__init__(model_class, data, category_type)
 
   def update_asset_tags(self, asset_id):
     data = self.get_data()

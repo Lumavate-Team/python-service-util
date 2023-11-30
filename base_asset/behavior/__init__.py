@@ -11,3 +11,9 @@ from .asset_tag_rest import AssetTagRestBehavior
 from .static_category_rest import StaticCategoryRestBehavior
 from .filetype_category_rest import FileTypeCategoryRestBehavior
 from .asset_filetype_rest import AssetFileTypeRestBehavior
+from .document.document_asset_filetype_rest import DocumentAssetFileTypeRestBehavior
+from .document.document_asset_rest import DocumentAssetRestBehavior
+from .document.document_asset_tag_rest import DocumentAssetTagRestBehavior
+from .document.document_category_rest import DocumentCategoryRestBehavior
+from .document.document_filetype_category_rest import DocumentFileTypeCategoryRestBehavior
+from .document.document_tag_rest import DocumentTagRestBehavior

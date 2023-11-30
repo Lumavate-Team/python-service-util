@@ -8,3 +8,5 @@ from .file_asset_model import FileAssetBaseModel
 from .category_model import CategoryModel
 from .asset_category_model import AssetCategoryModel
 from .document_asset_model import DocumentAssetModel
+from .document_category_model import DocumentCategoryModel
+from .document_asset_document_category_model import DocumentAssetDocumentCategoryModel

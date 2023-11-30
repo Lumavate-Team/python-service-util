@@ -1,17 +1,8 @@
-from jinja2 import Environment, BaseLoader
-from flask import Blueprint, jsonify, request, make_response, redirect, render_template, g, abort
-from sqlalchemy import or_, cast, VARCHAR, func
-from sqlalchemy.orm.attributes import flag_modified
-from datetime import datetime
+from sqlalchemy import func
 import rollbar
-import re
-import json
-from lumavate_properties import Properties, Components
+from lumavate_properties import Properties
 from lumavate_exceptions import ValidationException, ApiException
 from ...rest import RestBehavior
-from ...request import LumavateRequest
-from ...resolver import Resolver
-from ...paging import Paging
 from ...name_sort import NameSort
 from .asset_tag_rest import AssetTagRestBehavior
 from ...aws import FileBehavior, AwsClient

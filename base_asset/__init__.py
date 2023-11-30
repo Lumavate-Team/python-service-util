@@ -7,6 +7,12 @@ from .behavior import DataRestSort
 from .behavior import FileAssetRestBehavior
 from .behavior import TagRestBehavior
 from .behavior import CategoryRestBehavior
+from .behavior import DocumentAssetFileTypeRestBehavior
+from .behavior import DocumentAssetRestBehavior
+from .behavior import DocumentAssetTagRestBehavior
+from .behavior import DocumentCategoryRestBehavior
+from .behavior import DocumentFileTypeCategoryRestBehavior
+from .behavior import DocumentTagRestBehavior
 
 from .column import DataColumn
 from .data_filter import DataRestFilter
@@ -21,4 +27,6 @@ from .models import DataBaseModel
 from .models import SecuredAssetBaseModel
 from .models import SettingsModel
 from .models import DocumentAssetModel
+from .models import DocumentCategoryModel
+from .models import DocumentAssetDocumentCategoryModel
 

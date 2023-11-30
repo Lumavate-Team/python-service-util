@@ -1,14 +1,11 @@
-from sqlalchemy import or_, cast, VARCHAR, func
-import json
 from ..models import AssetCategoryModel
 from .asset_category_rest import AssetCategoryRestBehavior
 from .filetype_category_rest import FileTypeCategoryRestBehavior
-from ...rest import RestBehavior
 from lumavate_exceptions import ValidationException
 
 class AssetFileTypeRestBehavior(AssetCategoryRestBehavior):
-  def __init__(self, model_class=AssetCategoryModel, data=None):
-    super().__init__(model_class, data, 'filetype')
+  def __init__(self, model_class=AssetCategoryModel, data=None, category_type='filetype'):
+    super().__init__(model_class, data, category_type)
 
   def set_asset_filetype(self, asset_id, filetype):
     if not filetype:
