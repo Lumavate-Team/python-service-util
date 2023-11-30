@@ -7,6 +7,9 @@ from .data_model import DataBaseModel
 from .file_asset_model import FileAssetBaseModel
 from .category_model import CategoryModel
 from .asset_category_model import AssetCategoryModel
-from .document_asset_model import DocumentAssetModel
-from .document_category_model import DocumentCategoryModel
-from .document_asset_document_category_model import DocumentAssetDocumentCategoryModel
+from .document.document_asset_model import DocumentAssetModel
+from .document.document_category_model import DocumentCategoryModel
+from .document.document_asset_document_category_model import DocumentAssetDocumentCategoryModel
+from .image.image_asset_model import ImageAssetModel
+from .image.image_category_model import ImageCategoryModel
+from .image.image_asset_image_category_model import ImageAssetImageCategoryModel

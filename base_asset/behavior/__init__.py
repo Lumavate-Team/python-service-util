@@ -17,3 +17,9 @@ from .document.document_asset_tag_rest import DocumentAssetTagRestBehavior
 from .document.document_category_rest import DocumentCategoryRestBehavior
 from .document.document_filetype_category_rest import DocumentFileTypeCategoryRestBehavior
 from .document.document_tag_rest import DocumentTagRestBehavior
+from .image.image_asset_filetype_rest import ImageAssetFileTypeRestBehavior
+from .image.image_asset_rest import ImageAssetRestBehavior
+from .image.image_asset_tag_rest import ImageAssetTagRestBehavior
+from .image.image_category_rest import ImageCategoryRestBehavior
+from .image.image_filetype_category_rest import ImageFileTypeCategoryRestBehavior
+from .image.image_tag_rest import ImageTagRestBehavior

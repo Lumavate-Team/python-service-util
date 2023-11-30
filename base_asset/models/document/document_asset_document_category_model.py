@@ -1,16 +1,8 @@
 from app import db
-from time import time,sleep
-from flask import request, g
+from flask import g
 from sqlalchemy import ForeignKey, and_, delete
-from sqlalchemy.sql import text, expression
-from sqlalchemy.orm import validates, relationship, load_only
-from sqlalchemy import or_, cast, VARCHAR, func
-from sqlalchemy.dialects.postgresql import JSONB
-from hashids import Hashids
-
-from ...db import BaseModel, Column
+from ....db import BaseModel, Column
 from .document_category_model import DocumentCategoryModel
-import json
 
 
 class DocumentAssetDocumentCategoryModel(BaseModel):

@@ -13,6 +13,12 @@ from .behavior import DocumentAssetTagRestBehavior
 from .behavior import DocumentCategoryRestBehavior
 from .behavior import DocumentFileTypeCategoryRestBehavior
 from .behavior import DocumentTagRestBehavior
+from .behavior import ImageAssetFileTypeRestBehavior
+from .behavior import ImageAssetRestBehavior
+from .behavior import ImageAssetTagRestBehavior
+from .behavior import ImageCategoryRestBehavior
+from .behavior import ImageFileTypeCategoryRestBehavior
+from .behavior import ImageTagRestBehavior
 
 from .column import DataColumn
 from .data_filter import DataRestFilter
@@ -29,4 +35,7 @@ from .models import SettingsModel
 from .models import DocumentAssetModel
 from .models import DocumentCategoryModel
 from .models import DocumentAssetDocumentCategoryModel
+from .models import ImageAssetModel
+from .models import ImageCategoryModel
+from .models import ImageAssetImageCategoryModel
 

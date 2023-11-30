@@ -38,6 +38,9 @@ class BaseAsset:
   from .base_asset import DocumentAssetModel
   from .base_asset import DocumentCategoryModel
   from .base_asset import DocumentAssetDocumentCategoryModel
+  from .base_asset import ImageAssetModel
+  from .base_asset import ImageCategoryModel
+  from .base_asset import ImageAssetImageCategoryModel
 
   from .base_asset import AssetAccessRestBehavior
   from .base_asset import AssetRestBehavior
@@ -53,6 +56,12 @@ class BaseAsset:
   from .base_asset import DocumentCategoryRestBehavior
   from .base_asset import DocumentFileTypeCategoryRestBehavior
   from .base_asset import DocumentTagRestBehavior
+  from .base_asset import ImageAssetFileTypeRestBehavior
+  from .base_asset import ImageAssetRestBehavior
+  from .base_asset import ImageAssetTagRestBehavior
+  from .base_asset import ImageCategoryRestBehavior
+  from .base_asset import ImageFileTypeCategoryRestBehavior
+  from .base_asset import ImageTagRestBehavior
 
 class Util:
   from .util import org_hash
