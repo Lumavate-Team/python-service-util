@@ -11,7 +11,9 @@ import re
 import json
 from .asset_rest import AssetRestBehavior
 from .asset_filetype_rest import AssetFileTypeRestBehavior
+from .asset_tag_rest import AssetTagRestBehavior
 from ..models import AssetCategoryModel
+from ..models import CategoryModel
 from ..models import FileAssetBaseModel
 from ...aws import FileBehavior
 from ..file_filter import FileFilter

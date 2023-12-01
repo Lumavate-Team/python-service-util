@@ -1,4 +1,5 @@
 from ..models import AssetCategoryModel
+from ..models import CategoryModel
 from .asset_category_rest import AssetCategoryRestBehavior
 from .filetype_category_rest import FileTypeCategoryRestBehavior
 from lumavate_exceptions import ValidationException
