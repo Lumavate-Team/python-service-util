@@ -56,24 +56,6 @@ class BaseAsset:
   from .base_asset import SettingsRestBehavior
   from .base_asset import TagRestBehavior
   from .base_asset import CategoryRestBehavior
-  from .base_asset import AudioAssetFileTypeRestBehavior
-  from .base_asset import AudioAssetRestBehavior
-  from .base_asset import AudioAssetTagRestBehavior
-  from .base_asset import AudioCategoryRestBehavior
-  from .base_asset import AudioFileTypeCategoryRestBehavior
-  from .base_asset import AudioTagRestBehavior
-  from .base_asset import ImageAssetFileTypeRestBehavior
-  from .base_asset import ImageAssetRestBehavior
-  from .base_asset import ImageAssetTagRestBehavior
-  from .base_asset import ImageCategoryRestBehavior
-  from .base_asset import ImageFileTypeCategoryRestBehavior
-  from .base_asset import ImageTagRestBehavior
-  from .base_asset import VideoAssetFileTypeRestBehavior
-  from .base_asset import VideoAssetRestBehavior
-  from .base_asset import VideoAssetTagRestBehavior
-  from .base_asset import VideoCategoryRestBehavior
-  from .base_asset import VideoFileTypeCategoryRestBehavior
-  from .base_asset import VideoTagRestBehavior
 
 class Util:
   from .util import org_hash

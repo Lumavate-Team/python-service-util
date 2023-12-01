@@ -7,24 +7,6 @@ from .behavior import DataRestSort
 from .behavior import FileAssetRestBehavior
 from .behavior import TagRestBehavior
 from .behavior import CategoryRestBehavior
-from .behavior import AudioAssetFileTypeRestBehavior
-from .behavior import AudioAssetRestBehavior
-from .behavior import AudioAssetTagRestBehavior
-from .behavior import AudioCategoryRestBehavior
-from .behavior import AudioFileTypeCategoryRestBehavior
-from .behavior import AudioTagRestBehavior
-from .behavior import ImageAssetFileTypeRestBehavior
-from .behavior import ImageAssetRestBehavior
-from .behavior import ImageAssetTagRestBehavior
-from .behavior import ImageCategoryRestBehavior
-from .behavior import ImageFileTypeCategoryRestBehavior
-from .behavior import ImageTagRestBehavior
-from .behavior import VideoAssetFileTypeRestBehavior
-from .behavior import VideoAssetRestBehavior
-from .behavior import VideoAssetTagRestBehavior
-from .behavior import VideoCategoryRestBehavior
-from .behavior import VideoFileTypeCategoryRestBehavior
-from .behavior import VideoTagRestBehavior
 
 from .column import DataColumn
 from .data_filter import DataRestFilter
