@@ -11,13 +11,16 @@ import re
 import json
 from .asset_rest import AssetRestBehavior
 from .asset_filetype_rest import AssetFileTypeRestBehavior
+from ..models import AssetCategoryModel
 from ..models import FileAssetBaseModel
 from ...aws import FileBehavior
 from ..file_filter import FileFilter
 
 class FileAssetRestBehavior(AssetRestBehavior):
-  def __init__(self, model_class=FileAssetBaseModel, data=None, file_mapping={}):
+  def __init__(self, model_class=FileAssetBaseModel, data=None, file_mapping={}, category_model_class=CategoryModel, asset_category_model_class=AssetCategoryModel):
     self._filetype_category_mapping = file_mapping
+    self.category_model_class = category_model_class
+    self.asset_category_model_class = asset_category_model_class
     super().__init__(model_class, data)
 
   def supports_filetype_category(self):
@@ -53,7 +56,13 @@ class FileAssetRestBehavior(AssetRestBehavior):
   def set_asset_filetype(self, asset_id, filetype):
     if filetype in self._filetype_category_mapping:
       filetype = self._filetype_category_mapping[filetype]
-    AssetFileTypeRestBehavior().set_asset_filetype(asset_id, filetype)
+    AssetFileTypeRestBehavior(model_class=self.asset_category_model_class, category_model_class=self.category_model_class).set_asset_filetype(asset_id, filetype)
+
+  def update_user_tags(self, data, asset_id):
+    if not data or not isinstance(data, dict) or not 'tags' in data or not self.supports_tags():
+      return data
+
+    return AssetTagRestBehavior(model_class=self.asset_category_model_class, data=data).update_asset_tags(asset_id)
 
   def post(self):
     asset_data = self.get_data()
@@ -123,3 +132,18 @@ class FileAssetRestBehavior(AssetRestBehavior):
         rollbar.report_message(f'Unable to delete file path: {file_path}')
 
     return super().delete(record_id)
+
+  def pack(self, rec):
+    if rec is None:
+      return {}
+
+    if type(rec) is self._model_class:
+      json = rec.to_json()
+      if self.expanded('tags') and self.supports_tags():
+        json['expand'] = {}
+        tags = AssetTagRestBehavior(model_class=self.asset_category_model_class).get_categories_by_asset(rec.id)
+        json['expand']['tags'] = [tag.to_json() for tag in tags]
+
+      return json
+    else:
+      return {self.underscore_to_camel(key):value for(key,value) in rec._asdict().items()}

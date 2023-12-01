@@ -53,7 +53,7 @@ class TagRestBehavior(CategoryRestBehavior):
         continue
 
       tag['type'] = 'tag'
-      handler = CategoryRestBehavior(data=tag, category_type='tag')
+      handler = CategoryRestBehavior(model_class=self._model_class, data=tag, category_type='tag')
       if tag['name'].lower() in self.banned_tags():
         raise ValidationException("Invalid tag name", api_field='name')
 

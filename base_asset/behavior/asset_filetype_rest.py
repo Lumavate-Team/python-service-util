@@ -4,7 +4,8 @@ from .filetype_category_rest import FileTypeCategoryRestBehavior
 from lumavate_exceptions import ValidationException
 
 class AssetFileTypeRestBehavior(AssetCategoryRestBehavior):
-  def __init__(self, model_class=AssetCategoryModel, data=None, category_type='filetype'):
+  def __init__(self, model_class=AssetCategoryModel, data=None, category_type='filetype', category_model_class=CategoryModel):
+    self.category_model_class = category_model_class
     super().__init__(model_class, data, category_type)
 
   def set_asset_filetype(self, asset_id, filetype):
@@ -13,7 +14,7 @@ class AssetFileTypeRestBehavior(AssetCategoryRestBehavior):
     
     self.delete_by_asset(asset_id)
 
-    tag = FileTypeCategoryRestBehavior().get_tag_by_name(filetype)
+    tag = FileTypeCategoryRestBehavior(model_class=self.category_model_class).get_tag_by_name(filetype)
     if not tag:
       raise ValidationException('File type not found')
 
