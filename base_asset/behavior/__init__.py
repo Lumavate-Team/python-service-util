@@ -17,12 +17,6 @@ from .audio.audio_asset_tag_rest import AudioAssetTagRestBehavior
 from .audio.audio_category_rest import AudioCategoryRestBehavior
 from .audio.audio_filetype_category_rest import AudioFileTypeCategoryRestBehavior
 from .audio.audio_tag_rest import AudioTagRestBehavior
-from .document.document_asset_filetype_rest import DocumentAssetFileTypeRestBehavior
-from .document.document_asset_rest import DocumentAssetRestBehavior
-from .document.document_asset_tag_rest import DocumentAssetTagRestBehavior
-from .document.document_category_rest import DocumentCategoryRestBehavior
-from .document.document_filetype_category_rest import DocumentFileTypeCategoryRestBehavior
-from .document.document_tag_rest import DocumentTagRestBehavior
 from .image.image_asset_filetype_rest import ImageAssetFileTypeRestBehavior
 from .image.image_asset_rest import ImageAssetRestBehavior
 from .image.image_asset_tag_rest import ImageAssetTagRestBehavior

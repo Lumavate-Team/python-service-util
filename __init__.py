@@ -62,12 +62,6 @@ class BaseAsset:
   from .base_asset import AudioCategoryRestBehavior
   from .base_asset import AudioFileTypeCategoryRestBehavior
   from .base_asset import AudioTagRestBehavior
-  from .base_asset import DocumentAssetFileTypeRestBehavior
-  from .base_asset import DocumentAssetRestBehavior
-  from .base_asset import DocumentAssetTagRestBehavior
-  from .base_asset import DocumentCategoryRestBehavior
-  from .base_asset import DocumentFileTypeCategoryRestBehavior
-  from .base_asset import DocumentTagRestBehavior
   from .base_asset import ImageAssetFileTypeRestBehavior
   from .base_asset import ImageAssetRestBehavior
   from .base_asset import ImageAssetTagRestBehavior

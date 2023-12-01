@@ -13,12 +13,6 @@ from .behavior import AudioAssetTagRestBehavior
 from .behavior import AudioCategoryRestBehavior
 from .behavior import AudioFileTypeCategoryRestBehavior
 from .behavior import AudioTagRestBehavior
-from .behavior import DocumentAssetFileTypeRestBehavior
-from .behavior import DocumentAssetRestBehavior
-from .behavior import DocumentAssetTagRestBehavior
-from .behavior import DocumentCategoryRestBehavior
-from .behavior import DocumentFileTypeCategoryRestBehavior
-from .behavior import DocumentTagRestBehavior
 from .behavior import ImageAssetFileTypeRestBehavior
 from .behavior import ImageAssetRestBehavior
 from .behavior import ImageAssetTagRestBehavior
