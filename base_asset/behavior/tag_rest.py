@@ -3,12 +3,12 @@ from app import db
 import os
 import re
 import json
-from ..models import CategoryModel
+from ..models import create_category_model
 from .category_rest import CategoryRestBehavior
 from lumavate_exceptions import ValidationException
 
 class TagRestBehavior(CategoryRestBehavior):
-  def __init__(self, model_class=CategoryModel, data=None, category_type='tag'):
+  def __init__(self, model_class=create_category_model(), data=None, category_type='tag'):
     super().__init__(model_class, data, category_type)
 
   def banned_tags(self):

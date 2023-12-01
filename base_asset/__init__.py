@@ -16,20 +16,9 @@ from .file_filter import FileFilter
 from .models import AssetBaseModel
 from .models import AssetAccessBaseModel
 from .models import DataAssetBaseModel
-from .models import FileAssetBaseModel
+from .models import create_file_asset_model
 from .models import DataBaseModel
 from .models import SecuredAssetBaseModel
 from .models import SettingsModel
-from .models import AudioAssetModel
-from .models import AudioCategoryModel
-from .models import AudioAssetAudioCategoryModel
-from .models import DocumentAssetModel
-from .models import DocumentCategoryModel
-from .models import DocumentAssetDocumentCategoryModel
-from .models import ImageAssetModel
-from .models import ImageCategoryModel
-from .models import ImageAssetImageCategoryModel
-from .models import VideoAssetModel
-from .models import VideoCategoryModel
-from .models import VideoAssetVideoCategoryModel
-
+from .models import create_asset_category_model
+from .models import create_category_model

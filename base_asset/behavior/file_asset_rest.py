@@ -12,14 +12,14 @@ import json
 from .asset_rest import AssetRestBehavior
 from .asset_filetype_rest import AssetFileTypeRestBehavior
 from .asset_tag_rest import AssetTagRestBehavior
-from ..models import AssetCategoryModel
-from ..models import CategoryModel
-from ..models import FileAssetBaseModel
+from ..models import create_asset_category_model
+from ..models import create_category_model
+from ..models import create_file_asset_model
 from ...aws import FileBehavior
 from ..file_filter import FileFilter
 
 class FileAssetRestBehavior(AssetRestBehavior):
-  def __init__(self, model_class=FileAssetBaseModel, data=None, file_mapping={}, category_model_class=CategoryModel, asset_category_model_class=AssetCategoryModel):
+  def __init__(self, model_class=create_file_asset_model(), data=None, file_mapping={}, category_model_class=create_category_model(), asset_category_model_class=create_asset_category_model()):
     self._filetype_category_mapping = file_mapping
     self.category_model_class = category_model_class
     self.asset_category_model_class = asset_category_model_class
