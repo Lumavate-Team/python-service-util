@@ -7,6 +7,12 @@ from .behavior import DataRestSort
 from .behavior import FileAssetRestBehavior
 from .behavior import TagRestBehavior
 from .behavior import CategoryRestBehavior
+from .behavior import AudioAssetFileTypeRestBehavior
+from .behavior import AudioAssetRestBehavior
+from .behavior import AudioAssetTagRestBehavior
+from .behavior import AudioCategoryRestBehavior
+from .behavior import AudioFileTypeCategoryRestBehavior
+from .behavior import AudioTagRestBehavior
 from .behavior import DocumentAssetFileTypeRestBehavior
 from .behavior import DocumentAssetRestBehavior
 from .behavior import DocumentAssetTagRestBehavior
@@ -19,6 +25,12 @@ from .behavior import ImageAssetTagRestBehavior
 from .behavior import ImageCategoryRestBehavior
 from .behavior import ImageFileTypeCategoryRestBehavior
 from .behavior import ImageTagRestBehavior
+from .behavior import VideoAssetFileTypeRestBehavior
+from .behavior import VideoAssetRestBehavior
+from .behavior import VideoAssetTagRestBehavior
+from .behavior import VideoCategoryRestBehavior
+from .behavior import VideoFileTypeCategoryRestBehavior
+from .behavior import VideoTagRestBehavior
 
 from .column import DataColumn
 from .data_filter import DataRestFilter
@@ -32,10 +44,16 @@ from .models import FileAssetBaseModel
 from .models import DataBaseModel
 from .models import SecuredAssetBaseModel
 from .models import SettingsModel
+from .models import AudioAssetModel
+from .models import AudioCategoryModel
+from .models import AudioAssetAudioCategoryModel
 from .models import DocumentAssetModel
 from .models import DocumentCategoryModel
 from .models import DocumentAssetDocumentCategoryModel
 from .models import ImageAssetModel
 from .models import ImageCategoryModel
 from .models import ImageAssetImageCategoryModel
+from .models import VideoAssetModel
+from .models import VideoCategoryModel
+from .models import VideoAssetVideoCategoryModel
 

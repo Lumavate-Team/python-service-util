@@ -1,0 +1,21 @@
+from ...models import AudioAssetAudioCategoryModel
+from ..asset_filetype_rest import AssetFileTypeRestBehavior
+from .audio_filetype_category_rest import AudioFileTypeCategoryRestBehavior
+from lumavate_exceptions import ValidationException
+
+class AudioAssetFileTypeRestBehavior(AssetFileTypeRestBehavior):
+  def __init__(self, model_class=AudioAssetAudioCategoryModel, data=None, category_type='filetype'):
+    super().__init__(model_class, data, category_type)
+
+  def set_asset_filetype(self, asset_id, filetype):
+    if not filetype:
+      raise ValidationException('No file type specified')
+    
+    self.delete_by_asset(asset_id)
+
+    tag = AudioFileTypeCategoryRestBehavior().get_tag_by_name(filetype)
+    if not tag:
+      raise ValidationException('File type not found')
+
+    self.create_asset_category(asset_id, tag.id)
+    

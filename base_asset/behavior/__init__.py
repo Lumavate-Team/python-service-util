@@ -11,6 +11,12 @@ from .asset_tag_rest import AssetTagRestBehavior
 from .static_category_rest import StaticCategoryRestBehavior
 from .filetype_category_rest import FileTypeCategoryRestBehavior
 from .asset_filetype_rest import AssetFileTypeRestBehavior
+from .audio.audio_asset_filetype_rest import AudioAssetFileTypeRestBehavior
+from .audio.audio_asset_rest import AudioAssetRestBehavior
+from .audio.audio_asset_tag_rest import AudioAssetTagRestBehavior
+from .audio.audio_category_rest import AudioCategoryRestBehavior
+from .audio.audio_filetype_category_rest import AudioFileTypeCategoryRestBehavior
+from .audio.audio_tag_rest import AudioTagRestBehavior
 from .document.document_asset_filetype_rest import DocumentAssetFileTypeRestBehavior
 from .document.document_asset_rest import DocumentAssetRestBehavior
 from .document.document_asset_tag_rest import DocumentAssetTagRestBehavior
@@ -23,3 +29,9 @@ from .image.image_asset_tag_rest import ImageAssetTagRestBehavior
 from .image.image_category_rest import ImageCategoryRestBehavior
 from .image.image_filetype_category_rest import ImageFileTypeCategoryRestBehavior
 from .image.image_tag_rest import ImageTagRestBehavior
+from .video.video_asset_filetype_rest import VideoAssetFileTypeRestBehavior
+from .video.video_asset_rest import VideoAssetRestBehavior
+from .video.video_asset_tag_rest import VideoAssetTagRestBehavior
+from .video.video_category_rest import VideoCategoryRestBehavior
+from .video.video_filetype_category_rest import VideoFileTypeCategoryRestBehavior
+from .video.video_tag_rest import VideoTagRestBehavior
