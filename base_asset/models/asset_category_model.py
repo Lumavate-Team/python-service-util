@@ -6,6 +6,7 @@ from sqlalchemy.sql import text, expression
 from sqlalchemy.orm import validates, relationship, load_only
 from sqlalchemy import or_, cast, VARCHAR, func
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declarative_base
 from hashids import Hashids
 
 from ...db import BaseModel, Column
@@ -13,7 +14,9 @@ from .category_model import create_category_model
 import json
 
 def create_asset_category_model(tablename = 'asset_category', category_model = create_category_model()):
-  class AssetCategoryModel(BaseModel):
+  DynamicBase = declarative_base(cls=BaseModel, class_registry=dict())
+  
+  class AssetCategoryModel(DynamicBase):
     __tablename__ = tablename
     __table_args__ = {'extend_existing': True}
     org_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)

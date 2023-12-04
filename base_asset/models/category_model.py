@@ -6,13 +6,17 @@ from sqlalchemy.sql import text, expression
 from sqlalchemy.orm import validates, relationship, load_only
 from sqlalchemy import or_, cast, VARCHAR, func
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declarative_base
 from hashids import Hashids
 
 from ...db import BaseModel, Column
 import json
 
 def create_category_model(tablename = 'category'):
-  class CategoryModel(BaseModel):
+  DynamicBase = declarative_base(cls=BaseModel, class_registry=dict())
+
+
+  class CategoryModel(DynamicBase):
     __tablename__ = tablename
     __table_args__ = {'extend_existing': True}
     org_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)

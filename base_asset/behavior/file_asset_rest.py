@@ -50,7 +50,7 @@ class FileAssetRestBehavior(AssetRestBehavior):
     }
 
   def apply_filter(self, q, ignore_fields=None):
-    return FileFilter(self.args, ignore_fields).apply(q)
+    return FileFilter(self.args, ignore_fields, self.asset_category_model_class).apply(q)
 
   def get_asset_properties(self):
     raise ApiException(500, "get asset properties not implemented")
