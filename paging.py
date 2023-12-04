@@ -20,7 +20,7 @@ class Paging:
     return page_size
 
   def run(self, query, serialize_func=None):
-    paged_data = query.paginate(self.page, self.page_size, False)
+    paged_data = query.paginate(page=self.page, per_page=self.page_size, error_out=False)
     base_url = '{}{}'.format(os.environ.get('PROTO'),request.base_url[7:])
     next_params =  self.get_query_params(request.url, paged_data, next_page=True)
     prev_params =  self.get_query_params(request.url, paged_data)
