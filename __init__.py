@@ -1,3 +1,5 @@
+from .util import create_db
+
 from .paging import Paging
 from .email import Email
 from .filter import Filter
@@ -48,3 +50,4 @@ class BaseAsset:
 class Util:
   from .util import org_hash
   from .util import camel_to_underscore, underscore_to_camel, hyphen_to_camel
+
