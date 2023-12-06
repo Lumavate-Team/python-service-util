@@ -48,6 +48,7 @@ class BaseAsset:
   from .base_asset import SettingsRestBehavior
   from .base_asset import TagRestBehavior
   from .base_asset import CategoryRestBehavior
+  from .base_asset import ContentAssetRestBehavior
 
 class Util:
   from .util import org_hash
