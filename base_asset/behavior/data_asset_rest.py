@@ -176,7 +176,7 @@ class DataAssetRestBehavior(AssetRestBehavior):
         'id': None, 
         'isActive': True, 
         'baseProperty': True,
-        'lumaProperty': prop.options.get('lumaProperty', False),
+        'lumaProperty': prop.options.get('lumaProperty', None),
         'isMetadata': is_metadata
       })
 
