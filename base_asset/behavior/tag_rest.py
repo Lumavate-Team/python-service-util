@@ -3,13 +3,13 @@ from app import db
 import os
 import re
 import json
-from ..models import CategoryModel
+from ..models import create_category_model
 from .category_rest import CategoryRestBehavior
 from lumavate_exceptions import ValidationException
 
 class TagRestBehavior(CategoryRestBehavior):
-  def __init__(self, model_class=CategoryModel, data=None):
-    super().__init__(model_class, data, 'tag')
+  def __init__(self, model_class=create_category_model(), data=None, category_type='tag'):
+    super().__init__(model_class, data, category_type)
 
   def banned_tags(self):
     return ['undefined', 'none', 'true', 'false', 'null', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'bmp', 'csv', 'exe', 'jpg', 'jpeg', 'mov', 'mp3', 'mp4', 'png', 'tif', 'tiff', 'tmp', 'txt', 'zip', 'svg', 'gif']
@@ -53,7 +53,7 @@ class TagRestBehavior(CategoryRestBehavior):
         continue
 
       tag['type'] = 'tag'
-      handler = CategoryRestBehavior(data=tag, category_type='tag')
+      handler = CategoryRestBehavior(model_class=self._model_class, data=tag, category_type='tag')
       if tag['name'].lower() in self.banned_tags():
         raise ValidationException("Invalid tag name", api_field='name')
 

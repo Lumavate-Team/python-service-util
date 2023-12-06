@@ -4,6 +4,6 @@ from .asset_access_model import AssetAccessBaseModel
 from .settings_model import SettingsModel
 from .data_asset_model import DataAssetBaseModel
 from .data_model import DataBaseModel
-from .file_asset_model import FileAssetBaseModel
-from .category_model import CategoryModel
-from .asset_category_model import AssetCategoryModel
+from .file_asset_model import create_file_asset_model
+from .category_model import create_category_model
+from .asset_category_model import create_asset_category_model
