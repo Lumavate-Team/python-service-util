@@ -16,9 +16,8 @@ import json
 
 
 def create_file_asset_model(tablename = 'file_asset'):
-  DynamicBase = declarative_base(cls=BaseModel, class_registry=dict())
 
-  class FileAssetBaseModel(DynamicBase):
+  class FileAssetBaseModel(BaseModel):
     __tablename__ = tablename
     __table_args__ = {'extend_existing': True}
     org_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)

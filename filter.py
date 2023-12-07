@@ -33,13 +33,24 @@ class Filter:
 
   def apply(self, base_query):
     ops = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'sw', 'ct','aeq', 'adeq', 'act', 'any', 'in']
+    search = {'columns': [], 'value': None}
+
     for a in self.args:
       if a != 'sort' and a not in self.ignore_fields:
         parts = self.args[a].split(":", 1)
         if len(parts) > 1 and parts[0] in ops:
           base_query = self.apply_column(base_query, a, parts[0], parts[1])
+        elif len(parts) > 1 and parts[0] == 'find':
+          search['columns'].append(a)
+          #the value should be the same across columns for search
+          search['value'] = parts[1]
         else:
           base_query = self.apply_column(base_query, a, 'eq', self.args[a])
+
+    if len(search['columns']) > 0 and search['value'] is not None:
+      search_clauses = [self.get_expression(column_name, self.get_column(base_query, column_name), 'ct', search['value']) \
+                        for column_name in search['columns']]
+      base_query = base_query.filter(or_(*[c for c in search_clauses if c is not None]))
 
     return base_query
 
