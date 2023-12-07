@@ -13,10 +13,8 @@ from ...db import BaseModel, Column
 import json
 
 def create_category_model(tablename = 'category'):
-  DynamicBase = declarative_base(cls=BaseModel, class_registry=dict())
 
-
-  class CategoryModel(DynamicBase):
+  class CategoryModel(BaseModel):
     __tablename__ = tablename
     __table_args__ = {'extend_existing': True}
     org_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)
