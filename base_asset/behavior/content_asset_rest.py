@@ -44,10 +44,10 @@ class ContentAssetRestBehavior(AssetRestBehavior):
     for asset_table in self.asset_tables:
       queries.append(self.get_collection_query(asset_table))
 
-    u4 = union_all(*queries).limit(1)
-
     q = queries.pop(0)
-    q = q.union(*queries)
+
+    if len(queries) > 0:
+      q = q.union(*queries)
 
     return ContentPaging().run(q)
 
@@ -94,14 +94,3 @@ class ContentAssetRestBehavior(AssetRestBehavior):
       return {}
 
     return rec.to_json()
-
-    if type(rec) is self._model_class:
-      json = rec.to_json()
-      if self.expanded('tags') and self.supports_tags():
-        json['expand'] = {}
-        tags = AssetTagRestBehavior(model_class=self.asset_category_model_class).get_categories_by_asset(rec.id)
-        json['expand']['tags'] = [tag.to_json() for tag in tags]
-
-      return json
-    else:
-      return {self.underscore_to_camel(key):value for(key,value) in rec._asdict().items()}
