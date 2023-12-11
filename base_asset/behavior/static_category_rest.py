@@ -3,12 +3,12 @@ from app import db
 import os
 import re
 import json
-from ..models import create_category_model
+from ..models import CategoryModel
 from .category_rest import CategoryRestBehavior
 from lumavate_exceptions import InvalidOperationException
 
 class StaticCategoryRestBehavior(CategoryRestBehavior):
-  def __init__(self, model_class=create_category_model(), data=None, category_type=''):
+  def __init__(self, model_class=CategoryModel, data=None, category_type=''):
     super().__init__(model_class, data, category_type)
 
   def post(self):

@@ -1,11 +1,11 @@
 from sqlalchemy import or_, cast, VARCHAR, func
 import json
-from ..models import create_asset_category_model
+from ..models import AssetCategoryModel
 from .asset_category_rest import AssetCategoryRestBehavior
 from ...rest import RestBehavior
 
 class AssetTagRestBehavior(AssetCategoryRestBehavior):
-  def __init__(self, model_class=create_asset_category_model(), data=None, category_type='tag'):
+  def __init__(self, model_class=AssetCategoryModel, data=None, category_type='tag'):
     super().__init__(model_class, data, category_type)
 
   def update_asset_tags(self, asset_id):

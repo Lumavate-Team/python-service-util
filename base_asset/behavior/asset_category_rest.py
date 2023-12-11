@@ -3,12 +3,12 @@ from app import db
 import os
 import re
 import json
-from ..models import create_asset_category_model
+from ..models import AssetCategoryModel
 from ...rest import RestBehavior
 from lumavate_exceptions import NotFoundException, InvalidOperationException
 
 class AssetCategoryRestBehavior(RestBehavior):
-  def __init__(self, model_class=create_asset_category_model(), data=None, category_type=''):
+  def __init__(self, model_class=AssetCategoryModel, data=None, category_type=''):
     self._category_type = category_type
     super().__init__(model_class, data)
 

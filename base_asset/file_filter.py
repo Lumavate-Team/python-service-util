@@ -6,11 +6,11 @@ from dateutil.parser import parse
 from lumavate_exceptions import ValidationException
 from sqlalchemy.inspection import inspect
 from ..filter import Filter
-from .models import create_asset_category_model
+from .models import AssetCategoryModel
 import re
 
 class FileFilter(Filter):
-  def __init__(self, args=None, ignore_fields=None, model_class=create_asset_category_model()):
+  def __init__(self, args=None, ignore_fields=None, model_class=AssetCategoryModel):
     self._model_class=model_class
     super().__init__(args, ignore_fields)
 

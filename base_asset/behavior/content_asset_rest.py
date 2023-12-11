@@ -2,7 +2,7 @@ from jinja2 import Environment, BaseLoader
 from flask import Blueprint, jsonify, request, make_response, redirect, render_template, g, abort
 from lumavate_properties import Properties, Components
 from lumavate_exceptions import ValidationException, NotFoundException, ApiException
-from sqlalchemy import or_, cast, VARCHAR, func
+from sqlalchemy import or_, cast, VARCHAR, func, union_all
 import itertools
 import rollbar
 from app import db
@@ -12,14 +12,16 @@ import json
 from .asset_rest import AssetRestBehavior
 from .asset_filetype_rest import AssetFileTypeRestBehavior
 from .asset_tag_rest import AssetTagRestBehavior
-from ..models import create_asset_category_model
-from ..models import create_category_model
-from ..models import create_file_asset_model
 from ...aws import FileBehavior
 from ...name_sort import NameSort
-from ...column_select import ColumnSelect
-from ...paging import Paging
+from ..content_column_select import ContentColumnSelect
+from ..content_paging import ContentPaging
 from ..file_filter import FileFilter
+from ..models import AbstractAssetBaseModel
+from sqlalchemy.orm import class_mapper
+from sqlalchemy import literal_column
+from ..models.document.document_asset_model import DocumentAssetModel
+from ..models.image.image_asset_model import ImageAssetModel
 
 class ContentAssetRestBehavior(AssetRestBehavior):
   def __init__(self, asset_tables, data=None):
@@ -32,9 +34,9 @@ class ContentAssetRestBehavior(AssetRestBehavior):
 
     q = asset_table.asset_model_class.get_all()
 
-    q = self.apply_filter(q, asset_table.asset_category_model_class)
+    q = self.apply_filter(q, asset_table.asset_category_model_class, ['org_id'])
     q = self.apply_sort(q)
-    q = self.apply_select(q, asset_table.asset_category_model_class)
+    q = self.apply_select(q, asset_table.asset_model_class, asset_table.asset_type)
     return q
 
   def get_collection(self):
@@ -47,7 +49,7 @@ class ContentAssetRestBehavior(AssetRestBehavior):
     if len(queries) > 0:
       q = q.union(*queries)
 
-    return Paging().run(q, self.pack)
+    return ContentPaging().run(q)
 
   def apply_filter(self, q, model_class, ignore_fields=None):
     return FileFilter(self.args, ignore_fields, model_class).apply(q)
@@ -55,8 +57,8 @@ class ContentAssetRestBehavior(AssetRestBehavior):
   def apply_sort(self, q):
     return NameSort().apply(q)
 
-  def apply_select(self, q, model_class):
-    return ColumnSelect(model_class=model_class, args=self.get_args()).apply(q)
+  def apply_select(self, q, model_class, asset_type):
+    return ContentColumnSelect(model_class=model_class, asset_type=asset_type, args=self.get_args()).apply(q)
 
 
 
@@ -92,14 +94,3 @@ class ContentAssetRestBehavior(AssetRestBehavior):
       return {}
 
     return rec.to_json()
-
-    if type(rec) is self._model_class:
-      json = rec.to_json()
-      if self.expanded('tags') and self.supports_tags():
-        json['expand'] = {}
-        tags = AssetTagRestBehavior(model_class=self.asset_category_model_class).get_categories_by_asset(rec.id)
-        json['expand']['tags'] = [tag.to_json() for tag in tags]
-
-      return json
-    else:
-      return {self.underscore_to_camel(key):value for(key,value) in rec._asdict().items()}
