@@ -1,21 +1,16 @@
 from app import db
 from time import time,sleep
-from flask import request, g
-from sqlalchemy import ForeignKey, and_
-from sqlalchemy.sql import text, expression
-from sqlalchemy.orm import validates, relationship, load_only
-from sqlalchemy import or_, cast, VARCHAR, func
+from flask import g
+from sqlalchemy import and_
+from sqlalchemy.sql import expression
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.declarative import declarative_base
 from hashids import Hashids
-from lumavate_exceptions import ValidationException, NotFoundException
 
 from ...db import BaseModel, Column
-from .asset_model import AssetBaseModel
-import json
 
-class FileAssetBaseModel(BaseModel):
-  __tablename__ = 'file_asset'
+
+class AbstractAssetBaseModel(BaseModel):
+  __abstract__ = True
 
   org_id = Column(db.BigInteger, nullable=False, createable=True, updateable=False, viewable=False)
   name = Column(db.String(35), nullable=False)

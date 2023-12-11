@@ -12,3 +12,5 @@ from .static_category_rest import StaticCategoryRestBehavior
 from .filetype_category_rest import FileTypeCategoryRestBehavior
 from .asset_filetype_rest import AssetFileTypeRestBehavior
 from .content_asset_rest import ContentAssetRestBehavior
+from .content_category_rest_behavior import ContentCategoryRestBehavior
+from .content_tag_rest_behavior import ContentTagRestBehavior

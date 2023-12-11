@@ -8,6 +8,8 @@ from .behavior import FileAssetRestBehavior
 from .behavior import TagRestBehavior
 from .behavior import CategoryRestBehavior
 from .behavior import ContentAssetRestBehavior
+from .behavior import ContentCategoryRestBehavior
+from .behavior import ContentTagRestBehavior
 
 from .column import DataColumn
 from .data_filter import DataRestFilter
@@ -17,9 +19,22 @@ from .file_filter import FileFilter
 from .models import AssetBaseModel
 from .models import AssetAccessBaseModel
 from .models import DataAssetBaseModel
-from .models import create_file_asset_model
 from .models import DataBaseModel
 from .models import SecuredAssetBaseModel
 from .models import SettingsModel
-from .models import create_asset_category_model
-from .models import create_category_model
+from .models import FileAssetBaseModel
+from .models import CategoryModel
+from .models import AssetCategoryModel
+from .models import AudioAssetModel
+from .models import AudioCategoryModel
+from .models import AudioAssetAudioCategoryModel
+from .models import DocumentAssetModel
+from .models import DocumentCategoryModel
+from .models import DocumentAssetDocumentCategoryModel
+from .models import ImageAssetModel
+from .models import ImageCategoryModel
+from .models import ImageAssetImageCategoryModel
+from .models import VideoAssetModel
+from .models import VideoCategoryModel
+from .models import VideoAssetVideoCategoryModel
+from .models import AbstractAssetBaseModel

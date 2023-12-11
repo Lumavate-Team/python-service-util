@@ -1,0 +1,3 @@
+from .video_asset_model import VideoAssetModel
+from .video_category_model import VideoCategoryModel
+from .video_asset_video_category_model import VideoAssetVideoCategoryModel
