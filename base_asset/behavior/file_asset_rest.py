@@ -135,6 +135,10 @@ class FileAssetRestBehavior(AssetRestBehavior):
 
     return super().delete(record_id)
 
+  def delete_org(self, org_id):
+    FileBehavior().delete_by_org(org_id)
+    self._model_class.delete_org(org_id)
+
   def pack(self, rec):
     if rec is None:
       return {}

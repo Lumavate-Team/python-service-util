@@ -58,3 +58,7 @@ class VideoAssetVideoCategoryModel(BaseModel):
       .where(VideoCategoryModel.type == type)
 
     return db.session.execute(q)
+
+  @classmethod
+  def delete_org(cls, org_id):
+    return cls.query.filter_by(org_id=org_id).delete()

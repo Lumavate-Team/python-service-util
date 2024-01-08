@@ -48,3 +48,7 @@ class AbstractAssetBaseModel(BaseModel):
     self.public_id = 'p{}'.format(Hashids(min_length=8,
         salt='T2uDF0uSWF8RwU6IdL0x',
         alphabet='abcdefghijklmnopqrstuvwxyz1234567890').encode(timestamp))
+
+  @classmethod
+  def delete_org(cls, org_id):
+    return cls.query.filter_by(org_id=org_id).delete()

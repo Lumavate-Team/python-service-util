@@ -40,3 +40,7 @@ class AbstractCategoryModel(BaseModel):
     @classmethod
     def get_by_name_and_type(cls, name, type):
       return cls.get_all().filter_by(name=name, type=type).first()
+
+    @classmethod
+    def delete_org(cls, org_id):
+      return cls.query.filter_by(org_id=org_id).delete()

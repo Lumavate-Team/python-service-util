@@ -1,6 +1,7 @@
 from flask import request, g, make_response, abort
 import urllib.parse
 import uuid
+import rollbar
 from ..aws import AwsClient
 from ..util import org_hash
 from lumavate_exceptions import ValidationException, NotFoundException
@@ -84,6 +85,18 @@ class FileBehavior(object):
       return
     
     self.__client.delete_objects_with_prefix(path)
+
+  def delete_by_org(self, org_id):
+    org = org_hash(org_id)
+    if not org:
+      raise ValidationException('Org Prefix not found')
+
+    prefix = '{}content/{}/'.format(
+        self.__client.default_bucket_prefix,
+        org)
+
+    rollbar.report_message(f'Deleting prefix: {prefix} for org_id: {org_id}')
+    self.delete_by_prefix(prefix)
 
   def get_full_path(self, path=None, file_name=None):
     if file_name is None:

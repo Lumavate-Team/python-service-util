@@ -30,3 +30,7 @@ class SettingsModel(BaseModel):
   def get_org_settings(cls):
     return cls.get_all().first()
 
+  @classmethod
+  def delete_org(cls, org_id):
+    return cls.query.filter_by(org_id=org_id).delete()
+
