@@ -95,7 +95,7 @@ class FileBehavior(object):
         self.__client.default_bucket_prefix,
         org)
 
-    rollbar.report_message(f'Deleting prefix: {prefix} for org_id: {org_id}')
+    rollbar.report_message(f'Deleting prefix: {prefix} for org_id: {org_id}', 'info')
     self.delete_by_prefix(prefix)
 
   def get_full_path(self, path=None, file_name=None):
