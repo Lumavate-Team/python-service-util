@@ -38,9 +38,10 @@ class ContentPaging(Paging):
       if serialize_func is None:
         response['payload']['data'].append(dict(r))
       else:
-        response['payload']['data'].append(serialize_func(dict(r)))
+        response['payload']['data'].append(serialize_func(r))
 
     response['payload']['currentItemCount'] = len(response['payload']['data'])
+
     return make_response(jsonify(response), 200)
 
   def get_query_params(self, url, page):
