@@ -31,6 +31,10 @@ class AssetAccessBaseModel(BaseModel):
     return cls.get_all().filter_by(id=id).first()
 
   @classmethod
+  def delete_org(cls, org_id):
+    return cls.query.filter_by(org_id=org_id).delete()
+
+  @classmethod
   def get_by_asset(cls, asset_id, return_default=True):
     access_rec = cls.get_all().filter_by(asset_id=asset_id).first()
 
