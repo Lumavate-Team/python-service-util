@@ -32,6 +32,15 @@ class AudioAssetAudioCategoryModel(BaseModel):
     return AudioCategoryModel.get_by_ids_and_type(cls.query.with_entities(AudioAssetAudioCategoryModel.category_id).filter(and_(cls.org_id==g.org_id, cls.asset_id==asset_id)).all(), type)
 
   @classmethod
+  def get_categories_by_assets(cls, asset_ids):
+    return AudioCategoryModel.get_by_ids(cls.query.with_entities(AudioAssetAudioCategoryModel.category_id).filter(and_(cls.org_id==g.org_id, cls.asset_id.in_(asset_ids))).all())
+  
+  @classmethod
+  def get_categories_by_type_and_assets(cls, type, asset_ids):
+    return cls.query.with_entities(AudioCategoryModel, AudioAssetAudioCategoryModel).filter(and_(cls.org_id==g.org_id, cls.asset_id.in_(asset_ids))).\
+      join(AudioCategoryModel, and_(AudioCategoryModel.id == cls.category_id, AudioCategoryModel.type==type))
+
+  @classmethod
   def get_all_by_type_and_asset(cls, type, asset_id):
     return cls.query.filter(and_(cls.org_id==g.org_id, cls.asset_id==asset_id)).\
       join(AudioCategoryModel, AudioCategoryModel.type==type)
@@ -40,6 +49,11 @@ class AudioAssetAudioCategoryModel(BaseModel):
   def get_all_by_type_and_ids(cls, type, category_ids):
     return cls.query.filter(and_(cls.org_id==g.org_id)).\
       join(AudioCategoryModel, and_(AudioCategoryModel.id == cls.category_id, AudioCategoryModel.type==type, AudioCategoryModel.id.in_(category_ids)))
+  
+  @classmethod
+  def get_all_by_ids(cls, category_ids):
+    return cls.query.filter(and_(cls.org_id==g.org_id)).\
+      join(AudioCategoryModel, and_(AudioCategoryModel.id == cls.category_id, AudioCategoryModel.id.in_(category_ids)))
 
   @classmethod
   def delete_all_by_asset(cls, asset_id):

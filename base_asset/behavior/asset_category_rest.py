@@ -30,6 +30,12 @@ class AssetCategoryRestBehavior(RestBehavior):
 
     return self._model_class.get_categories_by_type_and_asset(self._category_type, asset_id)
 
+  def get_categories_by_assets(self, asset_ids):
+    if not self._category_type:
+      return self._model_class.get_categories_by_assets(asset_ids)
+
+    return self._model_class.get_categories_by_type_and_assets(self._category_type, asset_ids)
+
   def create_asset_category(self, asset_id, category_id):
     self.data = {'assetId': asset_id, 'categoryId': category_id, 'orgId': self.get_org_id()}
     return self.create()

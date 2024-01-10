@@ -40,6 +40,14 @@ class AssetCategoryModel(BaseModel):
     return CategoryModel.get_by_ids_and_type(cls.query.with_entities(AssetCategoryModel.category_id).filter(and_(cls.org_id==g.org_id, cls.asset_id==asset_id)).all(), type)
 
   @classmethod
+  def get_categories_by_assets(cls, asset_ids):
+    return CategoryModel.get_by_ids(cls.query.with_entities(AssetCategoryModel.category_id).filter(and_(cls.org_id==g.org_id, cls.asset_id.in_(asset_ids))).all())
+  
+  @classmethod
+  def get_categories_by_type_and_assets(cls, type, asset_ids):
+    return CategoryModel.get_by_ids_and_type(cls.query.with_entities(AssetCategoryModel.category_id).filter(and_(cls.org_id==g.org_id, cls.asset_id.in_(asset_ids))).all(), type)
+
+  @classmethod
   def get_all_by_type_and_asset(cls, type, asset_id):
     return cls.query.filter(and_(cls.org_id==g.org_id, cls.asset_id==asset_id)).\
       join(CategoryModel, CategoryModel.type==type)
@@ -48,6 +56,11 @@ class AssetCategoryModel(BaseModel):
   def get_all_by_type_and_ids(cls, type, category_ids):
     return cls.query.filter(and_(cls.org_id==g.org_id)).\
       join(CategoryModel, and_(CategoryModel.id == cls.category_id, CategoryModel.type==type, CategoryModel.id.in_(category_ids)))
+  
+  @classmethod
+  def get_all_by_ids(cls, category_ids):
+    return cls.query.filter(and_(cls.org_id==g.org_id)).\
+      join(CategoryModel, and_(CategoryModel.id == cls.category_id, CategoryModel.id.in_(category_ids)))
 
   @classmethod
   def delete_all_by_asset(cls, asset_id):

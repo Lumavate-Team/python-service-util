@@ -9,7 +9,7 @@ import json
 from math import ceil
 
 class ContentPaging(Paging):
-  def run(self, query, serialize_func=None):
+  def run(self, query, serialize_func=None, expansion_func=None):
     paged_data = query.limit(self.page_size).offset((self.page * self.page_size) - self.page_size)
     total_items = db.session.query(func.count(query.subquery().columns.id).label("total_cnt")).scalar()
     total_pages = ceil(total_items / self.page_size)
@@ -34,13 +34,19 @@ class ContentPaging(Paging):
                   }
               }
 
-    for r in db.session.execute(paged_data).fetchall():
+    results = [dict(row) for row in db.session.execute(paged_data).fetchall()]
+
+    if expansion_func is not None:
+      results = expansion_func(results)
+
+    for r in results:
       if serialize_func is None:
         response['payload']['data'].append(dict(r))
       else:
-        response['payload']['data'].append(serialize_func(dict(r)))
+        response['payload']['data'].append(serialize_func(r))
 
     response['payload']['currentItemCount'] = len(response['payload']['data'])
+
     return make_response(jsonify(response), 200)
 
   def get_query_params(self, url, page):
