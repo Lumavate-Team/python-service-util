@@ -2,3 +2,4 @@
 from lumavate_properties import ColumnDataType
 
 from .asset_selector_mode import AssetSelectorMode
+from .content_asset_types import ContentAssetTypes

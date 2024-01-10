@@ -23,6 +23,7 @@ from sqlalchemy import literal_column
 from ..models.document.document_asset_model import DocumentAssetModel
 from ..models.image.image_asset_model import ImageAssetModel
 from ..models.audio.audio_asset_audio_category_model import AudioAssetAudioCategoryModel
+from ...enums.content_asset_types import ContentAssetTypes
 
 class ContentAssetRestBehavior(AssetRestBehavior):
   def __init__(self, asset_tables, data=None):
@@ -30,7 +31,7 @@ class ContentAssetRestBehavior(AssetRestBehavior):
     super().__init__(data)
 
   def should_query(self, asset_type):
-    asset_types = ['audio', 'document', 'image', 'video']
+    asset_types = [e.value for e in ContentAssetTypes]
     user_filters_set = False
     hidden_filters_set = False
 
@@ -81,7 +82,7 @@ class ContentAssetRestBehavior(AssetRestBehavior):
     if len(queries) > 0:
       q = q.union(*queries)
 
-    return ContentPaging().run(q, self.pack)
+    return ContentPaging().run(q, self.pack, self.expanded)
 
   def apply_filter(self, q, model_class, ignore_fields=None, asset_type=None):
     return ContentFilter(self.args, ignore_fields, model_class, asset_type).apply(q)
@@ -92,20 +93,28 @@ class ContentAssetRestBehavior(AssetRestBehavior):
   def apply_select(self, q, model_class, asset_type):
     return ContentColumnSelect(model_class=model_class, asset_type=asset_type, args=self.get_args()).apply(q)
   
+  def expanded(self, records):
+    assetTableTypes = {}
+
+    for record in records:
+      assetTableTypes.setdefault((record['asset_type'] if ('asset_type' in record) else record['anon_1_asset_type']), []).append(record['id'])
+
+    for key in assetTableTypes:
+      assetTable = next(asset_table for asset_table in self.asset_tables if asset_table.asset_type == key)
+
+      tags = AssetTagRestBehavior(model_class=assetTable.asset_category_model_class).get_categories_by_assets(assetTableTypes[key]).all()
+      for record in records:
+        if(key == (record['asset_type'] if ('asset_type' in record) else record['anon_1_asset_type'])):
+          record['expand'] = {}
+          record['expand']['tags'] = [(dict(tag[0].to_json())) for tag in tags if tag[1].asset_id == record["id"]]
+
+    return records
+
   def pack(self, rec):
     if rec is None:
       return {}
-    
-    if self.expanded('tags') and self.supports_tags():
-      record = dict(rec)
-      record['expand'] = {}
 
-      assetTable = next(asset_table for asset_table in self.asset_tables if asset_table.asset_type == (record['asset_type'] if ('asset_type' in record) else record['anon_1_asset_type']))
-
-      tags = AssetTagRestBehavior(model_class=assetTable.asset_category_model_class).get_categories_by_asset(record['id'])
-      record['expand']['tags'] = [(dict(tag.to_json())) for tag in tags]
-
-    return record
+    return dict(rec)
 
   def supports_filetype_category(self):
     return False
