@@ -67,7 +67,6 @@ class ContentAssetRestBehavior(AssetRestBehavior):
     q = asset_table.asset_model_class.get_all()
 
     q = self.apply_filter(q, asset_table.asset_category_model_class, ['org_id'], asset_table.asset_type)
-    q = self.apply_sort(q)
     q = self.apply_select(q, asset_table.asset_model_class, asset_table.asset_type)
     return q
 
@@ -86,9 +85,6 @@ class ContentAssetRestBehavior(AssetRestBehavior):
 
   def apply_filter(self, q, model_class, ignore_fields=None, asset_type=None):
     return ContentFilter(self.args, ignore_fields, model_class, asset_type).apply(q)
-
-  def apply_sort(self, q):
-    return NameSort().apply(q)
 
   def apply_select(self, q, model_class, asset_type):
     return ContentColumnSelect(model_class=model_class, asset_type=asset_type, args=self.get_args()).apply(q)
