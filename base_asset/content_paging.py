@@ -5,11 +5,13 @@ from urllib.parse import urlparse, parse_qs
 import os
 from ..paging import Paging
 from ..db import db
+from ..content_name_sort import ContentNameSort
 import json
 from math import ceil
 
 class ContentPaging(Paging):
   def run(self, query, serialize_func=None, expansion_func=None):
+    query = ContentNameSort().apply(query)
     paged_data = query.limit(self.page_size).offset((self.page * self.page_size) - self.page_size)
     total_items = db.session.query(func.count(query.subquery().columns.id).label("total_cnt")).scalar()
     total_pages = ceil(total_items / self.page_size)
