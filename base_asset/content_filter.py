@@ -25,6 +25,8 @@ class ContentFilter(Filter):
         if len(parts) > 1 and parts[0] in ops:
           if self.asset_type is not None and a.startswith(self.asset_type + '_'):
             base_query = self.apply_column(base_query, a.replace(self.asset_type + '_', ''), parts[0], parts[1])
+          elif self.asset_type is not None and a.startswith('hf_' + self.asset_type + '_'):
+            base_query = self.apply_column(base_query, a.replace('hf_' + self.asset_type + '_', ''), parts[0], parts[1])
           else:
             base_query = self.apply_column(base_query, a, parts[0], parts[1])
         elif len(parts) > 1 and parts[0] == 'find':
@@ -34,6 +36,8 @@ class ContentFilter(Filter):
         else:
           if self.asset_type is not None and a.startswith(self.asset_type + '_'):
             base_query = self.apply_column(base_query, a.replace(self.asset_type + '_', ''), 'eq', self.args[a])
+          if self.asset_type is not None and a.startswith('hf_' + self.asset_type + '_'):
+            base_query = self.apply_column(base_query, a.replace('hf_' + self.asset_type + '_', ''), 'eq', self.args[a])
           else:
             base_query = self.apply_column(base_query, a, 'eq', self.args[a])
 
