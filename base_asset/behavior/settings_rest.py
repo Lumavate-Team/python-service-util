@@ -66,4 +66,4 @@ class SettingsRestBehavior(RestBehavior):
     return settings_rec.data.get(key, None)
 
   def delete_org(self, org_id):
-    SettingsModel.delete_org(org_id)
+    self._model_class.delete_org(org_id)

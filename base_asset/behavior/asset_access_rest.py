@@ -57,4 +57,4 @@ class AssetAccessRestBehavior(RestBehavior):
       return self.put(access_rec.id)
 
   def delete_org(self, org_id):
-    AssetAccessBaseModel.delete_org(org_id)
+    self._model_class.delete_org(org_id)
