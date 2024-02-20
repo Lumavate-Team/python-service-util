@@ -3,7 +3,7 @@ from flask import g
 from sqlalchemy import and_, func, select
 from ....enums import ColumnDataType
 from ..abstract_asset_type_model import AbstractAssetTypeModel
-from event.event import EventModel
+import event
 
 
 class EventTypeModel(AbstractAssetTypeModel):
@@ -14,8 +14,8 @@ class EventTypeModel(AbstractAssetTypeModel):
 
   @classmethod
   def get_all_with_counts(cls, args=None):
-    a = EventTypeModel
-    d = EventModel
+    a = event.EventTypeModel
+    d = event.EventModel
 
     counts  = db.session.query(
       a.id.label('event_type_id'), 
@@ -26,10 +26,10 @@ class EventTypeModel(AbstractAssetTypeModel):
     .subquery()
 
     data_counts = db.session.query(
-        EventTypeModel,
+        event.EventTypeModel,
         counts.c.data_count.label('data_count'),
     )\
-    .select_from(EventTypeModel)\
+    .select_from(event.EventTypeModel)\
     .join(counts, counts.c.event_type_id == a.id)\
     .filter(a.org_id == g.org_id)
 
@@ -38,13 +38,13 @@ class EventTypeModel(AbstractAssetTypeModel):
   #TODO: Consolidate with table builder into service util base data asset model
   @classmethod
   def get_file_column_names(cls, asset_id):
-    data_column = func.jsonb_array_elements(EventTypeModel.data.op('->')('columns'))
+    data_column = func.jsonb_array_elements(event.EventTypeModel.data.op('->')('columns'))
 
     data_columns_cte = \
       select([
         data_column.label('data_column')])\
-      .select_from(EventTypeModel)\
-      .where(and_(EventTypeModel.id == asset_id, EventTypeModel.org_id == g.org_id))\
+      .select_from(event.EventTypeModel)\
+      .where(and_(event.EventTypeModel.id == asset_id, event.EventTypeModel.org_id == g.org_id))\
       .cte('data_columns')
 
     file_column_query = \

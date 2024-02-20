@@ -11,8 +11,7 @@ from ....db import BaseModel, Column
 from ....aws import FileBehavior
 from ...column import DataColumn
 from ...models import AssetBaseModel
-from event.event_type import EventTypeModel
-from event.events_related_products import EventsRelatedProductsModel
+import event
 import json
 from dateutil.parser import *
 from dateutil.tz import *
@@ -181,7 +180,7 @@ class EventModel(BaseModel):
 
   @classmethod
   def get_all_overview(cls, asset_id, args=None):
-    asset = EventTypeModel
+    asset = event.EventTypeModel
     column_cte = select([
         asset.id,
         cast(asset.data.op('->')('headlineField').op('->>')('columnName'), Text).label('headlineField'), 
@@ -193,35 +192,35 @@ class EventModel(BaseModel):
       .cte('asset_columns')
 
     return db.session.query(
-        cast(EventModel.submitted_data.op('->>')('eventName'), Text).label('event_name'),
+        cast(event.EventModel.submitted_data.op('->>')('eventName'), Text).label('event_name'),
         case([
           (column_cte.c.isHeadlineBase == True, 
-            coalesce(cast(EventModel.submitted_data.op('->>')(column_cte.c.headlineField), Text),''))],
+            coalesce(cast(event.EventModel.submitted_data.op('->>')(column_cte.c.headlineField), Text),''))],
           else_ = 
-            coalesce(cast(EventModel.submitted_data.op('->')('columns').op('->>')(column_cte.c.headlineField),Text),''))\
+            coalesce(cast(event.EventModel.submitted_data.op('->')('columns').op('->>')(column_cte.c.headlineField),Text),''))\
         .label('headline_field'),
         case([
           (column_cte.c.subheadlineField == None, 
             None),
           (column_cte.c.isSubheadlineBase == True,
-            coalesce(cast(EventModel.submitted_data.op('->>')(column_cte.c.subheadlineField), Text), None))],
+            coalesce(cast(event.EventModel.submitted_data.op('->>')(column_cte.c.subheadlineField), Text), None))],
           else_ =
-            coalesce(cast(EventModel.submitted_data.op('->')('columns').op('->>')(column_cte.c.subheadlineField), Text), ''))\
+            coalesce(cast(event.EventModel.submitted_data.op('->')('columns').op('->>')(column_cte.c.subheadlineField), Text), ''))\
         .label('subheadline_field'),
-        EventModel.public_id,
-        EventModel.event_type_id
+        event.EventModel.public_id,
+        event.EventModel.event_type_id
         )\
-        .select_from(EventModel)\
-        .join(column_cte, EventModel.org_id == g.org_id)
+        .select_from(event.EventModel)\
+        .join(column_cte, event.EventModel.org_id == g.org_id)
 
   @classmethod
   def get_column_definitions(cls, asset_id):
-    return EventTypeModel.get_column_definitions(asset_id)
+    return event.EventTypeModel.get_column_definitions(asset_id)
 
   @classmethod
   def get_related_product_ids(cls, data_id):
-    d = EventModel
-    r = EventsRelatedProductsModel
+    d = event.EventModel
+    r = event.EventsRelatedProductsModel
 
     event_query = select([r.event_id])\
       .select_from(r)\
@@ -237,20 +236,20 @@ class EventModel(BaseModel):
   @classmethod
   def delete_data_chunk(cls, asset_id, file_columns, chunk_size=1000):
     data_rows = (
-      select([EventModel.id])
-      .select_from(EventModel)
+      select([event.EventModel.id])
+      .select_from(event.EventModel)
       .where(and_(
-        EventModel.org_id == g.org_id,
-        EventModel.event_type_id == asset_id))
+        event.EventModel.org_id == g.org_id,
+        event.EventModel.event_type_id == asset_id))
       .limit(chunk_size)
       .alias('data_rows'))
 
     file_paths = cls.get_file_paths(data_rows, file_columns)
     s3_response = FileBehavior().delete_objects(file_paths)
 
-    delete_query = (delete(EventModel)
-      .where(EventModel.id.in_(data_rows))
-      .returning(EventModel.id))
+    delete_query = (delete(event.EventModel)
+      .where(event.EventModel.id.in_(data_rows))
+      .returning(event.EventModel.id))
     
     results = db.session.execute(delete_query)
 
@@ -265,9 +264,9 @@ class EventModel(BaseModel):
       return file_paths
 
     submitted_data = (
-      select([EventModel.submitted_data]) 
-      .select_from(EventModel)
-      .where(EventModel.id.in_(data_rows)))
+      select([event.EventModel.submitted_data]) 
+      .select_from(event.EventModel)
+      .where(event.EventModel.id.in_(data_rows)))
     results = [dict(row) for row in db.session.execute(submitted_data)]
 
     for row_result in results:
