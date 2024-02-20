@@ -21,7 +21,7 @@ class EventsRelatedProductsModel(BaseModel):
 
   @classmethod
   def get_relations(cls, id):
-    return cls.get_all().filter(or_(EventsRelatedProductsModel.event_id==id, EventsRelatedProductsModel.product_id==id)).all()
+    return cls.get_all().filter(or_(cls.event_id==id, cls.product_id==id)).all()
 
   @classmethod
   def set_relations(cls, id, relation_ids):
@@ -30,14 +30,14 @@ class EventsRelatedProductsModel(BaseModel):
 
   @classmethod
   def delete_relations(cls, id):
-    return cls.get_all().filter(or_(EventsRelatedProductsModel.event_id==id, EventsRelatedProductsModel.product_id==id)).delete()
+    return cls.get_all().filter(or_(cls.event_id==id, cls.product_id==id)).delete()
 
   @classmethod
   def create_relations(cls, primary_id, relation_ids):
     user = g.user['id'] if hasattr(g,'user') else 0
     db.session.bulk_save_objects(
       [
-        EventsRelatedProductsModel(
+        cls(
           event_id = primary_id,
           product_id = relation_id,
           org_id = g.org_id,

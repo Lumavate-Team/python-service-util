@@ -16,7 +16,7 @@ class EventTypeAccessModel(AbstractAssetTypeAccessModel):
     access_rec = cls.get_all().filter_by(event_type_id=asset_id).first()
 
     if access_rec is None and return_default:
-      access_rec = EventTypeAccessModel(
+      access_rec = cls(
           org_id=g.org_id,
           event_type_id=asset_id,
           get_access = 'none',
