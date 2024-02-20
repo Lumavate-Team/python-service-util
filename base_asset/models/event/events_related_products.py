@@ -3,7 +3,7 @@ from flask import g
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import or_
 from datetime import datetime
-from lumavate_service_util import BaseModel, Column
+from ....db import BaseModel, Column
 
 
 class EventsRelatedProductsModel(BaseModel):

@@ -1,8 +1,6 @@
 from app import db
 from flask import g
-from sqlalchemy import ForeignKey
-from lumavate_service_util import BaseModel, Column
-import models
+from ...db import BaseModel, Column
 
 
 class AbstractAssetTypeAccessModel(BaseModel):

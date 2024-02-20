@@ -1,7 +1,7 @@
 from app import db
 from flask import g
 from sqlalchemy import ForeignKey
-from lumavate_service_util import Column
+from ....db import Column
 from models import AbstractAssetTypeAccessModel
 
 

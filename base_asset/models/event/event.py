@@ -7,8 +7,10 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql.functions import coalesce
 from hashids import Hashids
 from lumavate_exceptions import ValidationException
-from lumavate_service_util import BaseModel, Column, BaseAsset, Aws
-import models
+from ....db import BaseModel, Column
+from ....aws import FileBehavior
+from ...column import DataColumn
+from ...models import AssetBaseModel, EventTypeModel, EventsRelatedProductsModel
 import json
 from dateutil.parser import *
 from dateutil.tz import *
@@ -68,7 +70,7 @@ class EventModel(BaseModel):
   @validates('asset_id')
   def validate_asset_id(self, key, value):
     if value is not None:
-      if BaseAsset.AssetBaseModel().get(value) is None:
+      if AssetBaseModel().get(value) is None:
         raise ValidationException('Invalid asset id', key)
       return value
 
@@ -82,7 +84,7 @@ class EventModel(BaseModel):
       data = json.loads(data)
 
     schema_columns = self.get_column_definitions(self.event_type_id if self.event_type_id else self.asset_id)
-    column_dict = {column_def.get('columnName'): BaseAsset.DataColumn.from_json(column_def) for column_def in schema_columns}
+    column_dict = {column_def.get('columnName'): DataColumn.from_json(column_def) for column_def in schema_columns}
     time_patterns = self.get_compiled_time_patterns()
     tzinfo_dict = dict(self.gen_tzinfos())
 
@@ -177,7 +179,7 @@ class EventModel(BaseModel):
 
   @classmethod
   def get_all_overview(cls, asset_id, args=None):
-    asset = models.EventTypeModel
+    asset = EventTypeModel
     column_cte = select([
         asset.id,
         cast(asset.data.op('->')('headlineField').op('->>')('columnName'), Text).label('headlineField'), 
@@ -189,35 +191,35 @@ class EventModel(BaseModel):
       .cte('asset_columns')
 
     return db.session.query(
-        cast(models.EventModel.submitted_data.op('->>')('eventName'), Text).label('event_name'),
+        cast(EventModel.submitted_data.op('->>')('eventName'), Text).label('event_name'),
         case([
           (column_cte.c.isHeadlineBase == True, 
-            coalesce(cast(models.EventModel.submitted_data.op('->>')(column_cte.c.headlineField), Text),''))],
+            coalesce(cast(EventModel.submitted_data.op('->>')(column_cte.c.headlineField), Text),''))],
           else_ = 
-            coalesce(cast(models.EventModel.submitted_data.op('->')('columns').op('->>')(column_cte.c.headlineField),Text),''))\
+            coalesce(cast(EventModel.submitted_data.op('->')('columns').op('->>')(column_cte.c.headlineField),Text),''))\
         .label('headline_field'),
         case([
           (column_cte.c.subheadlineField == None, 
             None),
           (column_cte.c.isSubheadlineBase == True,
-            coalesce(cast(models.EventModel.submitted_data.op('->>')(column_cte.c.subheadlineField), Text), None))],
+            coalesce(cast(EventModel.submitted_data.op('->>')(column_cte.c.subheadlineField), Text), None))],
           else_ =
-            coalesce(cast(models.EventModel.submitted_data.op('->')('columns').op('->>')(column_cte.c.subheadlineField), Text), ''))\
+            coalesce(cast(EventModel.submitted_data.op('->')('columns').op('->>')(column_cte.c.subheadlineField), Text), ''))\
         .label('subheadline_field'),
-        models.EventModel.public_id,
-        models.EventModel.event_type_id
+        EventModel.public_id,
+        EventModel.event_type_id
         )\
-        .select_from(models.EventModel)\
-        .join(column_cte, models.EventModel.org_id == g.org_id)
+        .select_from(EventModel)\
+        .join(column_cte, EventModel.org_id == g.org_id)
 
   @classmethod
   def get_column_definitions(cls, asset_id):
-    return models.EventTypeModel.get_column_definitions(asset_id)
+    return EventTypeModel.get_column_definitions(asset_id)
 
   @classmethod
   def get_related_product_ids(cls, data_id):
-    d = models.EventModel
-    r = models.EventsRelatedProductsModel
+    d = EventModel
+    r = EventsRelatedProductsModel
 
     event_query = select([r.event_id])\
       .select_from(r)\
@@ -233,20 +235,20 @@ class EventModel(BaseModel):
   @classmethod
   def delete_data_chunk(cls, asset_id, file_columns, chunk_size=1000):
     data_rows = (
-      select([models.EventModel.id])
-      .select_from(models.EventModel)
+      select([EventModel.id])
+      .select_from(EventModel)
       .where(and_(
-        models.EventModel.org_id == g.org_id,
-        models.EventModel.event_type_id == asset_id))
+        EventModel.org_id == g.org_id,
+        EventModel.event_type_id == asset_id))
       .limit(chunk_size)
       .alias('data_rows'))
 
     file_paths = cls.get_file_paths(data_rows, file_columns)
-    s3_response = Aws.FileBehavior().delete_objects(file_paths)
+    s3_response = FileBehavior().delete_objects(file_paths)
 
-    delete_query = (delete(models.EventModel)
-      .where(models.EventModel.id.in_(data_rows))
-      .returning(models.EventModel.id))
+    delete_query = (delete(EventModel)
+      .where(EventModel.id.in_(data_rows))
+      .returning(EventModel.id))
     
     results = db.session.execute(delete_query)
 
@@ -261,9 +263,9 @@ class EventModel(BaseModel):
       return file_paths
 
     submitted_data = (
-      select([models.EventModel.submitted_data]) 
-      .select_from(models.EventModel)
-      .where(models.EventModel.id.in_(data_rows)))
+      select([EventModel.submitted_data]) 
+      .select_from(EventModel)
+      .where(EventModel.id.in_(data_rows)))
     results = [dict(row) for row in db.session.execute(submitted_data)]
 
     for row_result in results:

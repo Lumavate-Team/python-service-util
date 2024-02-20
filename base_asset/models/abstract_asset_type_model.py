@@ -3,8 +3,8 @@ from flask import g
 from sqlalchemy import and_
 from sqlalchemy.sql import expression
 from sqlalchemy.dialects.postgresql import JSONB
-from lumavate_service_util import BaseModel, Column
 from lumavate_exceptions import NotFoundException
+from ...db import BaseModel, Column
 
 class AbstractAssetTypeModel(BaseModel):
   __abstract__ = True
