@@ -1,7 +1,7 @@
 from app import db
 from flask import g
 from sqlalchemy import and_, func, select
-from ....enums import enums
+from ....enums import ColumnDataType
 from ..abstract_asset_type_model import AbstractAssetTypeModel
 from .event_type import EventTypeModel
 from .event import EventModel
@@ -50,7 +50,7 @@ class EventTypeModel(AbstractAssetTypeModel):
     file_column_query = \
       select([data_columns_cte.c.data_column.op('->')('componentData').op('->>')('columnName')])\
       .select_from(data_columns_cte)\
-      .where(data_columns_cte.c.data_column.op('->')('componentData').op('->')('columnType').op('->>')('value') == enums.ColumnDataType.FILE)
+      .where(data_columns_cte.c.data_column.op('->')('componentData').op('->')('columnType').op('->>')('value') == ColumnDataType.FILE)
     file_columns = db.session.execute(file_column_query)
 
     return [f[0] for f in file_columns]
