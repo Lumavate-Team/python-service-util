@@ -10,7 +10,9 @@ from lumavate_exceptions import ValidationException
 from ....db import BaseModel, Column
 from ....aws import FileBehavior
 from ...column import DataColumn
-from ...models import AssetBaseModel, EventTypeModel, EventsRelatedProductsModel
+from ...models import AssetBaseModel
+from event.event_type import EventTypeModel
+from event.events_related_products import EventsRelatedProductsModel
 import json
 from dateutil.parser import *
 from dateutil.tz import *

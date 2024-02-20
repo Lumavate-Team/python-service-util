@@ -3,7 +3,8 @@ from flask import g
 from sqlalchemy import and_, func, select
 from ....enums import ColumnDataType
 from ..abstract_asset_type_model import AbstractAssetTypeModel
-from ...models import EventModel
+from event.event import EventModel
+
 
 class EventTypeModel(AbstractAssetTypeModel):
   __tablename__ = 'event_type'
