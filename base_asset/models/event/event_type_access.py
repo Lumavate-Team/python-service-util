@@ -2,7 +2,7 @@ from app import db
 from flask import g
 from sqlalchemy import ForeignKey
 from ....db import Column
-from models import AbstractAssetTypeAccessModel
+from ..abstract_asset_type_access_model import AbstractAssetTypeAccessModel
 
 
 class EventTypeAccessModel(AbstractAssetTypeAccessModel):

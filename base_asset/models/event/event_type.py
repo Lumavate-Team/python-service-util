@@ -1,8 +1,10 @@
 from app import db
 from flask import g
 from sqlalchemy import and_, func, select
-from lumavate_service_util import enums
-from models import AbstractAssetTypeModel, EventTypeModel, EventModel
+from ....enums import enums
+from ..abstract_asset_type_model import AbstractAssetTypeModel
+from .event_type import EventTypeModel
+from .event import EventModel
 
 class EventTypeModel(AbstractAssetTypeModel):
   __tablename__ = 'event_type'
