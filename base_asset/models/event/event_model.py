@@ -11,12 +11,12 @@ from ....db import BaseModel, Column
 from ....aws import FileBehavior
 from ...column import DataColumn
 from ...models.asset_model import AssetBaseModel
-from event.event_type import EventTypeModel
-from event.events_related_products import EventsRelatedProductsModel
-import json
+from event import EventTypeModel
+from event import EventsRelatedProductsModel
+from json import loads
 from dateutil.parser import *
 from dateutil.tz import *
-from datetime import *
+from datetime import utcnow
 from time import time, sleep
 import pytz
 import re
@@ -83,7 +83,7 @@ class EventModel(BaseModel):
 
     if type(data) == str:
       data.replace("'", '"')
-      data = json.loads(data)
+      data = loads(data)
 
     schema_columns = self.get_column_definitions(self.event_type_id if self.event_type_id else self.asset_id)
     column_dict = {column_def.get('columnName'): DataColumn.from_json(column_def) for column_def in schema_columns}
@@ -170,7 +170,7 @@ class EventModel(BaseModel):
   def gen_tzinfos(self):
     for zone in pytz.common_timezones:
       try:
-        tzdate = pytz.timezone(zone).localize(datetime.utcnow(), is_dst=None)
+        tzdate = pytz.timezone(zone).localize(utcnow(), is_dst=None)
       except pytz.NonExistentTimeError:
         pass
       else:
