@@ -16,7 +16,7 @@ from ...models.asset_model import AssetBaseModel
 from json import loads
 from dateutil.parser import *
 from dateutil.tz import *
-from datetime import utcnow
+import datetime
 from time import time, sleep
 import pytz
 import re
@@ -170,7 +170,7 @@ class EventModel(BaseModel):
   def gen_tzinfos(self):
     for zone in pytz.common_timezones:
       try:
-        tzdate = pytz.timezone(zone).localize(utcnow(), is_dst=None)
+        tzdate = pytz.timezone(zone).localize(datetime.utcnow(), is_dst=None)
       except pytz.NonExistentTimeError:
         pass
       else:
