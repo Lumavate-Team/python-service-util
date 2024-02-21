@@ -2,7 +2,7 @@ from app import db
 from flask import g
 from sqlalchemy import and_, func
 from ..abstract_asset_type_model import AbstractAssetTypeModel
-from events import EventModel
+from .event_model import EventModel
 
 class EventTypeModel(AbstractAssetTypeModel):
   __tablename__ = 'event_type'
