@@ -11,7 +11,7 @@ class EventTypeModel(AbstractAssetTypeModel):
 
   @classmethod
   def get_all_with_counts(cls, args=None):
-    from event import EventModel
+    from events import EventModel
     counts  = db.session.query(
       cls.id.label('event_type_id'), 
       func.count(EventModel.id).label('data_count')
