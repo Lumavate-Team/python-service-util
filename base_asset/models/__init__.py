@@ -21,12 +21,10 @@ from .image.image_asset_image_category_model import ImageAssetImageCategoryModel
 from .video.video_asset_model import VideoAssetModel
 from .video.video_category_model import VideoCategoryModel
 from .video.video_asset_video_category_model import VideoAssetVideoCategoryModel
+from .events import EventModel
+from .events import EventTypeModel
+from .events import EventTypeAccessModel
+from .events import EventsRelatedProductsModel
 from .abstract_asset_model import AbstractAssetBaseModel
-
 from .abstract_asset_type_model import AbstractAssetTypeModel
 from .abstract_asset_type_access_model import AbstractAssetTypeAccessModel
-
-from .events.event_model import EventModel
-from .events.event_type import EventTypeModel
-from .events.event_type_access import EventTypeAccessModel
-from .events.events_related_products import EventsRelatedProductsModel
