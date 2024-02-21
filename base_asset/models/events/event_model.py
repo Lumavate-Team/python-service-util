@@ -11,7 +11,7 @@ from ....db import BaseModel, Column
 from ....aws import FileBehavior
 from ...column import DataColumn
 from ...models.asset_model import AssetBaseModel
-# from events.events_related_products import EventsRelatedProductsModel
+from .events_related_products import EventsRelatedProductsModel
 # from events.event_model import EventTypeModel
 from json import loads
 from dateutil.parser import *
@@ -222,19 +222,18 @@ class EventModel(BaseModel):
 
   @classmethod
   def get_related_product_ids(cls, data_id):
-    pass
-    # d = cls
-    # r = EventsRelatedProductsModel
+    d = cls
+    r = EventsRelatedProductsModel
 
-    # event_query = select([r.event_id])\
-    #   .select_from(r)\
-    #   .where(and_(r.product_id == data_id, r.org_id == g.org_id))
+    event_query = select([r.event_id])\
+      .select_from(r)\
+      .where(and_(r.product_id == data_id, r.org_id == g.org_id))
 
-    # product_query = select([r.product_id])\
-    #   .select_from(r)\
-    #   .where(and_(r.event_id == data_id, r.org_id == g.org_id))
+    product_query = select([r.product_id])\
+      .select_from(r)\
+      .where(and_(r.event_id == data_id, r.org_id == g.org_id))
 
-    # return union(event_query, product_query)
+    return union(event_query, product_query)
 
   #TODO: consolidate with table builder into service util  DataBaseModel
   @classmethod
