@@ -56,6 +56,10 @@ class BaseAsset:
   from .base_asset import EventModel
   from .base_asset import EventTypeAccessModel
   from .base_asset import EventsRelatedProductsModel
+  from .base_asset import ProductTypeModel
+  from .base_asset import ProductModel
+  from .base_asset import ProductTypeAccessModel
+  from .base_asset import ProductsRelatedProductsModel
 
   from .base_asset import AssetAccessRestBehavior
   from .base_asset import AssetRestBehavior

@@ -10,5 +10,5 @@ class EventsRelatedProductsModel(AbstractRelatedProductsModel):
   parent_id = Column(db.String(200), db.ForeignKey('event.public_id'), nullable=False)
   child_id = Column(db.String(200), db.ForeignKey('product.public_id'), nullable=False)
 
-  parent = relationship('EventModel', backref=backref('events_related_products_event', cascade='all, delete-orphan'), foreign_keys=parent_id)
-  child = relationship('ProductModel', backref=backref('events_related_products_product', cascade='all, delete-orphan'), foreign_keys=child_id)
+  parent = relationship('EventModel', backref=backref('events_related_products_parent', cascade='all, delete-orphan'), foreign_keys=parent_id)
+  child = relationship('ProductModel', backref=backref('events_related_products_child', cascade='all, delete-orphan'), foreign_keys=child_id)

@@ -25,6 +25,10 @@ from .event.event_model import EventModel
 from .event.event_type import EventTypeModel
 from .event.event_type_access import EventTypeAccessModel
 from .event.events_related_products import EventsRelatedProductsModel
+from .product.product_model import ProductModel
+from .product.product_type import ProductTypeModel
+from .product.product_type_access import ProductTypeAccessModel
+from .product.products_related_products import ProductsRelatedProductsModel
 from .abstract_asset_model import AbstractAssetBaseModel
 from .abstract_asset_type_model import AbstractAssetTypeModel
 from .abstract_asset_type_access_model import AbstractAssetTypeAccessModel

@@ -45,3 +45,7 @@ from .models import EventTypeModel
 from .models import EventModel
 from .models import EventTypeAccessModel
 from .models import EventsRelatedProductsModel
+from .models import ProductTypeModel
+from .models import ProductModel
+from .models import ProductTypeAccessModel
+from .models import ProductsRelatedProductsModel
