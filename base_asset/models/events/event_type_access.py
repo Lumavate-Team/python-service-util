@@ -9,4 +9,4 @@ class EventTypeAccessModel(AbstractAssetTypeAccessModel):
   __tablename__ = 'event_type_access'
   __table_args = {'extend_existing': True}
 
-  event_type_id = Column(db.BigInteger, ForeignKey('event_type.id'), nullable=False)
+  type_id = Column(db.BigInteger, ForeignKey('event_type.id'), nullable=False)

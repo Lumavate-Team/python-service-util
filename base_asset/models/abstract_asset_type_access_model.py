@@ -25,12 +25,12 @@ class AbstractAssetTypeAccessModel(BaseModel):
   
   @classmethod
   def get_by_asset(cls, asset_id, return_default=True):
-    access_rec = cls.get_all().filter_by(event_type_id=asset_id).first()
+    access_rec = cls.get_all().filter_by(type_id=asset_id).first()
 
     if access_rec is None and return_default:
       access_rec = cls(
           org_id=g.org_id,
-          event_type_id=asset_id,
+          type_id=asset_id,
           get_access = 'none',
           post_access= 'all',
           put_access = 'none',

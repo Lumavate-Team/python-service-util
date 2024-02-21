@@ -28,3 +28,4 @@ from .events.events_related_products import EventsRelatedProductsModel
 from .abstract_asset_model import AbstractAssetBaseModel
 from .abstract_asset_type_model import AbstractAssetTypeModel
 from .abstract_asset_type_access_model import AbstractAssetTypeAccessModel
+from .abstract_related_products_model import AbstractRelatedProductsModel

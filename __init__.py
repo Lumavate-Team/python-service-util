@@ -51,6 +51,7 @@ class BaseAsset:
   from .base_asset import VideoAssetVideoCategoryModel
   from .base_asset import AbstractAssetTypeModel
   from .base_asset import AbstractAssetTypeAccessModel
+  from .base_asset import AbstractRelatedProductsModel
   from .base_asset import EventTypeModel
   from .base_asset import EventModel
   from .base_asset import EventTypeAccessModel
