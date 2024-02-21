@@ -1,10 +1,7 @@
 from app import db
 from flask import g
-from sqlalchemy import and_, func, select
-from ....enums import ColumnDataType
+from sqlalchemy import and_, func
 from ..abstract_asset_type_model import AbstractAssetTypeModel
-from event import EventModel
-
 
 class EventTypeModel(AbstractAssetTypeModel):
   __tablename__ = 'event_type'
@@ -14,15 +11,13 @@ class EventTypeModel(AbstractAssetTypeModel):
 
   @classmethod
   def get_all_with_counts(cls, args=None):
-    a = cls
-    d = EventModel
-
+    from event import EventModel
     counts  = db.session.query(
-      a.id.label('event_type_id'), 
-      func.count(d.id).label('data_count')
+      cls.id.label('event_type_id'), 
+      func.count(EventModel.id).label('data_count')
     )\
-    .outerjoin(d, and_(a.id == d.event_type_id, a.org_id == g.org_id))\
-    .group_by(a.id)\
+    .outerjoin(EventModel, and_(cls.id == EventModel.event_type_id, cls.org_id == g.org_id))\
+    .group_by(cls.id)\
     .subquery()
 
     data_counts = db.session.query(
@@ -30,27 +25,7 @@ class EventTypeModel(AbstractAssetTypeModel):
         counts.c.data_count.label('data_count'),
     )\
     .select_from(cls)\
-    .join(counts, counts.c.event_type_id == a.id)\
-    .filter(a.org_id == g.org_id)
+    .join(counts, counts.c.event_type_id == cls.id)\
+    .filter(cls.org_id == g.org_id)
 
     return data_counts
-
-  #TODO: Consolidate with table builder into service util base data asset model
-  @classmethod
-  def get_file_column_names(cls, asset_id):
-    data_column = func.jsonb_array_elements(cls.data.op('->')('columns'))
-
-    data_columns_cte = \
-      select([
-        data_column.label('data_column')])\
-      .select_from(cls)\
-      .where(and_(cls.id == asset_id, cls.org_id == g.org_id))\
-      .cte('data_columns')
-
-    file_column_query = \
-      select([data_columns_cte.c.data_column.op('->')('componentData').op('->>')('columnName')])\
-      .select_from(data_columns_cte)\
-      .where(data_columns_cte.c.data_column.op('->')('componentData').op('->')('columnType').op('->>')('value') == ColumnDataType.FILE)
-    file_columns = db.session.execute(file_column_query)
-
-    return [f[0] for f in file_columns]
