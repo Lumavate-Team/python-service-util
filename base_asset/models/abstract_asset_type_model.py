@@ -22,12 +22,36 @@ class AbstractAssetTypeModel(BaseModel):
   schema_last_modified_at = Column(db.DateTime(timezone=True), server_default=db.func.current_timestamp())
 
   @classmethod
+  def get_asset_model(cls):
+    pass
+
+  @classmethod
   def get_all(cls, args=None):
     return cls.query.filter(and_(cls.org_id==g.org_id, cls.is_active==True))
 
   @classmethod
   def get(cls, id):
     return cls.get_all().filter_by(id=id).first()
+  
+  @classmethod
+  def get_all_with_counts(cls, args=None):
+    counts  = db.session.query(
+      cls.id.label('type_id'), 
+      func.count(cls.get_asset_model().id).label('data_count')
+    )\
+    .outerjoin(cls.get_asset_model(), and_(cls.id == cls.get_asset_model().type_id, cls.org_id == g.org_id))\
+    .group_by(cls.id)\
+    .subquery()
+
+    data_counts = db.session.query(
+        cls,
+        counts.c.data_count.label('data_count'),
+    )\
+    .select_from(cls)\
+    .join(counts, counts.c.type_id == cls.id)\
+    .filter(cls.org_id == g.org_id)
+
+    return data_counts
 
   @classmethod
   def get_column_definitions(cls, id, include_inactive=False):
