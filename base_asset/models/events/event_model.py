@@ -11,7 +11,8 @@ from ....db import BaseModel, Column
 from ....aws import FileBehavior
 from ...column import DataColumn
 from ...models.asset_model import AssetBaseModel
-from events.events_related_products import EventsRelatedProductsModel
+from ...models.events.events_related_products import EventsRelatedProductsModel
+from ...models.events.event_type import EventTypeModel
 from events.event_model import EventTypeModel
 from json import loads
 from dateutil.parser import *

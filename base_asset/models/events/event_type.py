@@ -11,21 +11,22 @@ class EventTypeModel(AbstractAssetTypeModel):
 
   @classmethod
   def get_all_with_counts(cls, args=None):
-    from events import EventModel
-    counts  = db.session.query(
-      cls.id.label('event_type_id'), 
-      func.count(EventModel.id).label('data_count')
-    )\
-    .outerjoin(EventModel, and_(cls.id == EventModel.event_type_id, cls.org_id == g.org_id))\
-    .group_by(cls.id)\
-    .subquery()
+    pass
+    # from events import EventModel
+    # counts  = db.session.query(
+    #   cls.id.label('event_type_id'), 
+    #   func.count(EventModel.id).label('data_count')
+    # )\
+    # .outerjoin(EventModel, and_(cls.id == EventModel.event_type_id, cls.org_id == g.org_id))\
+    # .group_by(cls.id)\
+    # .subquery()
 
-    data_counts = db.session.query(
-        cls,
-        counts.c.data_count.label('data_count'),
-    )\
-    .select_from(cls)\
-    .join(counts, counts.c.event_type_id == cls.id)\
-    .filter(cls.org_id == g.org_id)
+    # data_counts = db.session.query(
+    #     cls,
+    #     counts.c.data_count.label('data_count'),
+    # )\
+    # .select_from(cls)\
+    # .join(counts, counts.c.event_type_id == cls.id)\
+    # .filter(cls.org_id == g.org_id)
 
-    return data_counts
+    # return data_counts
