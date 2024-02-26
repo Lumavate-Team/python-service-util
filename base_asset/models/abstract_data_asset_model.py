@@ -14,7 +14,7 @@ from ..models.asset_model import AssetBaseModel
 from json import loads
 from dateutil.parser import *
 from dateutil.tz import *
-import datetime
+from datetime import *
 from time import time, sleep
 import pytz
 import re

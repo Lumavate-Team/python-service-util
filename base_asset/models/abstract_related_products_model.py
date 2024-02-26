@@ -1,7 +1,7 @@
 from app import db
 from flask import g
 from sqlalchemy import or_
-from datetime import datetime
+from datetime import *
 from ...db import BaseModel, Column
 
 
