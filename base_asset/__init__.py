@@ -49,3 +49,6 @@ from .models import ProductTypeModel
 from .models import ProductModel
 from .models import ProductTypeAccessModel
 from .models import ProductsRelatedProductsModel
+from .models import LocationTypeModel
+from .models import LocationModel
+from .models import LocationTypeAccessModel

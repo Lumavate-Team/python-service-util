@@ -29,6 +29,9 @@ from .product.product_model import ProductModel
 from .product.product_type import ProductTypeModel
 from .product.product_type_access import ProductTypeAccessModel
 from .product.products_related_products import ProductsRelatedProductsModel
+from .location.location_model import LocationModel
+from .location.location_type import LocationTypeModel
+from .location.location_type_access import LocationTypeAccessModel
 from .abstract_asset_model import AbstractAssetBaseModel
 from .abstract_asset_type_model import AbstractAssetTypeModel
 from .abstract_asset_type_access_model import AbstractAssetTypeAccessModel

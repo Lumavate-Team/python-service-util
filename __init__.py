@@ -60,6 +60,9 @@ class BaseAsset:
   from .base_asset import ProductModel
   from .base_asset import ProductTypeAccessModel
   from .base_asset import ProductsRelatedProductsModel
+  from .base_asset import LocationTypeModel
+  from .base_asset import LocationModel
+  from .base_asset import LocationTypeAccessModel
 
   from .base_asset import AssetAccessRestBehavior
   from .base_asset import AssetRestBehavior
