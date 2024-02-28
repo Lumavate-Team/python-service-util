@@ -305,15 +305,15 @@ class AbstractDataAssetModel(BaseModel):
   def get_related_product_ids(cls, data_id):
     r = cls.get_related_products_model()
 
-    event_query = select([r.parent_id])\
+    parent_query = select([r.parent_id])\
       .select_from(r)\
       .where(and_(r.child_id == data_id, r.org_id == g.org_id))
 
-    product_query = select([r.child_id])\
+    child_query = select([r.child_id])\
       .select_from(r)\
       .where(and_(r.parent_id == data_id, r.org_id == g.org_id))
 
-    return union(event_query, product_query)
+    return union(parent_query, child_query)
 
   @classmethod
   def delete_org(cls, org_id):
