@@ -38,3 +38,17 @@ from .models import VideoAssetModel
 from .models import VideoCategoryModel
 from .models import VideoAssetVideoCategoryModel
 from .models import AbstractAssetBaseModel
+from .models import AbstractAssetTypeModel
+from .models import AbstractAssetTypeAccessModel
+from .models import AbstractRelatedProductsModel
+from .models import EventTypeModel
+from .models import EventModel
+from .models import EventTypeAccessModel
+from .models import EventsRelatedProductsModel
+from .models import ProductTypeModel
+from .models import ProductModel
+from .models import ProductTypeAccessModel
+from .models import ProductsRelatedProductsModel
+from .models import LocationTypeModel
+from .models import LocationModel
+from .models import LocationTypeAccessModel
