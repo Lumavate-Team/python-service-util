@@ -15,7 +15,3 @@ class LocationTypeModel(AbstractAssetTypeModel):
   @classmethod
   def get_all_with_counts(cls, args=None):
     pass
-
-  @classmethod
-  def get_column_definitions(cls, id, include_inactive=False):
-    pass
