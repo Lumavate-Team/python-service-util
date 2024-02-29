@@ -39,6 +39,10 @@ class AbstractDataAssetModel(BaseModel):
     pass
 
   @classmethod
+  def cast_data_name_column(cls):
+    return cast(cls.submitted_data.op('->>')('name'), Text).label('name')
+
+  @classmethod
   def get_all(cls, args=None):
     return cls.query.filter_by(org_id=g.org_id)
 
@@ -276,7 +280,7 @@ class AbstractDataAssetModel(BaseModel):
       .cte('asset_columns')
 
     return db.session.query(
-        cast(cls.submitted_data.op('->>')('name'), Text).label('name'),
+        cls.cast_data_name_column(),
         case([
           (column_cte.c.isHeadlineBase == True, 
             coalesce(cast(cls.submitted_data.op('->>')(column_cte.c.headlineField), Text),''))],
