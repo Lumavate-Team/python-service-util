@@ -1,5 +1,6 @@
 from app import db
-from sqlalchemy import ForeignKey
+from flask import g
+from sqlalchemy import ForeignKey, cast, Text
 from ....db import Column
 from .location_type import LocationTypeModel
 from ..abstract_data_asset_model import AbstractDataAssetModel
@@ -17,3 +18,7 @@ class LocationModel(AbstractDataAssetModel):
   @classmethod
   def get_related_products_model(cls):
     pass
+  
+  @classmethod
+  def cast_data_name_column(cls):
+    return cast(cls.submitted_data.op('->>')('locationName'), Text).label('location_name')

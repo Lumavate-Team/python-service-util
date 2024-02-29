@@ -1,5 +1,6 @@
 from app import db
-from sqlalchemy import ForeignKey
+from flask import g
+from sqlalchemy import ForeignKey, cast, Text
 from ....db import Column
 from .events_related_products import EventsRelatedProductsModel
 from .event_type import EventTypeModel
@@ -18,3 +19,7 @@ class EventModel(AbstractDataAssetModel):
   @classmethod
   def get_related_products_model(cls):
     return EventsRelatedProductsModel
+  
+  @classmethod
+  def cast_data_name_column(cls):
+    return cast(cls.submitted_data.op('->>')('eventName'), Text).label('event_name')

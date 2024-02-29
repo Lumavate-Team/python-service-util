@@ -39,6 +39,10 @@ class AbstractDataAssetModel(BaseModel):
     pass
 
   @classmethod
+  def cast_data_name_column(cls):
+    return cast(cls.submitted_data.op('->>')('name'), Text).label('name')
+
+  @classmethod
   def get_all(cls, args=None):
     return cls.query.filter_by(org_id=g.org_id)
 
@@ -276,7 +280,7 @@ class AbstractDataAssetModel(BaseModel):
       .cte('asset_columns')
 
     return db.session.query(
-        cast(cls.submitted_data.op('->>')('eventName'), Text).label('event_name'),
+        cls.cast_data_name_column(),
         case([
           (column_cte.c.isHeadlineBase == True, 
             coalesce(cast(cls.submitted_data.op('->>')(column_cte.c.headlineField), Text),''))],
@@ -305,15 +309,15 @@ class AbstractDataAssetModel(BaseModel):
   def get_related_product_ids(cls, data_id):
     r = cls.get_related_products_model()
 
-    event_query = select([r.parent_id])\
+    parent_query = select([r.parent_id])\
       .select_from(r)\
       .where(and_(r.child_id == data_id, r.org_id == g.org_id))
 
-    product_query = select([r.child_id])\
+    child_query = select([r.child_id])\
       .select_from(r)\
       .where(and_(r.parent_id == data_id, r.org_id == g.org_id))
 
-    return union(event_query, product_query)
+    return union(parent_query, child_query)
 
   @classmethod
   def delete_org(cls, org_id):
