@@ -276,7 +276,7 @@ class AbstractDataAssetModel(BaseModel):
       .cte('asset_columns')
 
     return db.session.query(
-        cast(cls.submitted_data.op('->>')('eventName'), Text).label('event_name'),
+        cast(cls.submitted_data.op('->>')('name'), Text).label('name'),
         case([
           (column_cte.c.isHeadlineBase == True, 
             coalesce(cast(cls.submitted_data.op('->>')(column_cte.c.headlineField), Text),''))],
