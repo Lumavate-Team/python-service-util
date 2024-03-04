@@ -59,7 +59,7 @@ class DataRestBehavior(RestBehavior):
     if(data.get('manualEntry',False)):
       data['isDraft'] = False
     else:
-      data['isDraft'] = host_split[0].endswith("__test") or host_split[0].endswith("--test")
+      data['isDraft'] = host_split[0].lower() == 'test'
 
     self.data = data
     return super().post()
