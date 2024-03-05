@@ -1,6 +1,5 @@
 import logging
-from alembic import context
-from sqlalchemy import engine_from_config, pool, create_engine
+from sqlalchemy import create_engine
 
 def create_db(url):
 
