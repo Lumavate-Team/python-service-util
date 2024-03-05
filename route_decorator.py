@@ -73,6 +73,14 @@ def __authenticate_asset(request_type, access_check=False):
       'user': token_data.get('user')
     }
 
+    print('token', token_data, flush=True)
+    if hasattr(g, 'user'):
+      g.user['rolePermissions'] = token_data.get('rolePermissions', '').split(',')
+    else:
+      g.user = {
+        'rolePermissions': token_data.get('rolePermissions', [])
+      }
+
   asset_id = request.view_args.get('asset_id')
   if not asset_id:
     return
