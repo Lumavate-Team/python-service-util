@@ -269,6 +269,11 @@ class AbstractDataAssetModel(BaseModel):
   @classmethod
   def get_all_overview(cls, asset_id, args=None):
     asset = cls.get_type_model()
+    whereQueries = [asset.org_id == g.org_id];
+
+    if asset_id is not 0:
+      whereQueries.append(asset.id == asset_id)
+
     column_cte = select([
         asset.id,
         cast(asset.data.op('->')('headlineField').op('->>')('columnName'), Text).label('headlineField'), 
@@ -276,7 +281,7 @@ class AbstractDataAssetModel(BaseModel):
         coalesce(cast(asset.data.op('->')('subheadlineField').op('->>')('columnName'), Text), 'sku').label('subheadlineField'),
         case([(asset.data.op('->')('subheadlineField').op('->>')('id') == None, True)], else_=False).label('isSubheadlineBase')])\
       .select_from(asset)\
-      .where(and_(asset.org_id == g.org_id, asset.id == asset_id)) \
+      .where(and_(*whereQueries)) \
       .cte('asset_columns')
 
     return db.session.query(
@@ -299,7 +304,7 @@ class AbstractDataAssetModel(BaseModel):
         cls.type_id
         )\
         .select_from(cls)\
-        .join(column_cte, cls.org_id == g.org_id)
+        .join(column_cte, and_(cls.org_id == g.org_id, cls.type_id == column_cte.c.id))
 
   @classmethod
   def get_column_definitions(cls, asset_id):
