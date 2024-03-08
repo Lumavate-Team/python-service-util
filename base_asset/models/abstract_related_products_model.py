@@ -29,7 +29,7 @@ class AbstractRelatedProductsModel(BaseModel):
 
   @classmethod
   def create_relations(cls, primary_id, relation_ids):
-    user = g.user['id'] if hasattr(g,'user') else 0
+    user = g.user['id'] if hasattr(g,'user') and 'id' in g.user else 0
     db.session.bulk_save_objects(
       [
         cls(

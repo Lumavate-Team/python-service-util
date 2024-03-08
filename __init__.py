@@ -12,7 +12,6 @@ from .request_type import RequestType
 from .security_assertion import SecurityAssertion
 from .custom_encoder import CustomEncoder
 from .resolver import Resolver
-from .migrate import LumavateMigrate
 from .db import BaseModel, Column
 from .validators import IntValidator, BooleanValidator, ArrayValidator, EnumValidator, StringValidator, UrlValidator, FloatValidator, DictionaryValidator, DateTimeValidator
 from .name_sort import NameSort
